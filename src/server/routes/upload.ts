@@ -12,12 +12,14 @@ function extension(filename: string): string {
   return idx === -1 ? '' : filename.slice(idx).toLowerCase();
 }
 
-const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE' | 'UNSUPPORTED_FORMAT', number> = {
+const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE', number> = {
   PAYLOAD_TOO_LARGE: 413,
   UNSUPPORTED_FORMAT: 415,
   INVALID_SPEC: 400,
   EMPTY_SPEC: 400,
   UNSUPPORTED_VERSION: 400,
+  SWAGGER2_CONVERSION_FAILED: 400,
+  POSTMAN_CONVERSION_FAILED: 400,
   PARSE_TIMEOUT: 504,
   PARSE_DEPTH_EXCEEDED: 400,
   NO_FILE: 400,
