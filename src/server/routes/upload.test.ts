@@ -35,7 +35,11 @@ describe('POST /api/upload', () => {
       JSON.stringify({
         openapi: '3.0.3',
         info: { title: 'JSON Demo', version: '1' },
-        paths: { '/x': { get: { tags: ['x'], summary: 'g', responses: { '200': {} } } } },
+        paths: {
+          '/x': {
+            get: { tags: ['x'], summary: 'g', responses: { '200': { description: 'ok' } } },
+          },
+        },
       })
     );
     const res = await uploadFile(json, 'demo.json');

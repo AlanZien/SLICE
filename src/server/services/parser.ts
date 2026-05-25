@@ -40,7 +40,14 @@ export async function parseSpec(
   assertDepth(tree);
 
   const timeoutMs = options.timeoutMs ?? PARSE_TIMEOUT_MS;
-  const validated = await withTimeout(SwaggerParser.validate(tree as object), timeoutMs);
+  // SwaggerParser.validate accepts an in-memory object at runtime but its
+  // type definitions only list `string | Document`. Casting keeps the runtime
+  // contract while satisfying tsc.
+  const validated = await withTimeout(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    SwaggerParser.validate(tree as any),
+    timeoutMs
+  );
 
   // R1.1.7 — at least one path is required to consider the spec usable.
   // `paths` may be missing for OpenAPI 3.1 specs that only define webhooks,
@@ -91,6 +98,14 @@ function assertVersion(tree: unknown): void {
     throw new ParseError(
       'UNSUPPORTED_VERSION',
       'Swagger 2.0 detected. Conversion will be enabled in the next phase.'
+    );
+  }
+
+  if (root.openapi === undefined) {
+    // No version marker at all → not an OpenAPI document we can recognise.
+    throw new ParseError(
+      'INVALID_SPEC',
+      'Could not detect an OpenAPI version. The file does not look like an API spec.'
     );
   }
 
