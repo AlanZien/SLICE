@@ -32,7 +32,7 @@ function mockFetchOnce(init: { status: number; body: unknown }) {
     statusText: 'mocked',
     json: async () => init.body,
   };
-  global.fetch = vi.fn().mockResolvedValue(res) as unknown as typeof fetch;
+  globalThis.fetch = vi.fn().mockResolvedValue(res) as unknown as typeof fetch;
 }
 
 function makeFile(name: string): File {
@@ -40,14 +40,14 @@ function makeFile(name: string): File {
 }
 
 describe('<UploadScreen>', () => {
-  const originalFetch = global.fetch;
+  const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
-    global.fetch = vi.fn();
+    globalThis.fetch = vi.fn();
   });
 
   afterEach(() => {
-    global.fetch = originalFetch;
+    globalThis.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
@@ -67,7 +67,7 @@ describe('<UploadScreen>', () => {
     await waitFor(() => {
       expect(onParsed).toHaveBeenCalledWith(VALID_PARSED);
     });
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       '/api/upload',
       expect.objectContaining({ method: 'POST' })
     );
