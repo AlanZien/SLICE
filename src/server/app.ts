@@ -28,11 +28,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
     message: { error: 'Too many requests, please try again in a minute.' },
   });
 
-  app.use('/api/', apiLimiter);
-
+  // Health check is exempted from rate limiting so monitoring/CI behind
+  // shared NAT can probe freely without exhausting the IP quota.
   app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok', env: nodeEnv, timestamp: new Date().toISOString() });
+    res.json({ ok: true, status: 'ok', env: nodeEnv, timestamp: new Date().toISOString() });
   });
+
+  app.use('/api/', apiLimiter);
 
   // TODO: POST /api/upload — parsed in phase 02
   // TODO: POST /api/generate — implemented in phase 08

@@ -34,23 +34,25 @@ function App() {
             Phase 01 — squelette en place. Les écrans arrivent.
           </p>
 
-          {/* Dev shortcuts to preview stepper states — removed in phase 02 */}
-          <div className="font-mono flex justify-center gap-2 pt-6 text-[10px] text-muted-foreground">
-            {[1, 2, 3, 4].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => {
-                  setScreen(n as ScreenIndex);
-                  if (n === 2) setApiSlug('shopify-admin-api');
-                  if (n === 1) setApiSlug(null);
-                }}
-                className="rounded border border-border px-2 py-0.5 hover:bg-[var(--slice-highlight)]"
-              >
-                Étape {n}
-              </button>
-            ))}
-          </div>
+          {/* Dev-only shortcuts to preview stepper states. Stripped from prod. */}
+          {import.meta.env.DEV && (
+            <div className="font-mono flex justify-center gap-2 pt-6 text-[10px] text-muted-foreground">
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => {
+                    setScreen(n as ScreenIndex);
+                    if (n === 2) setApiSlug('shopify-admin-api');
+                    if (n === 1) setApiSlug(null);
+                  }}
+                  className="rounded border border-border px-2 py-0.5 hover:bg-[var(--slice-highlight)]"
+                >
+                  Étape {n}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>
