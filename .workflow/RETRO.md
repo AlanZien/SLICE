@@ -43,6 +43,7 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Sécurité]** `yaml.load` est synchrone et bloque l'event loop. `Promise.race` ne peut pas interrompre du travail sync — un YAML de 10 Mo pathologique tient l'event loop > 5s. Mitigé par MAX_BYTES + CORE_SCHEMA (pas d'expansion d'anchors), à revisiter si un load CPU non négligeable est observé en prod.
 - **[Tests]** Test `vi.spyOn(converter, 'convertToOpenAPI3')` dans `parser.test.ts` repose sur ESM live bindings. Vitest+Vite gère bien aujourd'hui, mais une bump majeure pourrait casser. À pinner via `vi.mock('./format-converter', …)` si flake.
 - **[Cohérence]** `assertVersion` garde les branches `swaggerVersion` et `swagger=2.0` qui sont devenues dead code (le detector catche avant). Préservées en défense en profondeur si l'ordre detector→parser change. Commentaire de `UNSUPPORTED_VERSION` mis à jour.
+- **[UX / Postman]** Limite intrinsèque de `postman-to-openapi` : Postman représente `:id.json` comme un seul segment, qui devient `{id.json}` en OpenAPI au lieu de `{id}.json`. Pas un bug SLICE — c'est l'aller-retour Postman ↔ OpenAPI qui perd l'info. À documenter sur l'écran de sélection (phase 04) si on veut prévenir l'utilisateur : "Les collections Postman avec params suivis d'extensions (`:id.json`) peuvent générer des chemins inattendus." Cas observé en UAT phase 03 sur fixture `shopify-postman-v2.json`.
 
 ---
 Alimente par le workflow FORGE (phase LEARN).

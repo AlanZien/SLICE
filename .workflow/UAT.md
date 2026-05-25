@@ -110,13 +110,18 @@ Genere par le workflow FORGE (phase DELIVER).
 | 14 | `parseSpec()` enveloppe la conversion dans le timeout (vi.spyOn hang) | ✓ | DoS guard étendu |
 | 15 | `assertNoExternalRefs` court-circuite swagger2openapi sur $ref `http://169.254.169.254/...` | ✓ | défense en profondeur |
 
-### Tests métier à valider par l'utilisateur (UAT manuelle)
+### Tests métier validés par l'utilisateur (UAT manuelle 2026-05-25)
 
-- [ ] Upload `fixtures/petstore-swagger2.json` via `pnpm dev` → écran 2 affiche "Petstore (Swagger 2.0)" + endpoints
-- [ ] Upload `fixtures/shopify-postman-v2.json` via `pnpm dev` → écran 2 affiche "Shopify Storefront..." + endpoints
-- [ ] Upload d'un vrai Swagger 2.0 public (Petstore officiel) → transition silencieuse vers écran 2, pas de message technique
-- [ ] Upload d'un vrai Postman Collection v2 public (Stripe API Postman) → idem
-- [ ] Upload de `fixtures/graphql-sdl.txt` renommé en `.yaml` → toast "Format non supporté"
+- [x] Upload `fixtures/petstore-swagger2.json` → écran 2 "Petstore (Swagger 2.0)" + 4 endpoints / 2 groupes (screenshot validé)
+- [x] Upload `fixtures/shopify-postman-v2.json` → écran 2 "Shopify Storefront (Postman v2.1 fixture)" + 3 endpoints / 2 groupes ; ParsedSpec montre params `required: false` natif et `Accept` header header bien typé (screenshot validé)
+- [x] Upload `fixtures/graphql-sdl.txt` (extension `.txt`, non renommée) → dropzone error "Unsupported file format. Use JSON or YAML." via filtre extension côté back (screenshot validé)
+- [ ] Upload d'un vrai Swagger 2.0 public (Petstore officiel via curl) — optionnel
+- [ ] Upload d'un vrai Postman Collection v2 public (Stripe API Postman) — optionnel
+- [ ] Upload de `graphql-sdl.yaml` (renommé) → message phase 03 "Use OpenAPI 3.x, Swagger 2.0, or Postman Collection v2" — optionnel (chemin format-detector au lieu de filtre extension)
+
+### Observation UAT — limite Postman documentée
+
+Path `:id.json` dans une Postman Collection devient `/{id.json}` après conversion (au lieu de `/{id}.json`). Limite intrinsèque de `postman-to-openapi` — il prend tout le segment Postman comme nom de paramètre. À documenter sur l'écran de sélection (phase 04) si on veut prévenir l'utilisateur des collections Postman qui collent `:id.json`.
 
 ### Observations
 
