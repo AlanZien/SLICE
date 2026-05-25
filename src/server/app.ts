@@ -3,6 +3,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createUploadRouter } from './routes/upload';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +37,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
 
   app.use('/api/', apiLimiter);
 
-  // TODO: POST /api/upload — parsed in phase 02
+  // POST /api/upload — phase 02 (multer applies its own 10 MB limit before json parser)
+  app.use('/api/upload', createUploadRouter());
+
   // TODO: POST /api/generate — implemented in phase 08
 
   if (nodeEnv === 'production') {

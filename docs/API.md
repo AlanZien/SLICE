@@ -37,43 +37,68 @@ Health check. Aucune authentification. **Exempté du rate-limit** (pour permettr
 
 ### POST /api/upload
 
-Parse une spec OpenAPI uploadée et retourne la liste des endpoints détectés.
+Parse une spec OpenAPI 3.x et retourne un `ParsedSpec` normalisé.
 
-**Status** : À implémenter (phase GENERATE)
+**Status** : Implémenté en phase 02 (OpenAPI 3.0/3.1 natif). Conversion Swagger 2.0 et Postman v2 ajoutée en phase 03.
 
 **Request** : `multipart/form-data`
-- `file` : fichier OpenAPI (JSON ou YAML, max 10MB)
+- `file` (obligatoire) : spec OpenAPI, extensions acceptées `.json`, `.yaml`, `.yml`, taille max **10 Mo strict**
 
-**Réponse 200**
+Les autres champs multipart sont ignorés (R1.6.9).
+
+**Réponse 200** — `application/json`
 ```json
 {
-  "success": true,
-  "spec": {
-    "title": "Shopify API",
-    "version": "2024-01",
-    "baseUrl": "https://api.shopify.com",
-    "detectedAuth": "bearer",
-    "endpoints": [
-      {
-        "id": "search_products",
-        "path": "/products/search",
-        "method": "GET",
-        "summary": "Voir les produits",
-        "description": "Search products by query",
-        "tag": "Products",
-        "parameters": [
-          { "name": "query", "in": "query", "type": "string", "required": true }
-        ]
-      }
-    ]
-  }
+  "apiName": "Shopify Sample",
+  "apiVersion": "2024-04",
+  "baseUrl": "https://example.myshopify.com/admin/api/2024-04",
+  "authType": "none",
+  "groups": [
+    {
+      "tag": "products",
+      "endpoints": [
+        {
+          "id": "GET /products",
+          "method": "GET",
+          "path": "/products",
+          "label": "List products",
+          "params": [
+            { "name": "limit", "in": "query", "type": "integer", "required": false }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
-**Erreurs**
-- `400` : fichier manquant, format invalide, spec OpenAPI mal formée
-- `413` : fichier > 10MB
-- `429` : rate limit atteint
+**Règles de normalisation (phase 02)**
+- Libellés : priorité `summary` > première ligne de `description` > généré (`Lister les <noun>`, `Créer un <noun>`, …) — R1.2.2
+- Groupes : par premier tag, sinon `"Autres"` — R1.2.3
+- Méthodes : seules `GET / POST / PUT / PATCH / DELETE` sont exposées (HEAD/OPTIONS/TRACE ignorées)
+- Path params marqués `required: true` automatiquement (règle OpenAPI)
+- `requestBody` non flatten en phase 02 (ajouté en phase 04+)
+
+**Garanties de sécurité**
+- Parser YAML safe : `CORE_SCHEMA` (bloque `!!js/function`, `!!binary`, dates, anchors-as-code — R1.1.4)
+- `$ref` externes (`http://`, `https://`, `file://`, refs relatifs) rejetés avant validation — anti-SSRF
+- Profondeur d'arbre limitée à 20, total nœuds limité à 200 000 — anti-DoS
+- Timeout strict 5 s — anti-DoS
+- Multer `memoryStorage` ; aucune écriture disque ; buffer relâché en fin de requête
+
+**Codes d'erreur** (JSON `{ "code": "<CODE>", "message": "..." }`)
+
+| HTTP | `code` | Cause |
+|------|--------|-------|
+| 400 | `NO_FILE` | Champ `file` absent ou mal nommé |
+| 415 | `UNSUPPORTED_FORMAT` | Extension hors `.json/.yaml/.yml` |
+| 413 | `PAYLOAD_TOO_LARGE` | Fichier > 10 Mo |
+| 400 | `INVALID_SPEC` | YAML/JSON mal formé, structure OpenAPI invalide, `$ref` externe |
+| 400 | `EMPTY_SPEC` | Pas de `paths` (R1.1.7) |
+| 400 | `UNSUPPORTED_VERSION` | Swagger 1.x ou 2.0 (phase 03 ajoutera la conversion auto) ou OpenAPI 3.2+ |
+| 400 | `PARSE_DEPTH_EXCEEDED` | Profondeur > 20 ou > 200 000 nœuds |
+| 504 | `PARSE_TIMEOUT` | Parsing > 5 s |
+| 429 | — | Rate-limit dépassé (30 req/min/IP) |
 
 ---
 
