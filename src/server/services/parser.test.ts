@@ -130,6 +130,39 @@ paths:
     ).rejects.toMatchObject({ code: 'INVALID_SPEC' });
   });
 
+  it('preserves native YAML types (booleans, numbers) — not stringified by FAILSAFE', async () => {
+    const yamlWithRequired = `openapi: "3.0.3"
+info: { title: req, version: "1" }
+paths:
+  /x/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+      - { name: limit, in: query, required: false, schema: { type: integer } }
+    get:
+      summary: g
+      responses:
+        "200": { description: ok }
+`;
+    const result = await parseSpec(yamlWithRequired, { sizeBytes: yamlWithRequired.length });
+    const params = result.groups[0].endpoints[0].params;
+    const id = params.find((p) => p.name === 'id');
+    const limit = params.find((p) => p.name === 'limit');
+    expect(id?.required).toBe(true);
+    expect(limit?.required).toBe(false);
+  });
+
+  it('still rejects unsafe YAML tags (e.g., !!js/function) — anti-bomb invariant', async () => {
+    const unsafe = `openapi: "3.0.3"
+info: { title: bomb, version: "1" }
+evil: !!js/function "function(){return 1}"
+paths:
+  /x: { get: { summary: g, responses: { "200": { description: ok } } } }
+`;
+    await expect(parseSpec(unsafe, { sizeBytes: unsafe.length })).rejects.toMatchObject({
+      code: 'INVALID_SPEC',
+    });
+  });
+
   it('returns a ParseError instance (not a plain object)', async () => {
     try {
       await parseSpec('garbage', { sizeBytes: 7 });

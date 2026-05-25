@@ -68,9 +68,14 @@ function loadStructured(raw: string): unknown {
   let tree: unknown;
   try {
     // YAML loader handles strict JSON too — single safe path.
-    tree = yaml.load(raw, {
-      schema: yaml.FAILSAFE_SCHEMA, // disallow arbitrary tags (R1.1.4 — no YAML bombs)
-    });
+    // CORE_SCHEMA = JSON-compatible types (str/seq/map + bool/int/float/null)
+    // without any custom tag resolver. It blocks the YAML-bomb / RCE vectors
+    // (`!!js/function`, `!!binary`, `!Date`, anchors-as-code) while still
+    // letting OpenAPI booleans / integers parse as their native types — which
+    // SwaggerParser's JSON schema validator requires (a `required: true`
+    // would otherwise be stringified by FAILSAFE_SCHEMA and rejected as
+    // "must be boolean").
+    tree = yaml.load(raw, { schema: yaml.CORE_SCHEMA }); // R1.1.4
   } catch (err) {
     throw new ParseError(
       'INVALID_SPEC',
