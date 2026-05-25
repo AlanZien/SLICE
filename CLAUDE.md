@@ -4,7 +4,18 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**FIND validé (2026-05-24)** — PRD complet dans `.workflow/PRD.md`. Prochaine étape : **BOOTSTRAP** (init de la stack TS / React / Vite / Express).
+**REFINE validé (2026-05-25)** — SPEC complète dans `.workflow/SPEC.md`, 13 PLAN.md dans `.workflow/phases/0X-*/PLAN.md`, matrice couverture dans `.workflow/phases/COVERAGE.md`. Décision D001 (Handlebars) dans `.workflow/DECISIONS.md`.
+
+**Prochaine étape : BOOTSTRAP + GENERATE phase 01 (squelette)**
+
+Reprise après /compact :
+1. **BOOTSTRAP** (3 étapes restantes du workflow) :
+   - Étape 1 : `git init` + premier commit `chore: initial commit`
+   - Étape 3 : `/permissions` (autoriser `Bash(pnpm:*)`, `Bash(npx:*)`, `Bash(git:*)` lecture, etc.)
+   - Étape 6 : créer le repo distant GitHub (`gh repo create slice --private --source=. --remote=origin`) + premier push `main` (seul push sur main autorisé)
+2. **GENERATE phase 01** : suivre `.workflow/phases/01-skeleton/PLAN.md` en TDD strict (RED → GREEN → REFACTOR par tâche, commits atomiques, branche `feature/01-skeleton`)
+
+Reste à faire après phase 01 : phases 02 → 13 selon `.workflow/phases/COVERAGE.md`.
 
 ## Stack
 
@@ -22,7 +33,9 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 - **Node.js** (LTS) + **TypeScript** (strict mode)
 - **Express** (framework HTTP, monolithe qui sert front statique + API)
 - **swagger-parser** (parsing OpenAPI safe)
-- **handlebars** ou **eta** (templating du code généré — à arbitrer en ORIENT)
+- **handlebars** (templating du code généré — décision D001)
+- **swagger2openapi** (conversion auto Swagger 2.0 → OpenAPI 3.0)
+- **postman-to-openapi** (conversion auto Postman Collection v2 → OpenAPI 3.0)
 - **archiver** (création des ZIP)
 - **express-rate-limit** (protection upload/generate)
 

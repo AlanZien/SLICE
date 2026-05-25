@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>SLICE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="slice-hifi.css" />
+<style>
+  /* Local prototype-specific bits */
+  .scr {
+    background: var(--bg);
+    position: relative;
+    animation: fadeIn 260ms ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* dot-pulse indicator */
+  .dot-pulse {
+    display: inline-block;
+    color: currentColor;
+    animation: dotPulse 900ms ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="hifi-shared.jsx"></script>
+<script type="text/babel" src="hifi-screen-1.jsx"></script>
+<script type="text/babel" src="hifi-screen-2.jsx"></script>
+<script type="text/babel" src="hifi-screen-3.jsx"></script>
+<script type="text/babel" src="hifi-screen-4.jsx"></script>
+
+<script type="text/babel">
+const SLICE_TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "accent": "ink",
+  "screen": 1
+}/*EDITMODE-END*/;
+
+const ACCENT_HEX = { paper: "#e9e7df", graphite: "#aeada4", bone: "#1f242d", ink: "#050608" };
+const HEX_TO_ID = {};
+for (const [k, v] of Object.entries(ACCENT_HEX)) HEX_TO_ID[v.toLowerCase()] = k;
+
+function App() {
+  const [tweaks, setTweak] = window.useTweaks(SLICE_TWEAKS);
+  const [screen, setScreen] = React.useState(tweaks.screen || 1);
+  const [config, setConfig] = React.useState(null);
+  const [summary, setSummary] = React.useState(() => window.summarize(window.SLICE_DEFAULT_PICKED));
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", tweaks.theme);
+    document.documentElement.setAttribute("data-accent", tweaks.accent);
+  }, [tweaks.theme, tweaks.accent]);
+
+  // sync screen from tweaks (jumper)
+  React.useEffect(() => {
+    if (tweaks.screen && tweaks.screen !== screen) setScreen(tweaks.screen);
+    // eslint-disable-next-line
+  }, [tweaks.screen]);
+
+  const goTo = (n) => { setScreen(n); setTweak("screen", n); };
+
+  return (
+    <div className="app">
+      <window.Topbar current={screen} onReset={() => goTo(1)} />
+
+      {screen === 1 && (
+        <window.HiFi1 onParsed={() => goTo(2)} />
+      )}
+      {screen === 2 && (
+        <window.HiFi2
+          onContinue={() => goTo(3)}
+          onBack={() => goTo(1)}
+        />
+      )}
+      {screen === 3 && (
+        <window.HiFi3
+          pickedCount={summary.count}
+          economy={summary.economy}
+          onBack={() => goTo(2)}
+          onGenerate={(cfg) => { setConfig(cfg); goTo(4); }}
+        />
+      )}
+      {screen === 4 && (
+        <window.HiFi4
+          config={config}
+          pickedCount={summary.count}
+          economy={summary.economy}
+          onRestart={() => goTo(1)}
+          onBackToSelect={() => goTo(2)}
+        />
+      )}
+
+      <window.TweaksPanel title="Tweaks">
+        <window.TweakSection title="Theme">
+          <window.TweakRadio
+            value={tweaks.theme}
+            onChange={(v) => setTweak("theme", v)}
+            options={[
+              { value: "dark",  label: "Dark" },
+              { value: "light", label: "Light" },
+            ]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="Accent" hint="Monochrome — applied to primary actions">
+          <window.TweakColor
+            value={ACCENT_HEX[tweaks.accent] || "#e9e7df"}
+            onChange={(hex) => setTweak("accent", HEX_TO_ID[String(hex).toLowerCase()] || "paper")}
+            options={["#e9e7df", "#aeada4", "#1f242d", "#050608"]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="Aller à l'écran" hint="Saute dans le flow">
+          <window.TweakRadio
+            value={String(screen)}
+            onChange={(v) => goTo(Number(v))}
+            options={[
+              { value: "1", label: "Upload" },
+              { value: "2", label: "Sélection" },
+              { value: "3", label: "Config" },
+              { value: "4", label: "Terminé" },
+            ]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="Récap visuel">
+          <div style={{ fontSize: 11, color: "var(--ink-mute)", lineHeight: 1.55, fontFamily: '"JetBrains Mono", monospace' }}>
+            <div>· Geist 700 → wordmark SLICE</div>
+            <div>· Fraunces italic → titres éditoriaux</div>
+            <div>· JetBrains Mono → tout le reste</div>
+            <div style={{ marginTop: 6 }}>Grille de points 14px · radius 5/8 · borders 1px alpha</div>
+          </div>
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+</body>
+</html>

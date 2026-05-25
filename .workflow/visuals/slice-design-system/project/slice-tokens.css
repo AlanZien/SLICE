@@ -1,0 +1,411 @@
+/* SLICE wireframes — tokens + sketchy primitives
+   Two themes (dark/light) × four mono accent ramps.
+   Wire-frame language: monospace base, Fraunces italic for editorial titles,
+   Patrick Hand for handwritten scribbles + placeholders.
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Patrick+Hand&family=Caveat:wght@500;700&display=swap");
+
+:root,
+[data-theme="dark"] {
+  --wf-bg:        #0b0d11;
+  --wf-bg-soft:   #11141a;
+  --wf-bg-card:   #14181f;
+  --wf-ink:       #e7e5dd;
+  --wf-ink-soft:  #a8a59a;
+  --wf-ink-mute:  #6a6b66;
+  --wf-line:      rgba(231, 229, 221, 0.18);
+  --wf-line-soft: rgba(231, 229, 221, 0.08);
+  --wf-line-strong: rgba(231, 229, 221, 0.4);
+  --wf-grid:      rgba(231, 229, 221, 0.06);
+  --wf-hatch:     rgba(231, 229, 221, 0.12);
+  --wf-method-get:    #7fb3d5;
+  --wf-method-post:   #a9c47e;
+  --wf-method-put:    #d8b06a;
+  --wf-method-delete: #d57f7f;
+  --wf-success:   #8cb56b;
+  --wf-error:     #c87272;
+}
+
+[data-theme="light"] {
+  --wf-bg:        #f6f4ef;
+  --wf-bg-soft:   #ecebe5;
+  --wf-bg-card:   #ffffff;
+  --wf-ink:       #1a1c20;
+  --wf-ink-soft:  #595a55;
+  --wf-ink-mute:  #92928b;
+  --wf-line:      rgba(26, 28, 32, 0.22);
+  --wf-line-soft: rgba(26, 28, 32, 0.10);
+  --wf-line-strong: rgba(26, 28, 32, 0.45);
+  --wf-grid:      rgba(26, 28, 32, 0.06);
+  --wf-hatch:     rgba(26, 28, 32, 0.10);
+  --wf-method-get:    #3d6f9a;
+  --wf-method-post:   #5e8536;
+  --wf-method-put:    #a47a2e;
+  --wf-method-delete: #a04a4a;
+  --wf-success:   #4d7a32;
+  --wf-error:     #963c3c;
+}
+
+/* Accent ramp — monochrome variants of the canvas, applied to primary
+   buttons + the headline-counter glyph. */
+[data-accent="paper"]    { --wf-accent: var(--wf-ink); --wf-accent-ink: var(--wf-bg); }
+[data-accent="graphite"] { --wf-accent: var(--wf-ink-soft); --wf-accent-ink: var(--wf-bg); }
+[data-accent="bone"]     { --wf-accent: var(--wf-bg-soft); --wf-accent-ink: var(--wf-ink); }
+[data-accent="ink"]      { --wf-accent: #000000; --wf-accent-ink: #ffffff; }
+[data-theme="light"][data-accent="ink"]      { --wf-accent: #1a1c20; --wf-accent-ink: #f6f4ef; }
+[data-theme="dark"][data-accent="ink"]       { --wf-accent: #e7e5dd; --wf-accent-ink: #0b0d11; }
+
+/* --- Base canvas inside an artboard ----------------------------------- */
+.wf {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--wf-bg);
+  color: var(--wf-ink);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--wf-grid) 1px, transparent 0);
+  background-size: 14px 14px;
+}
+
+.wf * { box-sizing: border-box; }
+
+/* --- Type --- */
+.wf-serif {
+  font-family: "Fraunces", "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.wf-hand {
+  font-family: "Patrick Hand", "Comic Sans MS", cursive;
+  letter-spacing: 0.005em;
+  color: var(--wf-ink-soft);
+}
+.wf-scrawl {
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  color: var(--wf-ink-soft);
+}
+.wf-caps {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--wf-ink-mute);
+}
+.wf-mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+.wf-mute { color: var(--wf-ink-mute); }
+.wf-soft { color: var(--wf-ink-soft); }
+
+/* --- Layout primitives --- */
+.wf-screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+}
+.wf-row { display: flex; align-items: center; gap: 10px; }
+.wf-col { display: flex; flex-direction: column; gap: 8px; }
+
+.wf-chrome {
+  height: 28px;
+  display: flex; align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  border-bottom: 1px solid var(--wf-line);
+  font-size: 10px;
+  color: var(--wf-ink-mute);
+  background: var(--wf-bg-soft);
+}
+.wf-chrome .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  border: 1px solid var(--wf-line);
+}
+.wf-chrome .crumb { font-family: "JetBrains Mono", monospace; }
+
+/* --- Boxes / cards / dividers --- */
+.wf-box {
+  border: 1px solid var(--wf-line);
+  background: var(--wf-bg-card);
+  border-radius: 3px;
+}
+.wf-box--dashed {
+  border-style: dashed;
+  background: transparent;
+}
+.wf-box--soft { background: var(--wf-bg-soft); }
+.wf-hr { height: 1px; background: var(--wf-line-soft); width: 100%; }
+.wf-hr--strong { background: var(--wf-line); }
+
+/* placeholder bars (text stand-in) */
+.wf-bar {
+  height: 8px;
+  background: var(--wf-hatch);
+  border-radius: 2px;
+}
+.wf-bar--xs { height: 5px; }
+.wf-bar--sm { height: 6px; }
+.wf-bar--lg { height: 11px; }
+.wf-bar--soft { background: var(--wf-line-soft); }
+
+/* --- Inputs --- */
+.wf-input {
+  height: 28px;
+  border: 1px solid var(--wf-line);
+  border-radius: 3px;
+  display: flex; align-items: center;
+  padding: 0 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--wf-ink-soft);
+  background: transparent;
+}
+.wf-input--focus {
+  border-color: var(--wf-line-strong);
+  box-shadow: 0 0 0 3px var(--wf-line-soft);
+}
+
+/* --- Buttons --- */
+.wf-btn {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--wf-line);
+  border-radius: 3px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--wf-ink);
+  background: var(--wf-bg-soft);
+  cursor: pointer;
+  user-select: none;
+}
+.wf-btn--ghost { background: transparent; color: var(--wf-ink-soft); }
+.wf-btn--primary {
+  background: var(--wf-accent);
+  color: var(--wf-accent-ink);
+  border-color: var(--wf-accent);
+  font-weight: 500;
+}
+.wf-btn--lg { height: 36px; padding: 0 16px; font-size: 12px; }
+
+/* --- Checkbox --- */
+.wf-check {
+  width: 14px; height: 14px;
+  border: 1.5px solid var(--wf-line-strong);
+  border-radius: 2px;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 14px;
+}
+.wf-check--on {
+  background: var(--wf-ink);
+  border-color: var(--wf-ink);
+  color: var(--wf-bg);
+}
+.wf-check--on::after { content: "✓"; font-size: 10px; line-height: 1; }
+
+/* --- Method badges (monochrome) --- */
+.wf-method {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  background: transparent;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+.wf-method--get    { color: var(--wf-method-get); }
+.wf-method--post   { color: var(--wf-method-post); }
+.wf-method--put    { color: var(--wf-method-put); }
+.wf-method--delete { color: var(--wf-method-delete); }
+
+/* --- Badges --- */
+.wf-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 6px;
+  border: 1px solid var(--wf-line);
+  border-radius: 99px;
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--wf-ink-soft);
+}
+
+/* --- Accordion header --- */
+.wf-acc {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--wf-line-soft);
+  cursor: pointer;
+  user-select: none;
+}
+.wf-acc .chev { width: 10px; opacity: 0.55; }
+
+.wf-endpoint {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px 7px 32px;
+  border-bottom: 1px solid var(--wf-line-soft);
+  font-size: 11px;
+}
+
+/* --- Hand-drawn marquee (focus ring around a sketch element) --- */
+.wf-marquee {
+  border: 1.5px dashed var(--wf-line-strong);
+  border-radius: 4px;
+}
+
+/* a single squiggly underline */
+.wf-squiggle {
+  background-image:
+    linear-gradient(45deg, transparent 33%, currentColor 33% 66%, transparent 66%),
+    linear-gradient(-45deg, transparent 33%, currentColor 33% 66%, transparent 66%);
+  background-size: 6px 4px;
+  background-position: 0 100%, 3px 100%;
+  background-repeat: repeat-x;
+  padding-bottom: 5px;
+  color: var(--wf-ink-mute);
+}
+
+/* annotation arrows (callouts in margins) */
+.wf-callout {
+  position: absolute;
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  color: var(--wf-ink-mute);
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+}
+.wf-callout svg { stroke: currentColor; fill: none; stroke-width: 1.5; }
+
+/* counter ring + counter glyph */
+.wf-ring {
+  --p: 73;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background:
+    conic-gradient(var(--wf-accent) calc(var(--p) * 1%), var(--wf-line-soft) 0);
+  position: relative;
+}
+.wf-ring::after {
+  content: "";
+  position: absolute; inset: 8px;
+  background: var(--wf-bg);
+  border-radius: 50%;
+}
+.wf-ring > * { position: relative; z-index: 1; }
+
+/* tag/chip */
+.wf-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px;
+  border: 1px solid var(--wf-line);
+  background: var(--wf-bg-soft);
+  border-radius: 99px;
+  font-size: 10px;
+  color: var(--wf-ink-soft);
+}
+.wf-chip--on {
+  background: var(--wf-ink);
+  color: var(--wf-bg);
+  border-color: var(--wf-ink);
+}
+
+/* tabs */
+.wf-tabs {
+  display: flex; gap: 0;
+  border-bottom: 1px solid var(--wf-line);
+}
+.wf-tab {
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--wf-ink-mute);
+  border-bottom: 1.5px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+.wf-tab--on { color: var(--wf-ink); border-bottom-color: var(--wf-ink); }
+
+/* code block */
+.wf-code {
+  background: var(--wf-bg-soft);
+  border: 1px solid var(--wf-line);
+  border-radius: 3px;
+  padding: 10px 12px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10.5px;
+  color: var(--wf-ink-soft);
+  white-space: pre;
+  line-height: 1.55;
+}
+
+/* dotted leader line */
+.wf-dots {
+  flex: 1;
+  border-bottom: 1px dotted var(--wf-line-strong);
+  margin: 0 6px;
+  height: 1px;
+  align-self: end;
+  margin-bottom: 4px;
+}
+
+/* big numeric */
+.wf-counter {
+  font-family: "Fraunces", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 56px;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: var(--wf-ink);
+}
+
+/* dropzone */
+.wf-drop {
+  border: 1.5px dashed var(--wf-line-strong);
+  border-radius: 4px;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 8px, var(--wf-line-soft) 8px 9px);
+}
+
+/* a single key cap */
+.wf-kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border: 1px solid var(--wf-line);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  font-size: 9px;
+  color: var(--wf-ink-soft);
+  background: var(--wf-bg-soft);
+}
+
+/* radio */
+.wf-radio {
+  width: 12px; height: 12px;
+  border: 1.5px solid var(--wf-line-strong);
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.wf-radio--on::after {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--wf-ink);
+}
+
+/* the version stamp in artboard corners */
+.wf-stamp {
+  position: absolute;
+  top: 8px; right: 10px;
+  font-family: "Caveat", cursive;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--wf-ink-mute);
+  transform: rotate(-4deg);
+  pointer-events: none;
+}

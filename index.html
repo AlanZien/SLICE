@@ -1,12 +1,30 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SLICE — Curated MCP Servers for AI Agents</title>
     <meta name="description" content="Génère un serveur MCP sur-mesure depuis ta spec OpenAPI. Choisis les endpoints à exposer, télécharge le code." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300;1,9..144,400;1,9..144,500&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    />
   </head>
   <body>
+    <script>
+      // Apply persisted theme before React mounts to avoid FOUC.
+      (function () {
+        try {
+          var stored = localStorage.getItem("slice-theme");
+          var theme = stored === "light" || stored === "dark" ? stored : "dark";
+          document.documentElement.classList.toggle("dark", theme === "dark");
+        } catch (e) {
+          /* localStorage unavailable */
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>
