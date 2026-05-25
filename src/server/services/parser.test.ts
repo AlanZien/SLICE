@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parseSpec } from './parser';
 import { ParseError } from '@shared/types';
 
@@ -169,6 +169,25 @@ paths:
     await expect(parseSpec(unsafe, { sizeBytes: unsafe.length })).rejects.toMatchObject({
       code: 'UNSUPPORTED_FORMAT',
     });
+  });
+
+  it('PARSE_TIMEOUT covers the whole pipeline (conversion + validation)', async () => {
+    // Hijack the converter so it hangs indefinitely. If the timeout only
+    // wrapped SwaggerParser.validate (the phase-02 behaviour), this test
+    // would hang and time out the entire suite. With the phase-03 fix
+    // `withTimeout` envelops the conversion stage too, so we get the typed
+    // PARSE_TIMEOUT back well within Vitest's per-test budget.
+    const converter = await import('./format-converter');
+    const spy = vi
+      .spyOn(converter, 'convertToOpenAPI3')
+      .mockImplementation(() => new Promise(() => {}));
+    try {
+      await expect(
+        parseSpec('openapi: "3.0.3"', { sizeBytes: 20, timeoutMs: 30 })
+      ).rejects.toMatchObject({ code: 'PARSE_TIMEOUT' });
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('returns a ParseError instance (not a plain object)', async () => {

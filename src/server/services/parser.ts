@@ -38,10 +38,19 @@ export async function parseSpec(
     );
   }
 
+  const timeoutMs = options.timeoutMs ?? PARSE_TIMEOUT_MS;
+  // The entire pipeline (conversion + structural checks + validation) is
+  // wrapped in a single timeout. Doing the conversion outside the envelope
+  // would create a DoS window: a pathological Postman collection or a
+  // combinatorial Swagger 2.0 doc could keep the event loop busy for tens
+  // of seconds before the parser ever ran. R1.1.5 promises 5 s total.
+  return withTimeout(runPipeline(raw), timeoutMs);
+}
+
+async function runPipeline(raw: string): Promise<ParsedSpec> {
   // Phase 03 — auto-convert Swagger 2.0 / Postman v2 → OpenAPI 3 string.
   // OpenAPI 3.x is returned verbatim; `convertToOpenAPI3` throws typed
-  // ParseErrors (UNSUPPORTED_FORMAT / SWAGGER2_CONVERSION_FAILED /
-  // POSTMAN_CONVERSION_FAILED) which we let bubble up to the route handler.
+  // ParseErrors which we let bubble up to the route handler.
   const openapiRaw = await convertToOpenAPI3(raw);
 
   const tree = loadStructured(openapiRaw);
@@ -49,15 +58,11 @@ export async function parseSpec(
   assertDepth(tree);
   assertNoExternalRefs(tree);
 
-  const timeoutMs = options.timeoutMs ?? PARSE_TIMEOUT_MS;
   // SwaggerParser.validate accepts an in-memory object at runtime but its
-  // type definitions only list `string | Document`. Casting keeps the runtime
-  // contract while satisfying tsc.
-  const validated = await withTimeout(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SwaggerParser.validate(tree as any),
-    timeoutMs
-  );
+  // type definitions only list `string | Document`. Casting keeps the
+  // runtime contract while satisfying tsc.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const validated = await SwaggerParser.validate(tree as any);
 
   // R1.1.7 — at least one path is required to consider the spec usable.
   // `paths` may be missing for OpenAPI 3.1 specs that only define webhooks,

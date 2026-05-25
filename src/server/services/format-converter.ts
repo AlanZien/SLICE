@@ -13,15 +13,9 @@
  * Native OpenAPI 3.x is returned verbatim — no re-encoding, no normalisation.
  */
 import postmanToOpenApi from 'postman-to-openapi';
-// swagger2openapi ships no type definitions; ambient declaration kept inline
-// rather than as a top-level d.ts so it stays scoped to this file.
-// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-const swagger2openapi: {
-  convertStr: (
-    str: string,
-    options: Record<string, unknown>
-  ) => Promise<{ openapi: unknown }>;
-} = require('swagger2openapi');
+// swagger2openapi ships no upstream types — see `./swagger2openapi.d.ts`
+// for the minimal ambient declaration we rely on.
+import { convertStr as swagger2openapiConvertStr } from 'swagger2openapi';
 import { ParseError } from '@shared/types';
 import { detectFormat } from './format-detector';
 
@@ -63,7 +57,7 @@ export async function convertToOpenAPI3(raw: string): Promise<string> {
     case 'swagger2': {
       let openapi: unknown;
       try {
-        const result = await swagger2openapi.convertStr(raw, {
+        const result = await swagger2openapiConvertStr(raw, {
           ...SWAGGER2OPENAPI_OPTIONS,
         });
         openapi = result.openapi;

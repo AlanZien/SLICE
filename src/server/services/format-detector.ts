@@ -32,11 +32,14 @@ function safeLoad(raw: string): unknown {
 }
 
 export function detectFormat(raw: string): SpecFormat {
-  // Only the truly empty / whitespace-only case is `unparseable`. Anything
-  // the user can show us — even if js-yaml chokes on it — is treated as an
-  // *unrecognised* format (GraphQL SDL, XML, binary noise), which routes to
-  // 415 UNSUPPORTED_FORMAT instead of 400 INVALID_SPEC. The user gets the
-  // honest message: "we don't translate this kind of file".
+  // Taxonomy:
+  // - `'unparseable'`  — empty / whitespace-only input. Maps to 400
+  //   INVALID_SPEC downstream (cf. `format-converter.ts`). The user hasn't
+  //   actually sent us anything to translate.
+  // - `'unknown'`      — non-empty input, but either yaml.load throws
+  //   (GraphQL SDL, XML, binary noise) or it parses to something that has
+  //   no openapi/swagger/postman marker. Maps to 415 UNSUPPORTED_FORMAT —
+  //   "we don't translate this kind of file".
   if (!raw || typeof raw !== 'string' || raw.trim().length === 0) {
     return 'unparseable';
   }
