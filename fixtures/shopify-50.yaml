@@ -1,0 +1,268 @@
+openapi: "3.0.3"
+info:
+  title: Shopify Sample
+  version: "2024-04"
+  description: Synthetic 50-endpoint fixture for SLICE perf tests.
+servers:
+  - url: https://example.myshopify.com/admin/api/2024-04
+paths:
+  /products:
+    get:
+      tags: [products]
+      summary: List products
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [products]
+      summary: Create a product
+      responses: { "201": { description: created } }
+  /products/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [products]
+      summary: Get a product
+      responses: { "200": { description: ok } }
+    put:
+      tags: [products]
+      summary: Update a product
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [products]
+      summary: Delete a product
+      responses: { "204": { description: deleted } }
+  /orders:
+    get:
+      tags: [orders]
+      summary: List orders
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [orders]
+      summary: Create a order
+      responses: { "201": { description: created } }
+  /orders/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [orders]
+      summary: Get a order
+      responses: { "200": { description: ok } }
+    put:
+      tags: [orders]
+      summary: Update a order
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [orders]
+      summary: Delete a order
+      responses: { "204": { description: deleted } }
+  /customers:
+    get:
+      tags: [customers]
+      summary: List customers
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [customers]
+      summary: Create a customer
+      responses: { "201": { description: created } }
+  /customers/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [customers]
+      summary: Get a customer
+      responses: { "200": { description: ok } }
+    put:
+      tags: [customers]
+      summary: Update a customer
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [customers]
+      summary: Delete a customer
+      responses: { "204": { description: deleted } }
+  /inventory:
+    get:
+      tags: [inventory]
+      summary: List inventory
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [inventory]
+      summary: Create a inventor
+      responses: { "201": { description: created } }
+  /inventory/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [inventory]
+      summary: Get a inventor
+      responses: { "200": { description: ok } }
+    put:
+      tags: [inventory]
+      summary: Update a inventor
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [inventory]
+      summary: Delete a inventor
+      responses: { "204": { description: deleted } }
+  /shipping:
+    get:
+      tags: [shipping]
+      summary: List shipping
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [shipping]
+      summary: Create a shippin
+      responses: { "201": { description: created } }
+  /shipping/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [shipping]
+      summary: Get a shippin
+      responses: { "200": { description: ok } }
+    put:
+      tags: [shipping]
+      summary: Update a shippin
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [shipping]
+      summary: Delete a shippin
+      responses: { "204": { description: deleted } }
+  /discounts:
+    get:
+      tags: [discounts]
+      summary: List discounts
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [discounts]
+      summary: Create a discount
+      responses: { "201": { description: created } }
+  /discounts/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [discounts]
+      summary: Get a discount
+      responses: { "200": { description: ok } }
+    put:
+      tags: [discounts]
+      summary: Update a discount
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [discounts]
+      summary: Delete a discount
+      responses: { "204": { description: deleted } }
+  /reports:
+    get:
+      tags: [reports]
+      summary: List reports
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [reports]
+      summary: Create a report
+      responses: { "201": { description: created } }
+  /reports/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [reports]
+      summary: Get a report
+      responses: { "200": { description: ok } }
+    put:
+      tags: [reports]
+      summary: Update a report
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [reports]
+      summary: Delete a report
+      responses: { "204": { description: deleted } }
+  /fulfillments:
+    get:
+      tags: [fulfillments]
+      summary: List fulfillments
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [fulfillments]
+      summary: Create a fulfillment
+      responses: { "201": { description: created } }
+  /fulfillments/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [fulfillments]
+      summary: Get a fulfillment
+      responses: { "200": { description: ok } }
+    put:
+      tags: [fulfillments]
+      summary: Update a fulfillment
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [fulfillments]
+      summary: Delete a fulfillment
+      responses: { "204": { description: deleted } }
+  /payments:
+    get:
+      tags: [payments]
+      summary: List payments
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [payments]
+      summary: Create a payment
+      responses: { "201": { description: created } }
+  /payments/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [payments]
+      summary: Get a payment
+      responses: { "200": { description: ok } }
+    put:
+      tags: [payments]
+      summary: Update a payment
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [payments]
+      summary: Delete a payment
+      responses: { "204": { description: deleted } }
+  /webhooks:
+    get:
+      tags: [webhooks]
+      summary: List webhooks
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [webhooks]
+      summary: Create a webhook
+      responses: { "201": { description: created } }
+  /webhooks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [webhooks]
+      summary: Get a webhook
+      responses: { "200": { description: ok } }
+    put:
+      tags: [webhooks]
+      summary: Update a webhook
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [webhooks]
+      summary: Delete a webhook
+      responses: { "204": { description: deleted } }

@@ -1,0 +1,90 @@
+openapi: "3.0.3"
+info: { title: Deep, version: "1.0" }
+paths:
+  /x:
+    get:
+      tags: [x]
+      summary: deep
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  n0:
+                    type: object
+                    properties:
+                      n1:
+                        type: object
+                        properties:
+                          n2:
+                            type: object
+                            properties:
+                              n3:
+                                type: object
+                                properties:
+                                  n4:
+                                    type: object
+                                    properties:
+                                      n5:
+                                        type: object
+                                        properties:
+                                          n6:
+                                            type: object
+                                            properties:
+                                              n7:
+                                                type: object
+                                                properties:
+                                                  n8:
+                                                    type: object
+                                                    properties:
+                                                      n9:
+                                                        type: object
+                                                        properties:
+                                                          n10:
+                                                            type: object
+                                                            properties:
+                                                              n11:
+                                                                type: object
+                                                                properties:
+                                                                  n12:
+                                                                    type: object
+                                                                    properties:
+                                                                      n13:
+                                                                        type: object
+                                                                        properties:
+                                                                          n14:
+                                                                            type: object
+                                                                            properties:
+                                                                              n15:
+                                                                                type: object
+                                                                                properties:
+                                                                                  n16:
+                                                                                    type: object
+                                                                                    properties:
+                                                                                      n17:
+                                                                                        type: object
+                                                                                        properties:
+                                                                                          n18:
+                                                                                            type: object
+                                                                                            properties:
+                                                                                              n19:
+                                                                                                type: object
+                                                                                                properties:
+                                                                                                  n20:
+                                                                                                    type: object
+                                                                                                    properties:
+                                                                                                      n21:
+                                                                                                        type: object
+                                                                                                        properties:
+                                                                                                          n22:
+                                                                                                            type: object
+                                                                                                            properties:
+                                                                                                              n23:
+                                                                                                                type: object
+                                                                                                                properties:
+                                                                                                                  n24:
+                                                                                                                    type: object
+                                                                                                                    properties:
