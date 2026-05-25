@@ -100,10 +100,20 @@ export async function convertToOpenAPI3(raw: string): Promise<string> {
       }
 
     case 'unknown':
-    default:
+      // Parseable as JSON/YAML but not a known spec format (e.g. a GraphQL
+      // SDL that yaml.load happily turned into a plain string).
       throw new ParseError(
         'UNSUPPORTED_FORMAT',
         'Unsupported file format. Use OpenAPI 3.x, Swagger 2.0, or Postman Collection v2.'
+      );
+
+    case 'unparseable':
+    default:
+      // Not parseable at all — surface as INVALID_SPEC so the user knows
+      // the file itself is malformed, not just an unrecognised flavour.
+      throw new ParseError(
+        'INVALID_SPEC',
+        'Could not parse the file as JSON or YAML.'
       );
   }
 }

@@ -38,13 +38,20 @@ describe('detectFormat', () => {
     expect(detectFormat(POSTMAN_V2)).toBe('postman');
   });
 
-  it('returns "unknown" for a GraphQL SDL', () => {
+  it('returns "unknown" for a GraphQL SDL (parses as a YAML scalar, not a spec)', () => {
     expect(detectFormat(GRAPHQL_SDL)).toBe('unknown');
   });
 
-  it('returns "unknown" for empty or unparseable input', () => {
-    expect(detectFormat('')).toBe('unknown');
-    expect(detectFormat('::::: not yaml or json :::::')).toBe('unknown');
+  it('returns "unparseable" only for empty / whitespace input', () => {
+    expect(detectFormat('')).toBe('unparseable');
+    expect(detectFormat('   \n\t  ')).toBe('unparseable');
+  });
+
+  it('returns "unknown" for non-empty input that is not a recognised spec', () => {
+    // Both a syntactically broken YAML and a valid YAML map that lacks any
+    // known marker route to 'unknown' — i.e. 415 UNSUPPORTED_FORMAT.
+    expect(detectFormat('foo: { not: openapi }')).toBe('unknown');
+    expect(detectFormat('\tfoo:\n\t\tbar: 1')).toBe('unknown'); // yaml.load throws
   });
 
   it('detects Postman v2.0 schema URL too (not just v2.1)', () => {

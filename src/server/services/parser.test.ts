@@ -45,9 +45,11 @@ describe('parseSpec', () => {
     ).rejects.toMatchObject({ name: 'ParseError', code: 'PAYLOAD_TOO_LARGE' });
   });
 
-  it('rejects unparseable content with INVALID_SPEC', async () => {
+  it('rejects unrecognised content (parseable but not a known spec) with UNSUPPORTED_FORMAT', async () => {
+    // "not a spec" parses as a YAML string scalar — detector returns
+    // 'unknown', and the format-converter pipeline converts that to 415.
     await expect(parseSpec('not a spec', { sizeBytes: 10 })).rejects.toMatchObject({
-      code: 'INVALID_SPEC',
+      code: 'UNSUPPORTED_FORMAT',
     });
   });
 
@@ -61,25 +63,26 @@ paths: {}
     });
   });
 
-  it('rejects Swagger 2.0 with UNSUPPORTED_VERSION (phase 02 only; phase 03 will convert)', async () => {
+  it('accepts Swagger 2.0 via auto-conversion (phase 03)', async () => {
     const swagger2 = `swagger: "2.0"
 info: { title: old, version: "1" }
 paths:
   /x:
     get:
-      responses: { 200: { description: ok } }
+      summary: ok
+      responses: { "200": { description: ok } }
 `;
-    await expect(parseSpec(swagger2, { sizeBytes: swagger2.length })).rejects.toMatchObject({
-      code: 'UNSUPPORTED_VERSION',
-    });
+    const result = await parseSpec(swagger2, { sizeBytes: swagger2.length });
+    expect(result.apiName).toBe('old');
+    expect(result.groups.length).toBeGreaterThan(0);
   });
 
-  it('rejects Swagger 1.x with UNSUPPORTED_VERSION', async () => {
+  it('rejects Swagger 1.x with UNSUPPORTED_FORMAT (obsolete since 2014, no converter)', async () => {
     const swagger1 = `swaggerVersion: "1.2"
 info: { title: ancient, version: "1" }
 `;
     await expect(parseSpec(swagger1, { sizeBytes: swagger1.length })).rejects.toMatchObject({
-      code: 'UNSUPPORTED_VERSION',
+      code: 'UNSUPPORTED_FORMAT',
     });
   });
 
@@ -158,8 +161,13 @@ evil: !!js/function "function(){return 1}"
 paths:
   /x: { get: { summary: g, responses: { "200": { description: ok } } } }
 `;
+    // CORE_SCHEMA throws on the non-standard tag — safeLoad returns null,
+    // the detector classifies the input as 'unknown' (we don't translate
+    // arbitrary-tag YAML) and the route surfaces it as UNSUPPORTED_FORMAT.
+    // The contract is "rejected"; the precise code is a side-effect of the
+    // detector taxonomy, not a security weakening.
     await expect(parseSpec(unsafe, { sizeBytes: unsafe.length })).rejects.toMatchObject({
-      code: 'INVALID_SPEC',
+      code: 'UNSUPPORTED_FORMAT',
     });
   });
 

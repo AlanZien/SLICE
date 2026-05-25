@@ -1,7 +1,3 @@
-"""
-GraphQL SDL fixture — SLICE should reject this (we don't translate GraphQL).
-"""
-
 type Query {
   things(limit: Int): [Thing!]!
   thing(id: ID!): Thing

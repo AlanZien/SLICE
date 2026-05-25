@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { ParseError, type ParsedSpec } from '@shared/types';
+import { convertToOpenAPI3 } from './format-converter';
 import { normalizeSpec } from './spec-normalizer';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
@@ -22,8 +23,9 @@ export interface ParseSpecOptions {
  * defensive checks (size, depth, timeout, ref scope) but we never rewrite
  * semantics. Anything we cannot vouch for is rejected with a typed error.
  *
- * Phase 02 supports OpenAPI 3.0.x and 3.1.x only.
- * Phase 03 will plug Swagger 2.0 and Postman v2 conversion in front of this.
+ * Accepts OpenAPI 3.x natively. Swagger 2.0 and Postman Collection v2 are
+ * auto-converted (phase 03) before the rest of the pipeline runs — the
+ * conversion is silent to the caller (SPEC R1.1.3).
  */
 export async function parseSpec(
   raw: string,
@@ -36,7 +38,13 @@ export async function parseSpec(
     );
   }
 
-  const tree = loadStructured(raw);
+  // Phase 03 — auto-convert Swagger 2.0 / Postman v2 → OpenAPI 3 string.
+  // OpenAPI 3.x is returned verbatim; `convertToOpenAPI3` throws typed
+  // ParseErrors (UNSUPPORTED_FORMAT / SWAGGER2_CONVERSION_FAILED /
+  // POSTMAN_CONVERSION_FAILED) which we let bubble up to the route handler.
+  const openapiRaw = await convertToOpenAPI3(raw);
+
+  const tree = loadStructured(openapiRaw);
   assertVersion(tree);
   assertDepth(tree);
   assertNoExternalRefs(tree);

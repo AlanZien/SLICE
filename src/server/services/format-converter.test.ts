@@ -39,9 +39,15 @@ describe('convertToOpenAPI3', () => {
     expect(out).toMatch(/products|orders/i);
   });
 
-  it('throws UNSUPPORTED_FORMAT on GraphQL SDL', async () => {
+  it('throws UNSUPPORTED_FORMAT on GraphQL SDL (parseable but not a spec)', async () => {
     await expect(convertToOpenAPI3(load('graphql-sdl.txt'))).rejects.toMatchObject({
       code: 'UNSUPPORTED_FORMAT',
+    });
+  });
+
+  it('throws INVALID_SPEC on empty input (nothing to translate)', async () => {
+    await expect(convertToOpenAPI3('   \n  ')).rejects.toMatchObject({
+      code: 'INVALID_SPEC',
     });
   });
 

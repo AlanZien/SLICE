@@ -16,7 +16,7 @@
  */
 import yaml from 'js-yaml';
 
-export type SpecFormat = 'openapi3' | 'swagger2' | 'postman' | 'unknown';
+export type SpecFormat = 'openapi3' | 'swagger2' | 'postman' | 'unknown' | 'unparseable';
 
 const POSTMAN_SCHEMA_RE =
   /^https?:\/\/schema\.getpostman\.com\/json\/collection\/v2\.\d+/;
@@ -32,10 +32,19 @@ function safeLoad(raw: string): unknown {
 }
 
 export function detectFormat(raw: string): SpecFormat {
-  if (!raw || typeof raw !== 'string') return 'unknown';
+  // Only the truly empty / whitespace-only case is `unparseable`. Anything
+  // the user can show us — even if js-yaml chokes on it — is treated as an
+  // *unrecognised* format (GraphQL SDL, XML, binary noise), which routes to
+  // 415 UNSUPPORTED_FORMAT instead of 400 INVALID_SPEC. The user gets the
+  // honest message: "we don't translate this kind of file".
+  if (!raw || typeof raw !== 'string' || raw.trim().length === 0) {
+    return 'unparseable';
+  }
 
   const tree = safeLoad(raw);
-  if (!tree || typeof tree !== 'object') return 'unknown';
+  if (tree === null || tree === undefined || typeof tree !== 'object') {
+    return 'unknown';
+  }
 
   const root = tree as Record<string, unknown>;
 
