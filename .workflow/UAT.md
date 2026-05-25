@@ -85,3 +85,43 @@ Genere par le workflow FORGE (phase DELIVER).
 - Le fix CORE_SCHEMA était critique : sans lui, toute spec YAML avec `required: true` (cas standard sur path params) était rejetée par swagger-parser. Bug détecté par `/simplify`, non visible dans les tests initiaux car la fixture VALID_YAML n'avait pas de params required. Test de non-régression ajouté.
 - Le fix SSRF (`assertNoExternalRefs`) bloque proactivement les `$ref` externes — utile pour AWS metadata endpoint et lectures fichiers.
 - Performance non mesurée en phase 02 (R1.1.9 p95 < 2s sur shopify-50). Reporté en phase 04 quand l'écran de sélection consommera réellement le ParsedSpec à l'écran.
+
+---
+
+## Phase 03 : Conversion automatique Swagger 2.0 + Postman v2 (2026-05-25)
+
+### Tests techniques (générés depuis PLAN 03)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 80/80 verts (11 fichiers) | ✓ | format-detector (6), format-converter (8), parser (15), upload (12), + phase 01/02 |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | tsc -b strict, déclaration ambient pour swagger2openapi |
+| 3 | `detectFormat()` retourne `openapi3`/`swagger2`/`postman`/`unknown`/`unparseable` selon entrée | ✓ | |
+| 4 | `convertToOpenAPI3()` passthrough OpenAPI 3.x | ✓ | hot path |
+| 5 | `convertToOpenAPI3()` convertit petstore Swagger 2.0 → OpenAPI 3.0 valide | ✓ | swagger2openapi avec `fetch:false / resolve:false` |
+| 6 | `convertToOpenAPI3()` convertit shopify Postman v2 → OpenAPI 3 valide | ✓ | postman-to-openapi |
+| 7 | `convertToOpenAPI3()` throw `UNSUPPORTED_FORMAT` sur GraphQL SDL | ✓ | |
+| 8 | `convertToOpenAPI3()` throw `SWAGGER2_CONVERSION_FAILED` sur Swagger 2.0 corrompu (paths non-object) | ✓ | `isPlausibleOpenApi3` post-check |
+| 9 | `convertToOpenAPI3()` throw `POSTMAN_CONVERSION_FAILED` sur Postman corrompu | ✓ | post-check symétrique |
+| 10 | `convertToOpenAPI3()` throw `INVALID_SPEC` sur input vide / whitespace | ✓ | |
+| 11 | `POST /api/upload` retourne 200 + ParsedSpec sur petstore-swagger2.json | ✓ | conversion silencieuse |
+| 12 | `POST /api/upload` retourne 200 + ParsedSpec sur shopify-postman-v2.json | ✓ | conversion silencieuse |
+| 13 | `POST /api/upload` retourne 415 UNSUPPORTED_FORMAT sur graphql-sdl.txt renommé .yaml | ✓ | |
+| 14 | `parseSpec()` enveloppe la conversion dans le timeout (vi.spyOn hang) | ✓ | DoS guard étendu |
+| 15 | `assertNoExternalRefs` court-circuite swagger2openapi sur $ref `http://169.254.169.254/...` | ✓ | défense en profondeur |
+
+### Tests métier à valider par l'utilisateur (UAT manuelle)
+
+- [ ] Upload `fixtures/petstore-swagger2.json` via `pnpm dev` → écran 2 affiche "Petstore (Swagger 2.0)" + endpoints
+- [ ] Upload `fixtures/shopify-postman-v2.json` via `pnpm dev` → écran 2 affiche "Shopify Storefront..." + endpoints
+- [ ] Upload d'un vrai Swagger 2.0 public (Petstore officiel) → transition silencieuse vers écran 2, pas de message technique
+- [ ] Upload d'un vrai Postman Collection v2 public (Stripe API Postman) → idem
+- [ ] Upload de `fixtures/graphql-sdl.txt` renommé en `.yaml` → toast "Format non supporté"
+
+### Observations
+
+- Pas de breaking change visible côté client (le ParsedSpec retourné est identique).
+- Conversion ajoute ~50-300ms selon la taille (sur fixtures < 100 endpoints).
+- Test de perf p95 (PLAN §35, §52, §53) non implémenté en phase 03 — reporté en phase 04 dans le même batch perf (cf. RETRO).
+- Recodage UNSUPPORTED_VERSION : Swagger 1.x renvoie maintenant UNSUPPORTED_FORMAT (415) au lieu de UNSUPPORTED_VERSION (400). Sémantiquement plus juste. Documenté dans docs/API.md.
+- Sécurité : `withTimeout` enveloppe maintenant TOUT le pipeline (conversion incluse) — fix critique trouvé par verifier audit, sinon DoS possible via Postman lourd.
