@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>SLICE — Wireframes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="slice-tokens.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #1f2128; }
+  body { font-family: "JetBrains Mono", monospace; color: #cbc8be; }
+  /* Canvas-level header strip — shown above the DesignCanvas */
+  .doc-header {
+    padding: 26px 36px 18px;
+    display: flex; align-items: baseline; gap: 22px;
+    background: #1f2128;
+    border-bottom: 1px solid rgba(231,229,221,0.08);
+    color: #e7e5dd;
+  }
+  .doc-header .mark {
+    font-family: "JetBrains Mono", monospace; font-weight: 600;
+    letter-spacing: 0.18em; font-size: 16px;
+  }
+  .doc-header .sep { color: #6a6b66; }
+  .doc-header .title {
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 400;
+    font-size: 30px; letter-spacing: -0.01em; color: #e7e5dd;
+  }
+  .doc-header .sub {
+    font-family: "Patrick Hand", cursive;
+    color: #a8a59a; font-size: 16px; margin-left: 6px;
+  }
+  .doc-header .meta { margin-left: auto; color: #6a6b66; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .doc-stage { position: absolute; inset: 80px 0 0 0; }
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <span class="mark">SLICE</span>
+  <span class="sep">/</span>
+  <span class="title">Wireframes — flow principal</span>
+  <span class="sub">low fidelity · 4 écrans · directions multiples</span>
+  <span class="meta">round 01</span>
+</div>
+
+<div id="root" class="doc-stage"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="screens-shared.jsx"></script>
+<script type="text/babel" src="screens-1.jsx"></script>
+<script type="text/babel" src="screens-2.jsx"></script>
+<script type="text/babel" src="screens-3.jsx"></script>
+<script type="text/babel" src="screens-4.jsx"></script>
+
+<script type="text/babel">
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": "dark",
+  "accent": "bone"
+}/*EDITMODE-END*/;
+
+// hex → accent id (the four CSS classes wired in slice-tokens.css)
+const ACCENT_SWATCHES = {
+  "#e7e5dd": "paper",
+  "#a8a59a": "graphite",
+  "#3a3d44": "bone",
+  "#0a0a0a": "ink",
+};
+const ACCENT_HEX = {
+  paper: "#e7e5dd", graphite: "#a8a59a", bone: "#3a3d44", ink: "#0a0a0a",
+};
+
+const ART_W = 880;
+const ART_H = 640;
+
+function App() {
+  const [tweaks, setTweak] = window.useTweaks(TWEAKS);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", tweaks.theme);
+    document.documentElement.setAttribute("data-accent", tweaks.accent);
+  }, [tweaks.theme, tweaks.accent]);
+
+  return (
+    <>
+      <window.DesignCanvas storageKey="slice-wireframes-v1">
+        <window.DCSection id="s-upload" title="Écran 1 · Landing / Upload" subtitle="3 directions + sheet des états">
+          <window.DCArtboard id="e1-v1" label="A · Pure minimal" width={ART_W} height={ART_H}>
+            <window.E1_V1 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e1-v2" label="B · Split editorial" width={ART_W} height={ART_H}>
+            <window.E1_V2 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e1-v3" label="C · Dropzone hero" width={ART_W} height={ART_H}>
+            <window.E1_V3 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e1-states" label="× états (default · hover · uploading · error)" width={ART_W} height={ART_H}>
+            <window.E1_STATES />
+          </window.DCArtboard>
+        </window.DCSection>
+
+        <window.DCSection id="s-select" title="Écran 2 · Sélection des endpoints" subtitle="3 directions structurelles">
+          <window.DCArtboard id="e2-v1" label="A · Sidebar + ring" width={ART_W} height={ART_H}>
+            <window.E2_V1 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e2-v2" label="B · Comparative bar" width={ART_W} height={ART_H}>
+            <window.E2_V2 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e2-v3" label="C · Raycast split" width={ART_W} height={ART_H}>
+            <window.E2_V3 />
+          </window.DCArtboard>
+        </window.DCSection>
+
+        <window.DCSection id="s-config" title="Écran 3 · Configuration finale" subtitle="3 directions structurelles">
+          <window.DCArtboard id="e3-v1" label="A · Vertical compact" width={ART_W} height={ART_H}>
+            <window.E3_V1 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e3-v2" label="B · Split + live preview" width={ART_W} height={ART_H}>
+            <window.E3_V2 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e3-v3" label="C · Focus first" width={ART_W} height={ART_H}>
+            <window.E3_V3 />
+          </window.DCArtboard>
+        </window.DCSection>
+
+        <window.DCSection id="s-done" title="Écran 4 · Succès post-génération" subtitle="3 directions structurelles">
+          <window.DCArtboard id="e4-v1" label="A · Centered minimal" width={ART_W} height={ART_H}>
+            <window.E4_V1 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e4-v2" label="B · Split + snippet" width={ART_W} height={ART_H}>
+            <window.E4_V2 />
+          </window.DCArtboard>
+          <window.DCArtboard id="e4-v3" label="C · Vertical stepper" width={ART_W} height={ART_H}>
+            <window.E4_V3 />
+          </window.DCArtboard>
+        </window.DCSection>
+      </window.DesignCanvas>
+
+      <window.TweaksPanel title="Tweaks">
+        <window.TweakSection title="Theme">
+          <window.TweakRadio
+            value={tweaks.theme}
+            onChange={(v) => setTweak("theme", v)}
+            options={[
+              { value: "dark",  label: "Dark" },
+              { value: "light", label: "Light" },
+            ]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="Accent" hint="Monochrome — wireframe palette">
+          <window.TweakColor
+            value={ACCENT_HEX[tweaks.accent] || "#e7e5dd"}
+            onChange={(hex) => setTweak("accent", ACCENT_SWATCHES[hex.toLowerCase()] || "paper")}
+            options={["#e7e5dd", "#a8a59a", "#3a3d44", "#0a0a0a"]}
+          />
+        </window.TweakSection>
+
+        <window.TweakSection title="Légende">
+          <div style={{ fontSize: 11, color: "#a8a59a", lineHeight: 1.5, fontFamily: '"JetBrains Mono", monospace' }}>
+            <div>· Patrick Hand → notes manuscrites</div>
+            <div>· Fraunces italic → titres éditoriaux</div>
+            <div>· JetBrains Mono → UI + code</div>
+            <div style={{ marginTop: 6 }}>Glisse, focus en plein écran, supprime ce qui ne sert à rien.</div>
+          </div>
+        </window.TweakSection>
+      </window.TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+</body>
+</html>
