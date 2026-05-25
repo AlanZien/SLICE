@@ -75,13 +75,15 @@ export interface ParsedSpec {
  * the upload route handler.
  */
 export type ParseErrorCode =
-  | 'PAYLOAD_TOO_LARGE'        // > 10 MB (R1.1.2)
-  | 'UNSUPPORTED_FORMAT'       // not JSON/YAML
-  | 'INVALID_SPEC'             // malformed JSON/YAML or invalid OpenAPI structure
-  | 'EMPTY_SPEC'               // no `paths`, no endpoints (R1.1.7)
-  | 'UNSUPPORTED_VERSION'      // Swagger 1.x or 2.0 (2.0 handled by conversion in phase 03)
-  | 'PARSE_TIMEOUT'            // > 5 s (R1.1.5)
-  | 'PARSE_DEPTH_EXCEEDED';    // > 20 levels (R1.1.6)
+  | 'PAYLOAD_TOO_LARGE'           // > 10 MB (R1.1.2)
+  | 'UNSUPPORTED_FORMAT'          // extension not JSON/YAML, or detector returned 'unknown'
+  | 'INVALID_SPEC'                // malformed JSON/YAML or invalid OpenAPI structure
+  | 'EMPTY_SPEC'                  // no `paths`, no endpoints (R1.1.7)
+  | 'UNSUPPORTED_VERSION'         // Swagger 1.x or OpenAPI 3.2+ (Swagger 2.0 is auto-converted)
+  | 'SWAGGER2_CONVERSION_FAILED'  // swagger2openapi could not convert the doc (phase 03)
+  | 'POSTMAN_CONVERSION_FAILED'   // postman-to-openapi could not convert the collection (phase 03)
+  | 'PARSE_TIMEOUT'               // > 5 s (R1.1.5)
+  | 'PARSE_DEPTH_EXCEEDED';       // > 20 levels (R1.1.6)
 
 export class ParseError extends Error {
   constructor(public readonly code: ParseErrorCode, message: string) {
