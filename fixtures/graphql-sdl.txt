@@ -1,0 +1,22 @@
+"""
+GraphQL SDL fixture — SLICE should reject this (we don't translate GraphQL).
+"""
+
+type Query {
+  things(limit: Int): [Thing!]!
+  thing(id: ID!): Thing
+}
+
+type Mutation {
+  createThing(input: ThingInput!): Thing!
+}
+
+type Thing {
+  id: ID!
+  name: String!
+  createdAt: String!
+}
+
+input ThingInput {
+  name: String!
+}
