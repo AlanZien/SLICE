@@ -37,14 +37,24 @@ Health check. Aucune authentification. **Exempté du rate-limit** (pour permettr
 
 ### POST /api/upload
 
-Parse une spec OpenAPI 3.x et retourne un `ParsedSpec` normalisé.
+Parse un fichier de spec API et retourne un `ParsedSpec` normalisé.
 
-**Status** : Implémenté en phase 02 (OpenAPI 3.0/3.1 natif). Conversion Swagger 2.0 et Postman v2 ajoutée en phase 03.
+**Status** : Implémenté.
+- Phase 02 : OpenAPI 3.0 / 3.1 natif
+- Phase 03 : conversion automatique silencieuse Swagger 2.0 et Postman Collection v2 → OpenAPI 3.0
 
 **Request** : `multipart/form-data`
-- `file` (obligatoire) : spec OpenAPI, extensions acceptées `.json`, `.yaml`, `.yml`, taille max **10 Mo strict**
+- `file` (obligatoire) : fichier spec, extensions acceptées `.json`, `.yaml`, `.yml`, taille max **10 Mo strict**
 
 Les autres champs multipart sont ignorés (R1.6.9).
+
+**Formats acceptés (auto-détectés)** :
+| Format source | Marker de détection | Pipeline |
+|---|---|---|
+| OpenAPI 3.0 / 3.1 | `openapi: "3.x"` | passthrough |
+| Swagger 2.0 | `swagger: "2.0"` | `swagger2openapi` → OpenAPI 3.0 → parser |
+| Postman Collection v2.x | `info.schema` matchant `schema.getpostman.com/json/collection/v2.*` | `postman-to-openapi` → OpenAPI 3.0 → parser |
+| Tout autre format (GraphQL SDL, Swagger 1.x, XML, …) | aucun marker reconnu | rejet `UNSUPPORTED_FORMAT` |
 
 **Réponse 200** — `application/json`
 ```json
@@ -93,9 +103,11 @@ Les autres champs multipart sont ignorés (R1.6.9).
 | 400 | `NO_FILE` | Champ `file` absent ou mal nommé |
 | 415 | `UNSUPPORTED_FORMAT` | Extension hors `.json/.yaml/.yml` |
 | 413 | `PAYLOAD_TOO_LARGE` | Fichier > 10 Mo |
-| 400 | `INVALID_SPEC` | YAML/JSON mal formé, structure OpenAPI invalide, `$ref` externe |
+| 400 | `INVALID_SPEC` | Input vide / whitespace seul, ou structure OpenAPI invalide post-conversion, ou `$ref` externe |
 | 400 | `EMPTY_SPEC` | Pas de `paths` (R1.1.7) |
-| 400 | `UNSUPPORTED_VERSION` | Swagger 1.x ou 2.0 (phase 03 ajoutera la conversion auto) ou OpenAPI 3.2+ |
+| 400 | `UNSUPPORTED_VERSION` | OpenAPI 3.2+ (3.0 et 3.1 supportés ; Swagger 2.0 est auto-converti ; Swagger 1.x renvoie `UNSUPPORTED_FORMAT`) |
+| 400 | `SWAGGER2_CONVERSION_FAILED` | Conversion Swagger 2.0 → OpenAPI 3.0 a échoué (doc invalide ou structurellement incomplet) |
+| 400 | `POSTMAN_CONVERSION_FAILED` | Conversion Postman v2 → OpenAPI 3.0 a échoué (collection invalide ou vide) |
 | 400 | `PARSE_DEPTH_EXCEEDED` | Profondeur > 20 ou > 200 000 nœuds |
 | 504 | `PARSE_TIMEOUT` | Parsing > 5 s |
 | 429 | — | Rate-limit dépassé (30 req/min/IP) |
