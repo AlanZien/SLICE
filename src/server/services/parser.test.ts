@@ -90,6 +90,46 @@ info: { title: ancient, version: "1" }
     });
   });
 
+  it('rejects external $ref (HTTP/file) without dereferencing them — anti-SSRF', async () => {
+    const withHttpRef = `openapi: "3.0.3"
+info: { title: ssrf, version: "1" }
+paths:
+  /x:
+    get:
+      summary: ok
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "http://169.254.169.254/latest/meta-data/"
+`;
+    await expect(
+      parseSpec(withHttpRef, { sizeBytes: withHttpRef.length })
+    ).rejects.toMatchObject({ code: 'INVALID_SPEC' });
+  });
+
+  it('rejects file:// $ref without reading the filesystem — anti-SSRF', async () => {
+    const withFileRef = `openapi: "3.0.3"
+info: { title: ssrf-file, version: "1" }
+paths:
+  /x:
+    get:
+      summary: ok
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "file:///etc/passwd"
+`;
+    await expect(
+      parseSpec(withFileRef, { sizeBytes: withFileRef.length })
+    ).rejects.toMatchObject({ code: 'INVALID_SPEC' });
+  });
+
   it('returns a ParseError instance (not a plain object)', async () => {
     try {
       await parseSpec('garbage', { sizeBytes: 7 });

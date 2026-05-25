@@ -38,6 +38,7 @@ export async function parseSpec(
   const tree = loadStructured(raw);
   assertVersion(tree);
   assertDepth(tree);
+  assertNoExternalRefs(tree);
 
   const timeoutMs = options.timeoutMs ?? PARSE_TIMEOUT_MS;
   // SwaggerParser.validate accepts an in-memory object at runtime but its
@@ -127,6 +128,38 @@ function assertDepth(tree: unknown, current = 0): void {
   if (tree && typeof tree === 'object') {
     for (const value of Object.values(tree as Record<string, unknown>)) {
       assertDepth(value, current + 1);
+    }
+  }
+}
+
+/**
+ * Walks the raw YAML tree and rejects any `$ref` that points outside the
+ * document itself. Only intra-document refs (`#/components/...`) are allowed.
+ *
+ * SwaggerParser would otherwise happily resolve `http://`, `https://` and
+ * `file://` refs at validate time, which is a textbook SSRF / LFI primitive
+ * once SLICE is deployed (the AWS metadata endpoint `169.254.169.254` is the
+ * canonical example). Doing the check on the YAML tree, before we hand the
+ * doc to SwaggerParser, also protects us if the upstream library's resolver
+ * defaults change.
+ */
+function assertNoExternalRefs(tree: unknown, seen = new WeakSet<object>()): void {
+  if (!tree || typeof tree !== 'object') return;
+  if (seen.has(tree as object)) return; // cycle guard — YAML FAILSAFE blocks anchors but we stay defensive
+  seen.add(tree as object);
+
+  for (const [key, value] of Object.entries(tree as Record<string, unknown>)) {
+    if (key === '$ref' && typeof value === 'string') {
+      const ref = value.trim();
+      // Allow only intra-document refs that start with `#`.
+      if (!ref.startsWith('#')) {
+        throw new ParseError(
+          'INVALID_SPEC',
+          `External $ref are not allowed for security reasons: ${ref}`
+        );
+      }
+    } else if (value && typeof value === 'object') {
+      assertNoExternalRefs(value, seen);
     }
   }
 }
