@@ -48,6 +48,17 @@ export async function parseSpec(
 }
 
 async function runPipeline(raw: string): Promise<ParsedSpec> {
+  // Defence in depth — scan the user's *original* tree for external $refs
+  // before handing the doc to swagger2openapi / postman-to-openapi. The
+  // converters are configured `fetch: false, resolve: false` and the
+  // post-conversion `assertNoExternalRefs` re-checks the output, but
+  // scanning the raw input too removes any dependency on what either
+  // upstream does with malicious refs.
+  const rawTree = tryLoadStructured(raw);
+  if (rawTree && typeof rawTree === 'object') {
+    assertNoExternalRefs(rawTree);
+  }
+
   // Phase 03 — auto-convert Swagger 2.0 / Postman v2 → OpenAPI 3 string.
   // OpenAPI 3.x is returned verbatim; `convertToOpenAPI3` throws typed
   // ParseErrors which we let bubble up to the route handler.
@@ -75,6 +86,20 @@ async function runPipeline(raw: string): Promise<ParsedSpec> {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return normalizeSpec(validated as any);
+}
+
+/**
+ * Best-effort YAML/JSON load that swallows errors. Used to pre-scan the
+ * original input for external $refs before we hand it to a converter; we
+ * don't want to throw INVALID_SPEC for inputs that the converter knows how
+ * to handle (Postman v2 isn't strict YAML/JSON-compat in places).
+ */
+function tryLoadStructured(raw: string): unknown {
+  try {
+    return yaml.load(raw, { schema: yaml.CORE_SCHEMA });
+  } catch {
+    return undefined;
+  }
 }
 
 function loadStructured(raw: string): unknown {

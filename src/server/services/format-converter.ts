@@ -12,6 +12,7 @@
  *
  * Native OpenAPI 3.x is returned verbatim — no re-encoding, no normalisation.
  */
+import yaml from 'js-yaml';
 import postmanToOpenApi from 'postman-to-openapi';
 // swagger2openapi ships no upstream types — see `./swagger2openapi.d.ts`
 // for the minimal ambient declaration we rely on.
@@ -33,6 +34,14 @@ const SWAGGER2OPENAPI_OPTIONS = {
 const POSTMAN_OPTIONS = {
   defaultTag: 'general',
 } as const;
+
+function tryParseYamlObject(raw: string): unknown {
+  try {
+    return yaml.load(raw, { schema: yaml.CORE_SCHEMA });
+  } catch {
+    return null;
+  }
+}
 
 function isPlausibleOpenApi3(doc: unknown): boolean {
   if (!doc || typeof doc !== 'object') return false;
@@ -62,9 +71,10 @@ export async function convertToOpenAPI3(raw: string): Promise<string> {
         });
         openapi = result.openapi;
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
         throw new ParseError(
           'SWAGGER2_CONVERSION_FAILED',
-          `Swagger 2.0 conversion failed: ${(err as Error).message}`
+          `Swagger 2.0 conversion failed: ${message}`
         );
       }
       // `warnOnly: true` lets the converter silently coerce a malformed
@@ -81,17 +91,33 @@ export async function convertToOpenAPI3(raw: string): Promise<string> {
       return JSON.stringify(openapi);
     }
 
-    case 'postman':
+    case 'postman': {
+      let yamlOut: string;
       try {
         // postman-to-openapi accepts a JSON string and returns YAML by default.
-        const yamlOut = await postmanToOpenApi(raw, undefined, POSTMAN_OPTIONS);
-        return yamlOut;
+        yamlOut = await postmanToOpenApi(raw, undefined, POSTMAN_OPTIONS);
       } catch (err) {
+        // postman-to-openapi historically throws plain strings in some
+        // paths — coerce to a readable message rather than 'undefined'.
+        const message = err instanceof Error ? err.message : String(err);
         throw new ParseError(
           'POSTMAN_CONVERSION_FAILED',
-          `Postman conversion failed: ${(err as Error).message}`
+          `Postman conversion failed: ${message}`
         );
       }
+      // Symmetric to the swagger2 post-check: if the converter silently
+      // returns a structurally-empty doc, surface it as a Postman-specific
+      // failure rather than letting it slip through and produce a
+      // confusing EMPTY_SPEC two stages later.
+      const parsed = tryParseYamlObject(yamlOut);
+      if (!isPlausibleOpenApi3(parsed)) {
+        throw new ParseError(
+          'POSTMAN_CONVERSION_FAILED',
+          'Postman conversion produced an invalid or empty OpenAPI 3 document.'
+        );
+      }
+      return yamlOut;
+    }
 
     case 'unknown':
       // Parseable as JSON/YAML but not a known spec format (e.g. a GraphQL

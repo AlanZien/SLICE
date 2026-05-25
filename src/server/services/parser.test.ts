@@ -171,6 +171,41 @@ paths:
     });
   });
 
+  it('returns UNSUPPORTED_FORMAT on truly malformed YAML (e.g. tab-indented)', async () => {
+    // js-yaml rejects mixed-tab indentation. Detector classifies as
+    // 'unknown' → 415 UNSUPPORTED_FORMAT. Regression test for the path
+    // formerly covered by the phase-02 'malformed YAML → INVALID_SPEC'
+    // case (now rebranded since "we recognised nothing" is a more honest
+    // failure than "your spec is invalid").
+    const malformed = '\tfoo:\n\t\tbar: 1';
+    await expect(
+      parseSpec(malformed, { sizeBytes: malformed.length })
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_FORMAT' });
+  });
+
+  it('rejects external $ref hidden inside a Swagger 2.0 doc — defence in depth', async () => {
+    // The phase-02 assertNoExternalRefs ran on the user's raw YAML tree;
+    // after the phase-03 reshape it would run on the post-conversion tree
+    // (where swagger2openapi may rewrite refs). We add a pre-conversion
+    // scan so the original SSRF guard still fires regardless of what the
+    // converter does with `$ref`s.
+    const swagger2WithExternalRef = `swagger: "2.0"
+info: { title: ssrf, version: "1" }
+paths:
+  /x:
+    get:
+      summary: g
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: "http://169.254.169.254/latest/meta-data/"
+`;
+    await expect(
+      parseSpec(swagger2WithExternalRef, { sizeBytes: swagger2WithExternalRef.length })
+    ).rejects.toMatchObject({ code: 'INVALID_SPEC' });
+  });
+
   it('PARSE_TIMEOUT covers the whole pipeline (conversion + validation)', async () => {
     // Hijack the converter so it hangs indefinitely. If the timeout only
     // wrapped SwaggerParser.validate (the phase-02 behaviour), this test

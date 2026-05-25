@@ -39,6 +39,10 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Qualité]** `isPlausibleOpenApi3` (`format-converter.ts`) vérifie seulement `openapi` + `paths` shape. Ne vérifie pas `info.title/version` requis par OpenAPI 3 schema. Conséquence : un doc converti sans `info` remonte un `INVALID_SPEC` (via SwaggerParser.validate) au lieu de `SWAGGER2_CONVERSION_FAILED`. Message moins clair, pas faux. À étendre si rencontré en UAT.
 - **[Cohérence]** `/^3\./` dans `format-detector` accepte `3.99.0` ; le check strict de version reste dans `assertVersion` (`/^3\.[01](\.\d+)?$/`). Cohérent en intention, à confirmer en phase 04 quand on testera avec des specs OpenAPI 3.1 réelles.
 - **[Tests]** Garantie `instanceof ParseError` n'est testée que sur un seul cas (`': not anything'`). À étendre si une régression où `throw new Error(...)` se glisse dans le converter.
+- **[Sécurité]** `withTimeout` ne cancel pas la conversion (Node sans cancel natif). Sous burst, un Postman de 9 Mo lourd peut consommer ~4.5s CPU avant timeout × 30 req/min/IP = ~150s de blocking CPU par minute par client. Acceptable MVP, à durcir en phase 11 (queue de tâches, ou worker thread avec AbortController).
+- **[Sécurité]** `yaml.load` est synchrone et bloque l'event loop. `Promise.race` ne peut pas interrompre du travail sync — un YAML de 10 Mo pathologique tient l'event loop > 5s. Mitigé par MAX_BYTES + CORE_SCHEMA (pas d'expansion d'anchors), à revisiter si un load CPU non négligeable est observé en prod.
+- **[Tests]** Test `vi.spyOn(converter, 'convertToOpenAPI3')` dans `parser.test.ts` repose sur ESM live bindings. Vitest+Vite gère bien aujourd'hui, mais une bump majeure pourrait casser. À pinner via `vi.mock('./format-converter', …)` si flake.
+- **[Cohérence]** `assertVersion` garde les branches `swaggerVersion` et `swagger=2.0` qui sont devenues dead code (le detector catche avant). Préservées en défense en profondeur si l'ordre detector→parser change. Commentaire de `UNSUPPORTED_VERSION` mis à jour.
 
 ---
 Alimente par le workflow FORGE (phase LEARN).

@@ -79,7 +79,7 @@ export type ParseErrorCode =
   | 'UNSUPPORTED_FORMAT'          // extension not JSON/YAML, or detector returned 'unknown'
   | 'INVALID_SPEC'                // malformed JSON/YAML or invalid OpenAPI structure
   | 'EMPTY_SPEC'                  // no `paths`, no endpoints (R1.1.7)
-  | 'UNSUPPORTED_VERSION'         // Swagger 1.x or OpenAPI 3.2+ (Swagger 2.0 is auto-converted)
+  | 'UNSUPPORTED_VERSION'         // OpenAPI 3.2+ only (Swagger 1.x routes via 'unknown' → UNSUPPORTED_FORMAT, Swagger 2.0 is auto-converted)
   | 'SWAGGER2_CONVERSION_FAILED'  // swagger2openapi could not convert the doc (phase 03)
   | 'POSTMAN_CONVERSION_FAILED'   // postman-to-openapi could not convert the collection (phase 03)
   | 'PARSE_TIMEOUT'               // > 5 s (R1.1.5)
