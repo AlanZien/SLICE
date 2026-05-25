@@ -13,21 +13,23 @@ Aucune en MVP (outil public, stateless, pas de compte utilisateur).
 
 ## Rate limiting
 
-- 30 requêtes / minute / IP sur tous les endpoints `/api/*`
-- Headers de réponse : `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`
+- 30 requêtes / minute / IP sur les endpoints `/api/*` sensibles (upload, generate).
+- `/api/health` est explicitement **exempté**.
+- Headers de réponse : `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`.
 
 ## Endpoints
 
 ### GET /api/health
 
-Health check. Aucune authentification, aucun rate limit spécifique.
+Health check. Aucune authentification. **Exempté du rate-limit** (pour permettre aux monitors / CI / load balancers partagés derrière NAT de probe sans saturer le quota IP).
 
 **Réponse 200**
 ```json
 {
+  "ok": true,
   "status": "ok",
   "env": "development",
-  "timestamp": "2026-05-24T19:00:00.000Z"
+  "timestamp": "2026-05-25T17:30:00.000Z"
 }
 ```
 

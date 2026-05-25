@@ -2,7 +2,7 @@
 
 Date : 2026-05-25
 SPEC : .workflow/SPEC.md (Principe de conception, design tokens 2.1)
-Statut : DRAFT
+Statut : DONE
 
 ## Objectif
 
