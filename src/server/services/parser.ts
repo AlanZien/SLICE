@@ -5,6 +5,7 @@ import { normalizeSpec } from './spec-normalizer';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
 const MAX_DEPTH = 20;                // Object/array depth ceiling (R1.1.6)
+const MAX_NODES = 200_000;           // Total nodes visited — bounds fanout DoS
 const PARSE_TIMEOUT_MS = 5_000;      // Hard timeout (R1.1.5)
 
 export interface ParseSpecOptions {
@@ -118,17 +119,31 @@ function assertVersion(tree: unknown): void {
   }
 }
 
-function assertDepth(tree: unknown, current = 0): void {
+function assertDepth(tree: unknown): void {
+  // Counter is shared across the traversal to bound total fanout, not just
+  // depth — a spec that's flat-but-wide (50k keys per object) would otherwise
+  // sail past the depth check and DoS downstream consumers.
+  const counter = { nodes: 0 };
+  walkDepth(tree, 0, counter);
+}
+
+function walkDepth(tree: unknown, current: number, counter: { nodes: number }): void {
   if (current > MAX_DEPTH) {
     throw new ParseError(
       'PARSE_DEPTH_EXCEEDED',
       `Spec is nested deeper than the ${MAX_DEPTH} level limit.`
     );
   }
-  if (tree && typeof tree === 'object') {
-    for (const value of Object.values(tree as Record<string, unknown>)) {
-      assertDepth(value, current + 1);
+  if (!tree || typeof tree !== 'object') return;
+  for (const value of Object.values(tree as Record<string, unknown>)) {
+    counter.nodes += 1;
+    if (counter.nodes > MAX_NODES) {
+      throw new ParseError(
+        'PARSE_DEPTH_EXCEEDED',
+        `Spec contains more than ${MAX_NODES} nodes — refusing to parse.`
+      );
     }
+    walkDepth(value, current + 1, counter);
   }
 }
 

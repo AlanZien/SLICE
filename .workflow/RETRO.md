@@ -19,6 +19,15 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Cohérence]** Padding topbar `px-5` (20px) vs SPEC §2.1 qui mentionne 18px. Écart de 2px assumé pour rester sur l'échelle Tailwind par défaut. À reconfirmer en phase 12 (audit visuel final).
 - **[Tests]** Pas de tests pour le 404, le rate-limit, le static serve en prod. Pas exigé par PLAN 01. À regarder si pattern récurrent de couverture incomplète en phase 02+.
 
+### Après phase 02 — Upload & parsing (2026-05-25)
+
+- **[Sécurité]** `withTimeout` ne cancel pas la `Promise` sous-jacente (Node sans cancel natif). `SwaggerParser.validate` peut continuer en arrière-plan après réponse 504. Acceptable MVP, à regarder en phase 11 si fuite d'event-loop.
+- **[Sécurité]** Pas de BOM check sur le buffer avant `toString('utf-8')` dans `upload.ts:54`. Un upload UTF-16/32 produit un `INVALID_SPEC` générique. Rejet OK, à durcir si support multi-encoding requis.
+- **[Qualité]** `/* eslint-disable @typescript-eslint/no-explicit-any */` au niveau fichier dans `spec-normalizer.ts:14`. À remplacer par un type `OpenAPIDocument` minimal (info, servers, paths) + casts ponctuels si le pattern réapparaît en phase 04+.
+- **[Qualité]** `<Dropzone>` accepte `text/plain` parmi les MIME (workaround navigateur qui sniff mal les .yaml). Vérifier en UAT et resserrer si trop permissif.
+- **[Tests]** Pas de test perf R1.1.9 (p95 < 2s sur shopify-50). Fixture créée mais test reporté. À ajouter en phase 04 où le besoin perf devient critique.
+- **[Cohérence]** Constante `'Autres'` hardcodée dans `spec-normalizer.ts:47` (conforme SPEC R1.2.3, mais en dur). Stratégie i18n à clarifier avant phase 04.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

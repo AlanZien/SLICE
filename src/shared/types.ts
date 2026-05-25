@@ -8,10 +8,15 @@
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 export interface EndpointParam {
-  /** Param name (path, query, header, or body field). */
+  /** Param name (path, query, header, or cookie). */
   name: string;
-  /** Param location. */
-  in: 'path' | 'query' | 'header' | 'body' | 'cookie';
+  /**
+   * Param location. Phase 02 only flattens `parameters`; `requestBody` fields
+   * are added in a later phase (cf. PLAN 04/06). Until then the `'body'`
+   * variant is intentionally absent from this union so callers can't lean on
+   * data we don't yet produce.
+   */
+  in: 'path' | 'query' | 'header' | 'cookie';
   /** OpenAPI type hint when available. */
   type?: string;
   /** True if the spec marks the param as required. */
@@ -30,7 +35,7 @@ export interface Endpoint {
   label: string;
   /** Full description (operation description or first paragraph of summary). */
   description?: string;
-  /** Flattened parameter list (path + query + body fields). */
+  /** Flattened parameter list. Phase 02 covers path + query + header + cookie. */
   params: EndpointParam[];
   /** Estimated tokens for selection counter (phase 05 will calibrate). */
   tokens?: number;
