@@ -30,9 +30,17 @@ export async function uploadSpec(file: File): Promise<ParsedSpec> {
   });
 
   if (!res.ok) {
-    let body: ApiErrorBody = { code: 'INVALID_SPEC', message: res.statusText };
+    // statusText is empty under HTTP/2 — fall back to a generic message so
+    // the UI never shows a blank red box.
+    let body: ApiErrorBody = {
+      code: 'INVALID_SPEC',
+      message: res.statusText || `Erreur ${res.status} du serveur.`,
+    };
     try {
-      body = (await res.json()) as ApiErrorBody;
+      const parsed = (await res.json()) as ApiErrorBody;
+      if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
+        body = parsed;
+      }
     } catch {
       // Server didn't return JSON — keep the fallback message.
     }

@@ -7,12 +7,16 @@ import { useTheme } from './hooks/use-theme';
 type ScreenIndex = 1 | 2 | 3 | 4;
 
 function slugify(name: string): string {
-  return name
+  // CJK / emoji titles collapse to an empty string under [^\w\s-], so we
+  // fall back to a stable placeholder instead of propagating "" to apiSlug
+  // (which downstream would render as broken URLs / filenames).
+  const slug = name
     .toLowerCase()
     .normalize('NFKD')
     .replace(/[^\w\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-');
+  return slug.length > 0 ? slug : 'api';
 }
 
 function App() {

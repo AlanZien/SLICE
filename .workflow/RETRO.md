@@ -27,6 +27,10 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Qualité]** `<Dropzone>` accepte `text/plain` parmi les MIME (workaround navigateur qui sniff mal les .yaml). Vérifier en UAT et resserrer si trop permissif.
 - **[Tests]** Pas de test perf R1.1.9 (p95 < 2s sur shopify-50). Fixture créée mais test reporté. À ajouter en phase 04 où le besoin perf devient critique.
 - **[Cohérence]** Constante `'Autres'` hardcodée dans `spec-normalizer.ts:47` (conforme SPEC R1.2.3, mais en dur). Stratégie i18n à clarifier avant phase 04.
+- **[Sécurité]** `express.json({ limit: '10mb' })` globalement avant `/api/upload`. Un client envoyant `Content-Type: application/json` 10 Mo bufferise en mémoire avant rejet multer (DoS amplifier × 30 req/min). À mounter le json parser route-par-route en phase 11 (avec helmet).
+- **[Cohérence]** `normalizeSpec` retourne `authType: 'none'` en dur, ignorant `securitySchemes` du doc validé. Détection de l'auth est traitée en phase 06 (config), mais à confirmer que la phase 06 lit bien le doc original et pas seulement `ParsedSpec`.
+- **[UX/Dev]** Dev shortcuts en bas de App.tsx ne resettent plus `apiSlug`/`parsedSpec` au clic sur 1. Préviser comme dev-only ; à retirer en phase 11 (build prod a déjà `import.meta.env.DEV` qui les strip).
+- **[Robustesse]** `op.tags?.[0] ?? 'Autres'` ne gère pas le cas `tags: [""]` (groupe au libellé vide). Edge case, à durcir si rencontré dans des specs réelles.
 
 ---
 Alimente par le workflow FORGE (phase LEARN).

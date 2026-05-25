@@ -75,13 +75,22 @@ export function createUploadRouter(): Router {
     (req, res, next) => {
       uploader.single('file')(req, res, (err: unknown) => {
         if (!err) return next();
-        // Multer file-size limit -> 413, anything else -> 400.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const code: string | undefined = (err as any)?.code;
         if (code === 'LIMIT_FILE_SIZE') {
           res.status(413).json({
             code: 'PAYLOAD_TOO_LARGE',
             message: 'File exceeds the 10 MB limit.',
+          });
+          return;
+        }
+        // Wrong field name or extra files — surface the same NO_FILE hint
+        // the handler would have produced, so the user actually knows what
+        // multipart field to attach the spec to.
+        if (code === 'LIMIT_UNEXPECTED_FILE' || code === 'LIMIT_FILE_COUNT') {
+          res.status(400).json({
+            code: 'NO_FILE',
+            message: 'No file provided. Attach the OpenAPI spec under the "file" field.',
           });
           return;
         }

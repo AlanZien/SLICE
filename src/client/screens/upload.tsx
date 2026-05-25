@@ -16,6 +16,11 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
   const [error, setError] = useState<string | null>(null);
 
   const handleFile = async (file: File) => {
+    // Reject concurrent uploads at the entry point — Dropzone's `disabled`
+    // prop only takes effect after a re-render, so a fast double-drop could
+    // otherwise launch two requests whose responses race and overwrite each
+    // other (last-resolved wins, possibly the wrong spec).
+    if (state === 'uploading' || state === 'parsing') return;
     setError(null);
     setState('uploading');
     try {
