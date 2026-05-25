@@ -1,5 +1,13 @@
 # Retrospectives
 
+## 2026-05-25 — Phase 01 (Squelette) ✓ mergée
+
+Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
+- TDD propre, 4 cycles, 20/20 verts au premier coup.
+- EVALUATE STANDARD : 0 Bloquant, 3 Important corrigés en < 10 min, 6 À considérer reportés.
+- Surprise : repo déjà bootstrappé hors phase BOOTSTRAP — décalage avec CLAUDE.md "Phase en cours". Pas de pattern récurrent à promouvoir (1 occurrence).
+- Patterns à observer en phases 02–04 : PLAN ↔ code drift, concat de classes verbeux, config Express globale.
+
 ## Findings "à considérer" en attente (alimentés par EVALUATE, traités en LEARN)
 
 ### Après phase 01 — Squelette (2026-05-25)
