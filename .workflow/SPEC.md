@@ -58,7 +58,7 @@ Décisions transverses (tranchées en SPEC) :
   - Formats hors-scope MVP (refusés avec message clair) : API Blueprint, RAML, GraphQL SDL, AsyncAPI, gRPC/Protobuf, WSDL, HAR. Message : "Format non supporté. Importe ton API en OpenAPI 3.x, Swagger 2.0 ou Postman Collection v2."
 - R1.1.4 — Parsing safe : pas de résolution de `$ref` externes (HTTP), pas d'évaluation de tags YAML arbitraires.
 - R1.1.5 — Timeout de parsing : **5 secondes**. Au-delà, abandon avec erreur "Fichier trop complexe à parser" (code interne `PARSE_TIMEOUT`).
-- R1.1.6 — Profondeur d'objet limitée à **20 niveaux**. Dépassement → erreur dédiée "Structure trop profonde" (code interne `PARSE_DEPTH_EXCEEDED`), distincte du timeout. Fixture de test : `fixtures/deep-25.yaml` (25 niveaux imbriqués).
+- R1.1.6 — Profondeur d'objet limitée à **50 niveaux** (relevé depuis 20 après UAT phase 03 — des specs publiques réelles comme Stripe/GitHub dépassent 20 sans nature pathologique). Total nœuds également borné (`MAX_NODES = 200 000`). Dépassement → erreur dédiée "Structure trop profonde" (code interne `PARSE_DEPTH_EXCEEDED`), distincte du timeout. Test RED utilise 55 niveaux.
 - R1.1.7 — Spec valide = au moins **1 endpoint** dans `paths`. Sinon erreur "Aucun endpoint trouvé dans la spec".
 - R1.1.8 — La spec n'est **jamais persistée** : elle existe en mémoire le temps du parsing puis est libérée. Pas d'écriture disque.
 - R1.1.9 — Performance cible : **upload + parsing < 2s p95** pour une spec de 50 endpoints (~500 Ko), mesuré en local sur machine dev (M1-class ou équivalent). Fixture de référence : `fixtures/shopify-50.yaml`.
@@ -195,7 +195,7 @@ Décisions transverses (tranchées en SPEC) :
 **Règles métier :**
 
 - R1.4.1 — Endpoint : `POST /api/generate`. Body JSON contenant la spec parsée + la sélection d'endpoints + la config. **Limite body** : 15 Mo max (couvre 10 Mo de spec + sélection + config). Au-delà : `413 Payload Too Large`.
-- R1.4.1bis — **Re-validation côté serveur** : le `parsedSpec` reçu est re-parsé via `swagger-parser` avec les mêmes garde-fous que R1.1.4 à R1.1.6 (pas de `$ref` externes, timeout 5s, profondeur 20). Le serveur ne fait **jamais** confiance au client : la spec est re-validée intégralement avant génération. Si invalide → `400 Bad Request` avec code `INVALID_SPEC`.
+- R1.4.1bis — **Re-validation côté serveur** : le `parsedSpec` reçu est re-parsé via `swagger-parser` avec les mêmes garde-fous que R1.1.4 à R1.1.6 (pas de `$ref` externes, timeout 5s, profondeur 50). Le serveur ne fait **jamais** confiance au client : la spec est re-validée intégralement avant génération. Si invalide → `400 Bad Request` avec code `INVALID_SPEC`.
 - R1.4.1ter — Whitelist stricte des `selectedEndpointIds` : chaque id reçu doit correspondre à un endpoint présent dans le re-parsing de la spec. Ids inconnus → ignorés silencieusement. Si 0 id valide après filtrage → `400` avec code `NO_ENDPOINT_SELECTED`.
 - R1.4.2 — **Génération synchrone** : la réponse HTTP contient directement le ZIP (`Content-Type: application/zip`, `Content-Disposition: attachment; filename="<nom-mcp>.zip"`).
 - R1.4.3 — **In-memory streaming** : le ZIP est construit en mémoire avec `archiver`, streamé dans la réponse. Aucune écriture disque côté serveur.

@@ -92,7 +92,7 @@ Les autres champs multipart sont ignorés (R1.6.9).
 **Garanties de sécurité**
 - Parser YAML safe : `CORE_SCHEMA` (bloque `!!js/function`, `!!binary`, dates, anchors-as-code — R1.1.4)
 - `$ref` externes (`http://`, `https://`, `file://`, refs relatifs) rejetés avant validation — anti-SSRF
-- Profondeur d'arbre limitée à 20, total nœuds limité à 200 000 — anti-DoS
+- Profondeur d'arbre limitée à 50, total nœuds limité à 200 000 — anti-DoS
 - Timeout strict 5 s — anti-DoS
 - Multer `memoryStorage` ; aucune écriture disque ; buffer relâché en fin de requête
 
@@ -108,7 +108,7 @@ Les autres champs multipart sont ignorés (R1.6.9).
 | 400 | `UNSUPPORTED_VERSION` | OpenAPI 3.2+ (3.0 et 3.1 supportés ; Swagger 2.0 est auto-converti ; Swagger 1.x renvoie `UNSUPPORTED_FORMAT`) |
 | 400 | `SWAGGER2_CONVERSION_FAILED` | Conversion Swagger 2.0 → OpenAPI 3.0 a échoué (doc invalide ou structurellement incomplet) |
 | 400 | `POSTMAN_CONVERSION_FAILED` | Conversion Postman v2 → OpenAPI 3.0 a échoué (collection invalide ou vide) |
-| 400 | `PARSE_DEPTH_EXCEEDED` | Profondeur > 20 ou > 200 000 nœuds |
+| 400 | `PARSE_DEPTH_EXCEEDED` | Profondeur > 50 ou > 200 000 nœuds |
 | 504 | `PARSE_TIMEOUT` | Parsing > 5 s |
 | 429 | — | Rate-limit dépassé (30 req/min/IP) |
 

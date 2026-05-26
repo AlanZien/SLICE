@@ -86,8 +86,8 @@ info: { title: ancient, version: "1" }
     });
   });
 
-  it('rejects pathologically deep YAML with PARSE_DEPTH_EXCEEDED', async () => {
-    const deep = deepYaml(25);
+  it('rejects pathologically deep YAML with PARSE_DEPTH_EXCEEDED (> 50 levels)', async () => {
+    const deep = deepYaml(55);
     await expect(parseSpec(deep, { sizeBytes: deep.length })).rejects.toMatchObject({
       code: 'PARSE_DEPTH_EXCEEDED',
     });

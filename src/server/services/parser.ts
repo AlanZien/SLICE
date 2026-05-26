@@ -5,7 +5,7 @@ import { convertToOpenAPI3 } from './format-converter';
 import { normalizeSpec } from './spec-normalizer';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
-const MAX_DEPTH = 20;                // Object/array depth ceiling (R1.1.6)
+const MAX_DEPTH = 50;                // Object/array depth ceiling (R1.1.6 — raised from 20 after real-world specs like Stripe/GitHub were rejected as false positives; CORE_SCHEMA already blocks YAML bombs, MAX_NODES caps total work)
 const MAX_NODES = 200_000;           // Total nodes visited — bounds fanout DoS
 const PARSE_TIMEOUT_MS = 5_000;      // Hard timeout (R1.1.5)
 
