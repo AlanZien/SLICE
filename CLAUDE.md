@@ -4,18 +4,19 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**REFINE validé (2026-05-25)** — SPEC complète dans `.workflow/SPEC.md`, 13 PLAN.md dans `.workflow/phases/0X-*/PLAN.md`, matrice couverture dans `.workflow/phases/COVERAGE.md`. Décision D001 (Handlebars) dans `.workflow/DECISIONS.md`.
+**Phase 03 — Conversion formats (DELIVER en cours, 2026-05-26)** — PR #3 ouverte avec hotfix MAX_DEPTH 20→50. 80/80 tests verts. En attente re-test UAT utilisateur sur la spec qui avait tilté.
 
-**Prochaine étape : BOOTSTRAP + GENERATE phase 01 (squelette)**
+**Phases mergées** : 01 (squelette, PR #1), 02 (upload & parsing, PR #2)
+**Phase courante** : 03 (PR #3)
+**Branche courante** : `feature/03-format-conversion` (HEAD `dd3ade6`)
 
-Reprise après /compact :
-1. **BOOTSTRAP** (3 étapes restantes du workflow) :
-   - Étape 1 : `git init` + premier commit `chore: initial commit`
-   - Étape 3 : `/permissions` (autoriser `Bash(pnpm:*)`, `Bash(npx:*)`, `Bash(git:*)` lecture, etc.)
-   - Étape 6 : créer le repo distant GitHub (`gh repo create slice --private --source=. --remote=origin`) + premier push `main` (seul push sur main autorisé)
-2. **GENERATE phase 01** : suivre `.workflow/phases/01-skeleton/PLAN.md` en TDD strict (RED → GREEN → REFACTOR par tâche, commits atomiques, branche `feature/01-skeleton`)
+**Reprise** :
+1. Re-tester l'UAT phase 03 (drop la spec qui avait dépassé la profondeur 20)
+2. Merger PR #3 dans main
+3. Enchaîner **Phase 04 — Écran de sélection** (lire `.workflow/phases/04-selection-screen/PLAN.md`, créer `feature/04-selection-screen` depuis main, TDD strict)
 
-Reste à faire après phase 01 : phases 02 → 13 selon `.workflow/phases/COVERAGE.md`.
+Détails session précédente : `.workflow/sessions/2026-05-26-phase-02-03.md`.
+Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 04 → 13 restantes).
 
 ## Stack
 
