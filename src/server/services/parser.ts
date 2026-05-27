@@ -242,8 +242,21 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     return result as T;
   } catch (err) {
     if (err instanceof ParseError) throw err;
-    throw new ParseError('INVALID_SPEC', (err as Error).message);
+    const message = err instanceof Error ? err.message : String(err);
+    throw new ParseError('INVALID_SPEC', summariseValidatorMessage(message));
   } finally {
     clearTimeout(timer!);
   }
+}
+
+/**
+ * SwaggerParser concatenates every JSON-schema violation into one multi-line
+ * message that can be hundreds of lines long — unusable in a toast. Keep the
+ * headline (first line) and trim the rest. Callers who need full diagnostics
+ * can drop down to the validator directly.
+ */
+function summariseValidatorMessage(raw: string): string {
+  const firstLine = raw.split('\n')[0]?.trim() ?? raw;
+  const MAX_LEN = 250;
+  return firstLine.length > MAX_LEN ? `${firstLine.slice(0, MAX_LEN - 1)}…` : firstLine;
 }

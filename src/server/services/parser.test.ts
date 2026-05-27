@@ -240,6 +240,42 @@ components:
     expect(result.groups.length).toBeGreaterThan(0);
   });
 
+  it('truncates SwaggerParser validation errors to a readable single message', async () => {
+    // SwaggerParser concatenates every JSON-schema violation into one giant
+    // multi-line message — easily 50+ lines on a malformed spec. The user
+    // shouldn't see that wall of text; we keep the first cause + a hint.
+    const malformed = `openapi: "3.0.3"
+info: { title: bad, version: "1" }
+paths:
+  /x:
+    get:
+      summary: ok
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  # invalid: properties must be a map of name → schema,
+                  # not a nested object marker like this.
+                  type: object
+`;
+    try {
+      await parseSpec(malformed, { sizeBytes: malformed.length });
+      throw new Error('should have thrown');
+    } catch (err) {
+      const e = err as { code: string; message: string };
+      // First line of the error must be present, but the whole concatenated
+      // dump must not — cap the surfaced message length so the UI can render
+      // it in one paragraph.
+      expect(e.code).toBe('INVALID_SPEC');
+      expect(e.message.length).toBeLessThan(300);
+      expect(e.message.split('\n').length).toBeLessThanOrEqual(2);
+    }
+  });
+
   it('returns a ParseError instance (not a plain object)', async () => {
     try {
       await parseSpec('garbage', { sizeBytes: 7 });
