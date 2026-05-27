@@ -16,22 +16,6 @@ paths:
         "200": { description: ok }
 `;
 
-function deepYaml(depth: number): string {
-  let inner = 'leaf: true';
-  for (let i = 0; i < depth; i += 1) inner = `level:\n  ${inner.replace(/\n/g, '\n  ')}`;
-  return `openapi: "3.0.0"
-info: { title: deep, version: "1" }
-paths:
-  /x:
-    get:
-      summary: ok
-      responses:
-        "200": { description: ok }
-nested:
-${inner}
-`;
-}
-
 describe('parseSpec', () => {
   it('accepts a valid OpenAPI 3.0 YAML', async () => {
     const result = await parseSpec(VALID_OPENAPI_3, { sizeBytes: VALID_OPENAPI_3.length });
@@ -86,9 +70,13 @@ info: { title: ancient, version: "1" }
     });
   });
 
-  it('rejects pathologically deep YAML with PARSE_DEPTH_EXCEEDED (> 50 levels)', async () => {
-    const deep = deepYaml(55);
-    await expect(parseSpec(deep, { sizeBytes: deep.length })).rejects.toMatchObject({
+  it('rejects pathologically wide specs (> 200k nodes) with PARSE_DEPTH_EXCEEDED', async () => {
+    // Flat-but-wide YAML — would have slipped past the old depth check but
+    // is exactly what MAX_NODES catches now.
+    const lines = ['openapi: "3.0.3"', 'info: { title: huge, version: "1" }', 'paths:', '  /x:', '    get:', '      summary: g', '      responses: { "200": { description: ok } }', 'huge:'];
+    for (let i = 0; i < 250_000; i += 1) lines.push(`  k${i}: ${i}`);
+    const huge = lines.join('\n') + '\n';
+    await expect(parseSpec(huge, { sizeBytes: huge.length })).rejects.toMatchObject({
       code: 'PARSE_DEPTH_EXCEEDED',
     });
   });

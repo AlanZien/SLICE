@@ -6,8 +6,14 @@ import { normalizeSpec } from './spec-normalizer';
 import { sanitizeSpec } from './spec-sanitizer';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
-const MAX_DEPTH = 50;                // Object/array depth ceiling (R1.1.6 — raised from 20 after real-world specs like Stripe/GitHub were rejected as false positives; CORE_SCHEMA already blocks YAML bombs, MAX_NODES caps total work)
-const MAX_NODES = 200_000;           // Total nodes visited — bounds fanout DoS
+// SPEC R1.1.6 originally specified a depth ceiling (initially 20, raised to 50)
+// to bound recursive descent. After real-world testing (Stripe, GitHub, .NET
+// enterprise specs), we found legitimate deep schemas constantly tripped it
+// while CORE_SCHEMA already prevents YAML-bomb expansion (no anchors) and
+// MAX_NODES caps the total work. The depth guard was a false-positive factory
+// with no incremental security benefit, so it's been dropped. MAX_NODES is
+// the canonical anti-DoS bound now.
+const MAX_NODES = 200_000;           // Total nodes visited — bounds fanout DoS (R1.1.6)
 const PARSE_TIMEOUT_MS = 5_000;      // Hard timeout (R1.1.5)
 
 export interface ParseSpecOptions {
@@ -67,7 +73,7 @@ async function runPipeline(raw: string): Promise<ParsedSpec> {
 
   const tree = loadStructured(openapiRaw);
   assertVersion(tree);
-  assertDepth(tree);
+  assertSize(tree);
   assertNoExternalRefs(tree);
   // Narrow, non-semantic orthographic fixes (e.g. Swashbuckle's `scheme:
   // Bearer` → `scheme: bearer`) so the downstream validator doesn't reject
@@ -86,7 +92,7 @@ async function runPipeline(raw: string): Promise<ParsedSpec> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const paths = (validated as any).paths as Record<string, unknown> | undefined;
   if (!paths || Object.keys(paths).length === 0) {
-    throw new ParseError('EMPTY_SPEC', 'No endpoints found in the spec.');
+    throw new ParseError('EMPTY_SPEC', 'No endpoints found in the API description.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,7 +133,7 @@ function loadStructured(raw: string): unknown {
   }
 
   if (tree == null || typeof tree !== 'object') {
-    throw new ParseError('INVALID_SPEC', 'Spec must be a YAML or JSON object.');
+    throw new ParseError('INVALID_SPEC', 'The API description must be a YAML or JSON object.');
   }
 
   return tree;
@@ -155,7 +161,7 @@ function assertVersion(tree: unknown): void {
     // No version marker at all → not an OpenAPI document we can recognise.
     throw new ParseError(
       'INVALID_SPEC',
-      'Could not detect an OpenAPI version. The file does not look like an API spec.'
+      'Could not detect an OpenAPI version. The file does not look like an API description.'
     );
   }
 
@@ -167,31 +173,26 @@ function assertVersion(tree: unknown): void {
   }
 }
 
-function assertDepth(tree: unknown): void {
-  // Counter is shared across the traversal to bound total fanout, not just
-  // depth — a spec that's flat-but-wide (50k keys per object) would otherwise
-  // sail past the depth check and DoS downstream consumers.
+function assertSize(tree: unknown): void {
+  // Bounds the total amount of work the downstream pipeline will see. A spec
+  // that's flat-but-wide (50k keys per object) or just very large needs to be
+  // rejected before SwaggerParser.validate amplifies it. Depth itself is no
+  // longer checked — see the MAX_NODES comment up top.
   const counter = { nodes: 0 };
-  walkDepth(tree, 0, counter);
+  walk(tree, counter);
 }
 
-function walkDepth(tree: unknown, current: number, counter: { nodes: number }): void {
-  if (current > MAX_DEPTH) {
-    throw new ParseError(
-      'PARSE_DEPTH_EXCEEDED',
-      `Spec is nested deeper than the ${MAX_DEPTH} level limit.`
-    );
-  }
+function walk(tree: unknown, counter: { nodes: number }): void {
   if (!tree || typeof tree !== 'object') return;
   for (const value of Object.values(tree as Record<string, unknown>)) {
     counter.nodes += 1;
     if (counter.nodes > MAX_NODES) {
       throw new ParseError(
         'PARSE_DEPTH_EXCEEDED',
-        `Spec contains more than ${MAX_NODES} nodes — refusing to parse.`
+        `The API description contains more than ${MAX_NODES} nodes — refusing to parse.`
       );
     }
-    walkDepth(value, current + 1, counter);
+    walk(value, counter);
   }
 }
 

@@ -38,7 +38,7 @@ const handler: RequestHandler = async (req, res) => {
   if (!file) {
     res.status(STATUS_BY_CODE.NO_FILE).json({
       code: 'NO_FILE',
-      message: 'No file provided. Attach the OpenAPI spec under the "file" field.',
+      message: 'No file provided. Attach your API description under the "file" field.',
     });
     return;
   }
@@ -92,7 +92,7 @@ export function createUploadRouter(): Router {
         if (code === 'LIMIT_UNEXPECTED_FILE' || code === 'LIMIT_FILE_COUNT') {
           res.status(400).json({
             code: 'NO_FILE',
-            message: 'No file provided. Attach the OpenAPI spec under the "file" field.',
+            message: 'No file provided. Attach your API description under the "file" field.',
           });
           return;
         }
