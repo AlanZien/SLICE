@@ -39,7 +39,11 @@ describe('<EndpointGroup>', () => {
     render(
       <EndpointGroup group={GROUP} isSelected={() => false} onToggle={() => {}} />
     );
-    await userEvent.click(screen.getByRole('button', { name: /things/i }));
+    // The accordion header is the only `aria-expanded` element in the
+    // tree — endpoint rows use `aria-pressed`.
+    const header = document.querySelector('[aria-expanded]') as HTMLElement;
+    expect(header).not.toBeNull();
+    await userEvent.click(header);
     expect(screen.queryByText('List things')).not.toBeInTheDocument();
   });
 });
