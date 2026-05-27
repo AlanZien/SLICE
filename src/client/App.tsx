@@ -52,16 +52,16 @@ function App() {
 
         {screen === 2 && parsedSpec && (
           <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 px-6 py-16 text-center">
-            <p className="eyebrow">Étape 2 — Sélection</p>
+            <p className="eyebrow">Step 2 — Select</p>
             <h2 className="h2">{parsedSpec.apiName}</h2>
             <p className="font-mono text-sm text-muted-foreground">
               {parsedSpec.groups.reduce((acc, g) => acc + g.endpoints.length, 0)} endpoints,{' '}
-              {parsedSpec.groups.length} groupes — écran de sélection à venir en phase 04.
+              {parsedSpec.groups.length} groups — selection screen coming in phase 04.
             </p>
             {import.meta.env.DEV && (
               <details className="w-full text-left">
                 <summary className="font-mono cursor-pointer text-xs text-muted-foreground">
-                  Debug : ParsedSpec (dev only)
+                  Debug: ParsedSpec (dev only)
                 </summary>
                 <pre className="font-mono mt-2 max-h-96 overflow-auto rounded bg-card/40 p-3 text-[10px]">
                   {JSON.stringify(parsedSpec, null, 2)}

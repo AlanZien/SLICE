@@ -61,12 +61,12 @@ export function Topbar({
 
         <button
           type="button"
-          aria-label="Basculer le thème"
+          aria-label="Toggle theme"
           onClick={onToggleTheme}
           className="font-mono inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[11px] text-muted-foreground transition-colors hover:bg-[var(--slice-highlight)] hover:text-foreground"
         >
           {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-          <span className="sr-only">Basculer le thème</span>
+          <span className="sr-only">Toggle theme</span>
         </button>
 
         <button
@@ -75,7 +75,7 @@ export function Topbar({
           className="font-mono inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-[11px] text-muted-foreground transition-colors hover:bg-[var(--slice-highlight)] hover:text-foreground"
         >
           <RotateCcw className="h-3.5 w-3.5" />
-          Recommencer
+          Reset
         </button>
       </div>
     </header>

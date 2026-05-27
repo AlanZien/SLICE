@@ -11,7 +11,7 @@ describe('<Dropzone>', () => {
   it('shows a human-readable hint in idle state', () => {
     render(<Dropzone onFile={() => {}} />);
     expect(
-      screen.getByText(/dépose|drag|choisir/i)
+      screen.getByText(/drop|pick a file/i)
     ).toBeInTheDocument();
   });
 
@@ -28,17 +28,17 @@ describe('<Dropzone>', () => {
 
   it('renders the uploading state when state="uploading"', () => {
     render(<Dropzone onFile={() => {}} state="uploading" />);
-    expect(screen.getByText(/upload|envoi/i)).toBeInTheDocument();
+    expect(screen.getByText(/upload/i)).toBeInTheDocument();
   });
 
   it('renders the parsing state when state="parsing"', () => {
     render(<Dropzone onFile={() => {}} state="parsing" />);
-    expect(screen.getByText(/analyse|parsing/i)).toBeInTheDocument();
+    expect(screen.getByText(/parsing/i)).toBeInTheDocument();
   });
 
   it('renders the error state with the message when error prop is set', () => {
-    render(<Dropzone onFile={() => {}} state="error" error="Format non supporté" />);
-    expect(screen.getByText(/format non supporté/i)).toBeInTheDocument();
+    render(<Dropzone onFile={() => {}} state="error" error="Unsupported file format" />);
+    expect(screen.getByText(/unsupported file format/i)).toBeInTheDocument();
   });
 
   it('is disabled (input not clickable) while uploading or parsing', () => {
