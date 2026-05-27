@@ -1,6 +1,11 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Endpoint, ParsedSpec } from '@shared/types';
 
+export interface TagCount {
+  picked: number;
+  total: number;
+}
+
 export interface UseSelectionApi {
   /** Number of currently selected endpoints. */
   count: number;
@@ -12,6 +17,18 @@ export interface UseSelectionApi {
    * alone would not catch.
    */
   selected: ReadonlySet<string>;
+  /**
+   * Endpoint id currently focused in the selection screen (drives the preview
+   * pane). Independent from `selected` — focus is just "highlight this row",
+   * not "include in MCP".
+   */
+  focused: string | null;
+  setFocused: (id: string | null) => void;
+  /**
+   * Per-tag picked/total counts, memoised so the tag rail doesn't recompute
+   * on every render. Re-derived only when the selection set changes.
+   */
+  tagCounts: ReadonlyMap<string, TagCount>;
   /** Whether `id` is currently selected. */
   isSelected: (id: string) => boolean;
   /** Add or remove an endpoint from the selection. */
@@ -50,7 +67,20 @@ function initialSelection(spec: ParsedSpec): Set<string> {
 
 export function useSelection(spec: ParsedSpec): UseSelectionApi {
   const [selected, setSelected] = useState<Set<string>>(() => initialSelection(spec));
+  const [focused, setFocused] = useState<string | null>(null);
   const allEndpoints = useMemo(() => flattenEndpoints(spec), [spec]);
+
+  const tagCounts = useMemo(() => {
+    const map = new Map<string, TagCount>();
+    for (const group of spec.groups) {
+      let picked = 0;
+      for (const ep of group.endpoints) {
+        if (selected.has(ep.id)) picked += 1;
+      }
+      map.set(group.tag, { picked, total: group.endpoints.length });
+    }
+    return map;
+  }, [spec, selected]);
 
   const isSelected = useCallback((id: string) => selected.has(id), [selected]);
 
@@ -86,6 +116,9 @@ export function useSelection(spec: ParsedSpec): UseSelectionApi {
   return {
     count: selected.size,
     selected,
+    focused,
+    setFocused,
+    tagCounts,
     isSelected,
     toggle,
     bulkCheck,
