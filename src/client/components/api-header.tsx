@@ -18,6 +18,10 @@ export function ApiHeader({
 }: ApiHeaderProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(baseUrl);
+  // Suppress the next onBlur commit when Escape was just pressed. Without
+  // this, blurring the input as a side-effect of Escape would race with the
+  // cancel() and re-commit the value we just reverted.
+  const cancellingRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,11 +37,16 @@ export function ApiHeader({
   }, [editing, baseUrl]);
 
   const commit = () => {
+    if (cancellingRef.current) {
+      cancellingRef.current = false;
+      return;
+    }
     if (draft !== baseUrl) onBaseUrlChange(draft);
     setEditing(false);
   };
 
   const cancel = () => {
+    cancellingRef.current = true;
     setDraft(baseUrl);
     setEditing(false);
   };

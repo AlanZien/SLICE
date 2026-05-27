@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Endpoint, ParsedSpec } from '@shared/types';
 import { ApiHeader } from '@/components/api-header';
 import { BulkActions } from '@/components/bulk-actions';
@@ -43,7 +43,7 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
     [spec]
   );
 
-  const isVisible = (e: Endpoint) => matchesQuery(e, query);
+  const isVisible = useCallback((e: Endpoint) => matchesQuery(e, query), [query]);
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">

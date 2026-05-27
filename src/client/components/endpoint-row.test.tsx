@@ -29,10 +29,12 @@ describe('<EndpointRow>', () => {
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  it('calls onToggle when the row is clicked', async () => {
+  it('calls onToggle when the row label is clicked', async () => {
     const onToggle = vi.fn();
     render(<EndpointRow endpoint={EP} selected={false} onToggle={onToggle} />);
-    await userEvent.click(screen.getByRole('button', { name: /list things/i }));
+    // Clicking the row text bubbles to the wrapping <label>, which toggles
+    // the associated checkbox and fires its `onChange`.
+    await userEvent.click(screen.getByText('List things'));
     expect(onToggle).toHaveBeenCalledWith('GET /things');
   });
 
