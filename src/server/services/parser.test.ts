@@ -276,6 +276,137 @@ paths:
     }
   });
 
+  it('accepts a spec that uses bearer auth (MVP supported)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: bearer-ok, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ Bearer: [] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    Bearer: { type: http, scheme: bearer }
+`;
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.apiName).toBe('bearer-ok');
+  });
+
+  it('accepts a spec that uses apiKey auth (MVP supported)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: apikey-ok, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ ApiKey: [] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    ApiKey: { type: apiKey, in: header, name: X-API-Key }
+`;
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.apiName).toBe('apikey-ok');
+  });
+
+  it('rejects oauth2 with UNSUPPORTED_AUTH (12.a)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: oauth, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ OAuth2: [read] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://example.com/oauth
+          scopes: { read: "read" }
+`;
+    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
+      code: 'UNSUPPORTED_AUTH',
+    });
+  });
+
+  it('rejects openIdConnect with UNSUPPORTED_AUTH (12.a)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: oidc, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ OIDC: [] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    OIDC: { type: openIdConnect, openIdConnectUrl: https://example.com/.well-known/openid-configuration }
+`;
+    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
+      code: 'UNSUPPORTED_AUTH',
+    });
+  });
+
+  it('rejects http+basic with UNSUPPORTED_AUTH (12.a)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: basic, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ Basic: [] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    Basic: { type: http, scheme: basic }
+`;
+    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
+      code: 'UNSUPPORTED_AUTH',
+    });
+  });
+
+  it('rejects http+digest with UNSUPPORTED_AUTH (12.a)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: digest, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ Digest: [] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    Digest: { type: http, scheme: digest }
+`;
+    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
+      code: 'UNSUPPORTED_AUTH',
+    });
+  });
+
+  it('accepts a spec that declares oauth2 in components but no endpoint requires it', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: declared-not-used, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ Bearer: [] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    Bearer: { type: http, scheme: bearer }
+    LegacyOAuth2:
+      type: oauth2
+      flows: { implicit: { authorizationUrl: https://x, scopes: {} } }
+`;
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.apiName).toBe('declared-not-used');
+  });
+
   it('returns a ParseError instance (not a plain object)', async () => {
     try {
       await parseSpec('garbage', { sizeBytes: 7 });

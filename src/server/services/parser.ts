@@ -86,6 +86,15 @@ async function runPipeline(raw: string): Promise<ParsedSpec> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const validated = await SwaggerParser.validate(sanitised as any);
 
+  // Phase 04 task 12.a — reject specs that REQUIRE auth schemes we don't
+  // generate code for yet (MVP supports none / apiKey / http+bearer only).
+  // OAuth2, OpenID Connect, http+basic, http+digest are all explicitly
+  // declared post-MVP in the PRD. We only flag schemes that are actually
+  // referenced by an endpoint's `security` (or the root `security`) — a
+  // legacy scheme declared in `components.securitySchemes` but never used
+  // is fine.
+  assertSupportedAuth(validated);
+
   // R1.1.7 — at least one path is required to consider the spec usable.
   // `paths` may be missing for OpenAPI 3.1 specs that only define webhooks,
   // which we don't support (SLICE generates HTTP MCP tools, not webhook handlers).
@@ -172,6 +181,70 @@ function assertVersion(tree: unknown): void {
     );
   }
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function assertSupportedAuth(doc: any): void {
+  const schemes: Record<string, any> = doc?.components?.securitySchemes ?? {};
+  if (Object.keys(schemes).length === 0) return;
+
+  // Collect every scheme name that is actually required by an endpoint.
+  // OpenAPI's security model is an array of requirement objects, each whose
+  // keys reference scheme names. A root-level `security` applies as a
+  // default; operation-level `security` (including an empty array `[]`)
+  // overrides it.
+  const referenced = new Set<string>();
+  const rootSecurity: any[] = Array.isArray(doc?.security) ? doc.security : [];
+
+  for (const item of rootSecurity) {
+    if (item && typeof item === 'object') {
+      for (const name of Object.keys(item)) referenced.add(name);
+    }
+  }
+
+  const paths: Record<string, any> = doc?.paths ?? {};
+  const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'];
+  for (const pathItem of Object.values(paths)) {
+    if (!pathItem || typeof pathItem !== 'object') continue;
+    for (const method of HTTP_METHODS) {
+      const op = pathItem[method];
+      if (!op || typeof op !== 'object') continue;
+      const opSecurity = Array.isArray(op.security) ? op.security : null;
+      if (opSecurity === null) continue; // falls back to root, already counted
+      for (const item of opSecurity) {
+        if (item && typeof item === 'object') {
+          for (const name of Object.keys(item)) referenced.add(name);
+        }
+      }
+    }
+  }
+
+  for (const name of referenced) {
+    const scheme = schemes[name];
+    if (!scheme) continue;
+    const type = String(scheme.type ?? '').toLowerCase();
+    const httpScheme = String(scheme.scheme ?? '').toLowerCase();
+
+    if (type === 'oauth2') {
+      throw new ParseError(
+        'UNSUPPORTED_AUTH',
+        `Auth scheme "${name}" uses OAuth2, which SLICE does not generate MCP code for yet. Re-export your API description with API Key or Bearer auth, or wait for V1.5.`
+      );
+    }
+    if (type === 'openidconnect') {
+      throw new ParseError(
+        'UNSUPPORTED_AUTH',
+        `Auth scheme "${name}" uses OpenID Connect, which SLICE does not generate MCP code for yet.`
+      );
+    }
+    if (type === 'http' && (httpScheme === 'basic' || httpScheme === 'digest')) {
+      throw new ParseError(
+        'UNSUPPORTED_AUTH',
+        `Auth scheme "${name}" uses HTTP ${httpScheme}, which SLICE does not generate MCP code for yet. Use Bearer or API Key instead.`
+      );
+    }
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 function assertSize(tree: unknown): void {
   // Bounds the total amount of work the downstream pipeline will see. A spec

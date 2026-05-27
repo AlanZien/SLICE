@@ -130,3 +130,46 @@ Path `:id.json` dans une Postman Collection devient `/{id.json}` après conversi
 - Test de perf p95 (PLAN §35, §52, §53) non implémenté en phase 03 — reporté en phase 04 dans le même batch perf (cf. RETRO).
 - Recodage UNSUPPORTED_VERSION : Swagger 1.x renvoie maintenant UNSUPPORTED_FORMAT (415) au lieu de UNSUPPORTED_VERSION (400). Sémantiquement plus juste. Documenté dans docs/API.md.
 - Sécurité : `withTimeout` enveloppe maintenant TOUT le pipeline (conversion incluse) — fix critique trouvé par verifier audit, sinon DoS possible via Postman lourd.
+
+---
+
+## Phase 04 : Écran de sélection (2026-05-26)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 138/138 verts (24 fichiers) | ✓ | +47 tests vs phase 03 (useSelection, MethodBadge, EndpointRow, EndpointGroup, SearchBox, BulkActions, Sidebar, ApiHeader, SelectionScreen, keyboard, perf) |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict |
+| 3 | `useSelection(spec)` pré-coche tous les GET (R1.2.7) | ✓ | |
+| 4 | `bulkCheck(predicate, visible?)` respecte le filtre (R1.2.6) | ✓ | |
+| 5 | `bulkUncheck()` vide la sélection (R1.2.6) | ✓ | conforme SPEC |
+| 6 | `<MethodBadge>` couleurs distinctes par méthode | ✓ | |
+| 7 | `<EndpointRow>` toggle au click via `<label>` (HTML valide a11y) | ✓ | |
+| 8 | `<EndpointGroup>` accordéon, ouvert par défaut (R1.2.4), compteur X/Y | ✓ | |
+| 9 | `<SearchBox>` filtre case-insensitive label + path (R1.2.5) | ✓ | |
+| 10 | ⌘K / Ctrl+K focus la recherche | ✓ | preventDefault |
+| 11 | `<SelectionSidebar>` bouton "Continue" désactivé si count=0 (R1.2.9) | ✓ | |
+| 12 | `<ApiHeader>` édition inline baseURL (Enter commit, Esc cancel) | ✓ | |
+| 13 | Perf parser p95 < 2s sur shopify-50 (R1.1.9) | ✓ | |
+| 14 | Perf parser p95 < 3s sur aws-500 (500 endpoints) | ✓ | |
+| 15 | Perf filtre client p95 < 100ms sur 500 endpoints (R1.2.5) | ✓ | |
+
+### Tests métier à valider par l'utilisateur
+
+- [ ] Upload `fixtures/shopify-50.yaml` → écran 2 affiche 10 groupes, GET pré-cochés
+- [ ] Toggle quelques endpoints, voir compteur sidebar à jour
+- [ ] Recherche "products" → seuls les endpoints products visibles
+- [ ] Click "Check all writes" → POST/PUT/DELETE visibles cochés
+- [ ] Click "Uncheck all" → tout décoché, bouton Continue désactivé
+- [ ] ⌘K focus la searchbox depuis n'importe où sur la page
+- [ ] Click sur la baseURL → édition inline, Enter sauvegarde, Esc annule
+- [ ] Click "Continue" → écran 3 placeholder avec liste des ids sélectionnés
+- [ ] Upload `fixtures/aws-500.yaml` (500 endpoints, 100 groupes) → écran 2 reste fluide, recherche temps réel
+
+### Findings reportés (non bloquants)
+
+- Tâche 12 du PLAN (qualification light : `UNSUPPORTED_AUTH`, exclusion endpoints sans description, toggle deprecated) **non implémentée** — ajoutée au plan entre les sessions et non vue à temps. À traiter en phase 06 ou reporter V1.1 (BACKLOG.md déjà alimenté).
+- `baseUrl` édité dans `<ApiHeader>` n'est pas propagé à `App.tsx` — TODO inline dans `selection.tsx` pour phase 06.
+- Accent folding manquant (`matchesQuery`) — reporter V1.1 pour specs FR/ES/JP.
+- `selectedCount` recalculé sans memo dans `EndpointGroup` — watch perf si jank observé.

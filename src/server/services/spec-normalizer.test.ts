@@ -46,17 +46,20 @@ describe('normalizeSpec', () => {
     expect(result.groups[0].endpoints[0].label).toBe('Liste les commandes');
   });
 
-  it('generates a default label from method + path when both summary and description are missing (R1.2.2 priority 3)', () => {
+  it('generates a default label from method + path when summary and description are missing but operationId is set (R1.2.2 priority 3)', () => {
+    // 12.b — operationId must be present for the endpoint to survive the
+    // exclusion filter. We still want priority-3 label generation when only
+    // operationId is present (no summary, no description).
     const spec = {
       ...baseSpec,
       paths: {
         '/customers': {
-          get: { tags: ['Customers'], responses: { '200': {} } },
-          post: { tags: ['Customers'], responses: { '201': {} } },
-          delete: { tags: ['Customers'], responses: { '204': {} } },
+          get: { tags: ['Customers'], operationId: 'listCustomers', responses: { '200': {} } },
+          post: { tags: ['Customers'], operationId: 'createCustomer', responses: { '201': {} } },
+          delete: { tags: ['Customers'], operationId: 'deleteCustomer', responses: { '204': {} } },
         },
         '/customers/{id}': {
-          put: { tags: ['Customers'], responses: { '200': {} } },
+          put: { tags: ['Customers'], operationId: 'updateCustomer', responses: { '200': {} } },
         },
       },
     };
@@ -160,5 +163,51 @@ describe('normalizeSpec', () => {
   it('returns "Untitled API" when info.title is missing', () => {
     const spec = { openapi: '3.0.0', info: {}, paths: { '/x': { get: { responses: {} } } } };
     expect(normalizeSpec(spec).apiName).toBe('Untitled API');
+  });
+
+  it('excludes endpoints that have no operationId AND no summary AND no usable description (12.b)', () => {
+    const spec = {
+      ...baseSpec,
+      paths: {
+        '/keep': {
+          get: { tags: ['T'], summary: 'documented', responses: { '200': {} } },
+        },
+        '/drop-bare': {
+          get: { tags: ['T'], responses: { '200': {} } },
+        },
+        '/drop-empty-desc': {
+          get: { tags: ['T'], description: '   ', responses: { '200': {} } },
+        },
+        '/keep-via-opid': {
+          get: { tags: ['T'], operationId: 'listKept', responses: { '200': {} } },
+        },
+      },
+    };
+    const result = normalizeSpec(spec);
+    const labels = result.groups.flatMap((g) => g.endpoints).map((e) => e.path);
+    expect(labels).toContain('/keep');
+    expect(labels).toContain('/keep-via-opid');
+    expect(labels).not.toContain('/drop-bare');
+    expect(labels).not.toContain('/drop-empty-desc');
+    expect(result.excludedCount).toBe(2);
+  });
+
+  it('flags deprecated endpoints (12.c) without dropping them', () => {
+    const spec = {
+      ...baseSpec,
+      paths: {
+        '/legacy': {
+          get: { tags: ['T'], summary: 'old', deprecated: true, responses: { '200': {} } },
+        },
+        '/current': {
+          get: { tags: ['T'], summary: 'new', responses: { '200': {} } },
+        },
+      },
+    };
+    const endpoints = normalizeSpec(spec).groups.flatMap((g) => g.endpoints);
+    const legacy = endpoints.find((e) => e.path === '/legacy');
+    const current = endpoints.find((e) => e.path === '/current');
+    expect(legacy?.deprecated).toBe(true);
+    expect(current?.deprecated).toBeFalsy();
   });
 });

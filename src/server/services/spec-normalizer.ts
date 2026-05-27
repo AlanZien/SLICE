@@ -22,18 +22,37 @@ const SUPPORTED_METHODS: ReadonlyArray<string> = [
 ];
 
 export function normalizeSpec(doc: any): ParsedSpec {
+  const { groups, excludedCount } = collectGroups(doc);
   return {
     apiName: doc?.info?.title ?? 'Untitled API',
     apiVersion: doc?.info?.version ?? '0.0.0',
     baseUrl: doc?.servers?.[0]?.url ?? '',
     authType: 'none',
-    groups: collectGroups(doc),
+    groups,
+    excludedCount,
   };
 }
 
-function collectGroups(doc: any): EndpointGroup[] {
+/**
+ * Phase 04 task 12.b — an endpoint with no operationId, no summary, and no
+ * usable description (empty / whitespace) would generate a meaningless MCP
+ * tool name and an LLM-useless description. We drop it from the parsed
+ * spec and surface a counter so the user knows what happened.
+ *
+ * "Usable" = string, non-empty after trim. We don't try to assess content
+ * quality — that's V1.1.
+ */
+function hasUsableMetadata(op: any): boolean {
+  const opId = typeof op.operationId === 'string' && op.operationId.trim().length > 0;
+  const summary = typeof op.summary === 'string' && op.summary.trim().length > 0;
+  const description = typeof op.description === 'string' && op.description.trim().length > 0;
+  return opId || summary || description;
+}
+
+function collectGroups(doc: any): { groups: EndpointGroup[]; excludedCount: number } {
   const byTag = new Map<string, Endpoint[]>();
   const paths = doc?.paths ?? {};
+  let excludedCount = 0;
 
   for (const [pathKey, pathItem] of Object.entries<Record<string, any>>(paths)) {
     if (!pathItem || typeof pathItem !== 'object') continue;
@@ -42,6 +61,11 @@ function collectGroups(doc: any): EndpointGroup[] {
     for (const method of SUPPORTED_METHODS) {
       const op = pathItem[method];
       if (!op || typeof op !== 'object') continue;
+
+      if (!hasUsableMetadata(op)) {
+        excludedCount += 1;
+        continue;
+      }
 
       const upperMethod = method.toUpperCase() as HttpMethod;
       const tag: string = op.tags?.[0] ?? 'Other';
@@ -55,6 +79,7 @@ function collectGroups(doc: any): EndpointGroup[] {
         label,
         description: typeof op.description === 'string' ? op.description : undefined,
         params,
+        ...(op.deprecated === true ? { deprecated: true } : {}),
       };
 
       const bucket = byTag.get(tag) ?? [];
@@ -63,7 +88,10 @@ function collectGroups(doc: any): EndpointGroup[] {
     }
   }
 
-  return Array.from(byTag.entries()).map(([tag, endpoints]) => ({ tag, endpoints }));
+  return {
+    groups: Array.from(byTag.entries()).map(([tag, endpoints]) => ({ tag, endpoints })),
+    excludedCount,
+  };
 }
 
 function pickLabel(op: any, method: HttpMethod, pathKey: string): string {
