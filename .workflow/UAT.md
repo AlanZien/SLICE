@@ -213,3 +213,44 @@ charsPerToken = 5 (description.length / 5)
 ```
 
 Methodologie complète : [docs/token-estimator.md](../docs/token-estimator.md).
+
+---
+
+## Phase 04bis : Refonte écran 2 (layout 3-col Raycast) — 2026-05-28
+
+### Pourquoi
+
+Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquette JSX validée (`hifi-screen-2.jsx`) décrit un 3-col Raycast split. Refactor dédié pour aligner sur la maquette avant d'implémenter les écrans 3-4.
+
+### Tests techniques
+
+| # | Scenario | Résultat |
+|---|----------|----------|
+| 1 | `pnpm test` → 187/187 verts | ✓ |
+| 2 | `pnpm typecheck` → exit 0 | ✓ |
+| 3 | `useSelection` expose `focused` + `tagCounts` | ✓ |
+| 4 | `<TagRail>` rend "All" + tags avec compteurs picked/total | ✓ |
+| 5 | `<TagRail>` highlight via aria-current sur tag actif | ✓ |
+| 6 | `<EndpointPreview>` affiche méthode/path/label/desc/params/cost | ✓ |
+| 7 | `<EndpointPreview>` "Add to MCP" vs "Included in MCP" selon état | ✓ |
+| 8 | `<FilterChips>` All/Reads/Writes avec aria-pressed | ✓ |
+| 9 | `<StickyFooter>` désactive Continue si count=0, raccourci ↵ visible | ✓ |
+| 10 | `<EndpointRow>` clic body = focus, clic checkbox = toggle (séparés) | ✓ |
+| 11 | `<SelectionScreen>` 3-col rendu, navigation tag, "All" tous endpoints | ✓ |
+| 12 | Cleanup : 4 composants obsolètes supprimés (endpoint-group, selection-sidebar, bulk-actions, economy-counter) | ✓ |
+
+### Tests métier à valider
+
+- [ ] Upload `fixtures/shopify-50.yaml` → layout 3-col affiché : rail gauche avec 10 tags + bignum, liste centrale du premier tag, preview du premier endpoint à droite
+- [ ] Click "Orders" dans le rail → liste change, preview suit le premier endpoint d'Orders
+- [ ] Click "All" → tous les endpoints visibles
+- [ ] Click sur une row → preview affiche cet endpoint
+- [ ] Click sur la checkbox d'une row → toggle, preview ne change pas
+- [ ] FilterChips Reads → seuls les GET visibles
+- [ ] FilterChips Writes → seuls les POST/PUT/DELETE visibles
+- [ ] Search "products" dans le tag Products → filtre dans le tag
+- [ ] "↓ reads" bulk → tous les GET du tag actif cochés
+- [ ] Footer affiche "X endpoints · −Y% context" en live
+- [ ] Continue désactivé si count=0, sinon enabled avec raccourci ↵
+- [ ] Click Back → retour écran 1 (reset)
+- [ ] Toggle "Show deprecated" reste fonctionnel

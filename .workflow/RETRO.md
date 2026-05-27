@@ -64,6 +64,14 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Sécurité]** `js-tiktoken` épinglé en exact version (`1.0.21`, plus de `^`) pour éviter qu'un bump mineur ne change le mapping `gpt-4` → encoding et fasse dévier silencieusement le test de calibration. À revisiter explicitement à chaque bump volontaire.
 - **[UX]** `EconomyCounter` clampe NaN à 0% défensivement. `computeEconomy` ne produit jamais NaN (garde `total === 0 → 100`), mais le composant est public et doit honorer son contrat.
 
+### Après phase 04bis — Refonte écran sélection 3-col (2026-05-28)
+
+- **[Process / leçon]** **La maquette JSX (`*.workflow/visuals/*.jsx`) est la source de vérité visuelle, pas le wireframe ASCII du SPEC.md.** Phase 04 a livré un layout 2-col en suivant le wireframe ASCII alors que la maquette validée décrivait un 3-col Raycast split. Coût : phase 04bis dédiée au refactor. À enchaîner sur écrans 3-4 : **toujours ouvrir et lire la maquette JSX correspondante avant d'implémenter** (`hifi-screen-3.jsx`, `hifi-screen-4.jsx` pour les prochaines phases).
+- **[Architecture]** `useSelection` expose maintenant `focused` (état UI distinct de `selected`) + `tagCounts` mémoisé. Le hook reste source unique de vérité pour la sélection — pas de duplication d'état dans `SelectionScreen`. Bon pattern à reproduire si on ajoute des hooks similaires (`useConfig`, `useGeneration` en phase 06+).
+- **[Qualité]** 4 composants supprimés en cleanup (`endpoint-group`, `selection-sidebar`, `bulk-actions`, `economy-counter`). Eslint et typecheck ont remonté immédiatement les imports cassés — protection structurelle correcte. À garder en tête : ne pas laisser de composants "exemple" en place s'ils ne sont plus utilisés (deadcode = drift).
+- **[Tests]** Le test d'intégration `selection.test.tsx` a dû passer de `getByText` à `getAllByText` quand le preview pane est apparu — un même endpoint apparaît maintenant dans la liste ET dans le pane. Tests UI doivent tenir compte des écrans multi-vues. Pattern à appliquer : préférer `within(container).getByText(...)` quand on veut scoper.
+- **[A11y]** `aria-label="Tag: ${name}"` sur les RailItem pour éviter la collision avec le FilterChips "All". Convention à étendre : préfixer les aria-labels par leur contexte UI quand on a plusieurs zones avec des labels similaires.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.
