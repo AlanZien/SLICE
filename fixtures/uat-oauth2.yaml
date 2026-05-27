@@ -1,0 +1,55 @@
+# UAT fixture for task 12.a — OAuth2 rejection.
+#
+# Expected behaviour:
+#   - Upload via the dropzone → HTTP 400
+#   - Toast / error message: "Auth scheme \"OAuth2\" uses OAuth2, which
+#     SLICE does not generate MCP code for yet. Re-export your API
+#     description with API Key or Bearer auth, or wait for V1.5."
+#   - The screen 2 (selection) is NOT reached.
+#
+# Variants to test manually (edit this file or use a sibling):
+#   - Replace `type: oauth2` with `type: openIdConnect` + `openIdConnectUrl: ...`
+#     → same UNSUPPORTED_AUTH, message mentions OpenID Connect
+#   - Replace with `type: http` + `scheme: basic` → UNSUPPORTED_AUTH (basic)
+#   - Replace with `type: http` + `scheme: digest` → UNSUPPORTED_AUTH (digest)
+#   - Replace with `type: http` + `scheme: bearer` → SUCCESS (Bearer is supported)
+#   - Replace with `type: apiKey` + `name: X-API-Key` + `in: header` → SUCCESS
+
+openapi: "3.0.3"
+info:
+  title: OAuth2 Sample
+  version: "1.0.0"
+  description: Sample API protected by OAuth2 — SLICE rejects this at upload time.
+servers:
+  - url: https://oauth.example.com/api
+security:
+  - OAuth2: [read, write]
+paths:
+  /me:
+    get:
+      tags: [User]
+      summary: Get current user
+      responses:
+        "200": { description: ok }
+  /things:
+    get:
+      tags: [Things]
+      summary: List things
+      responses:
+        "200": { description: ok }
+    post:
+      tags: [Things]
+      summary: Create a thing
+      responses:
+        "201": { description: created }
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://oauth.example.com/authorize
+          tokenUrl: https://oauth.example.com/token
+          scopes:
+            read: Read access
+            write: Write access

@@ -1,0 +1,51 @@
+# UAT fixture for task 12.c — deprecated endpoints hidden by default.
+#
+# Expected behaviour:
+#   - Upload via the dropzone → screen 2 displays the API
+#   - 3 endpoints visible by default (the non-deprecated ones)
+#   - Sidebar shows checkbox "Show deprecated (2)"
+#   - Toggle ON → 2 additional endpoints appear (Legacy products, Legacy orders)
+#     in their respective groups, faded/identical visually for now
+#   - Toggle OFF → the deprecated endpoints disappear again
+#   - "Check all reads" while toggle OFF must NOT pre-select the deprecated GETs
+#     (matchesQuery + isVisible filter respects the toggle)
+
+openapi: "3.0.3"
+info:
+  title: Deprecated Sample
+  version: "2024-04"
+  description: Sample API mixing current and deprecated endpoints — exercises the deprecated toggle.
+servers:
+  - url: https://api.example.com
+paths:
+  /products:
+    get:
+      tags: [Products]
+      summary: List products
+      responses:
+        "200": { description: ok }
+    post:
+      tags: [Products]
+      summary: Create a product
+      responses:
+        "201": { description: created }
+  /products/legacy:
+    get:
+      tags: [Products]
+      summary: Legacy products (replaced by GET /products)
+      deprecated: true
+      responses:
+        "200": { description: ok }
+  /orders:
+    get:
+      tags: [Orders]
+      summary: List orders
+      responses:
+        "200": { description: ok }
+  /orders/legacy:
+    get:
+      tags: [Orders]
+      summary: Legacy orders (replaced by GET /orders)
+      deprecated: true
+      responses:
+        "200": { description: ok }

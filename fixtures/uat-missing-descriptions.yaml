@@ -1,0 +1,41 @@
+# UAT fixture for task 12.b — endpoints without metadata are excluded.
+#
+# Expected behaviour:
+#   - Upload via the dropzone → screen 2 displays the API
+#   - Only 2 endpoints visible: GET /good (has summary) and POST /also-good
+#     (has operationId, label generated as "Create a also-good")
+#   - Sidebar shows: "2 endpoints excluded — missing description"
+#   - The 2 silent endpoints (/bare, /whitespace-only) are gone from the list
+#   - Selection counter starts at 1 / 2 (only GET pre-selected per R1.2.7)
+
+openapi: "3.0.3"
+info:
+  title: Missing Descriptions Sample
+  version: "1.0.0"
+  description: Sample API where some endpoints have no summary, description or operationId — they should be dropped silently with a counter.
+servers:
+  - url: https://api.example.com
+paths:
+  /good:
+    get:
+      tags: [Documented]
+      summary: List good things
+      responses:
+        "200": { description: ok }
+  /also-good:
+    post:
+      tags: [Documented]
+      operationId: createAlsoGood
+      responses:
+        "201": { description: created }
+  /bare:
+    get:
+      tags: [Silent]
+      responses:
+        "200": { description: ok }
+  /whitespace-only:
+    get:
+      tags: [Silent]
+      description: "   "
+      responses:
+        "200": { description: ok }
