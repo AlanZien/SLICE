@@ -111,6 +111,30 @@ describe('useSelection', () => {
     expect(result.current.selectedIds()).toEqual([]);
   });
 
+  it('exposes focused = null by default, setFocused updates it', () => {
+    const { result } = renderHook(() => useSelection(SPEC));
+    expect(result.current.focused).toBeNull();
+    act(() => result.current.setFocused('POST /things'));
+    expect(result.current.focused).toBe('POST /things');
+    act(() => result.current.setFocused(null));
+    expect(result.current.focused).toBeNull();
+  });
+
+  it('exposes tagCounts with picked + total per tag', () => {
+    const { result } = renderHook(() => useSelection(SPEC));
+    // Initial: 2 GETs pre-selected in "Things" tag (4 endpoints), nothing in "Other".
+    const things = result.current.tagCounts.get('Things');
+    const other = result.current.tagCounts.get('Other');
+    expect(things).toEqual({ picked: 2, total: 4 });
+    expect(other).toEqual({ picked: 0, total: 1 });
+  });
+
+  it('tagCounts updates when selection changes', () => {
+    const { result } = renderHook(() => useSelection(SPEC));
+    act(() => result.current.toggle('POST /things'));
+    expect(result.current.tagCounts.get('Things')?.picked).toBe(3);
+  });
+
   it('selectedIds() returns a fresh array on every call (no shared mutable state leakage)', () => {
     const { result } = renderHook(() => useSelection(SPEC));
     const a = result.current.selectedIds();
