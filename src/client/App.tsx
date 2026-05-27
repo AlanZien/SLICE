@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ParsedSpec } from '@shared/types';
 import { Topbar } from './components/topbar';
 import { UploadScreen } from './screens/upload';
+import { SelectionScreen } from './screens/selection';
 import { useTheme } from './hooks/use-theme';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
@@ -24,17 +25,24 @@ function App() {
   const [screen, setScreen] = useState<ScreenIndex>(1);
   const [apiSlug, setApiSlug] = useState<string | null>(null);
   const [parsedSpec, setParsedSpec] = useState<ParsedSpec | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const handleReset = () => {
     setScreen(1);
     setApiSlug(null);
     setParsedSpec(null);
+    setSelectedIds([]);
   };
 
   const handleParsed = (spec: ParsedSpec) => {
     setParsedSpec(spec);
     setApiSlug(slugify(spec.apiName));
     setScreen(2);
+  };
+
+  const handleSelectionDone = (ids: string[]) => {
+    setSelectedIds(ids);
+    setScreen(3);
   };
 
   return (
@@ -51,20 +59,23 @@ function App() {
         {screen === 1 && <UploadScreen onParsed={handleParsed} />}
 
         {screen === 2 && parsedSpec && (
+          <SelectionScreen spec={parsedSpec} onContinue={handleSelectionDone} />
+        )}
+
+        {screen === 3 && parsedSpec && (
           <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 px-6 py-16 text-center">
-            <p className="eyebrow">Step 2 — Select</p>
+            <p className="eyebrow">Step 3 — Configure</p>
             <h2 className="h2">{parsedSpec.apiName}</h2>
             <p className="font-mono text-sm text-muted-foreground">
-              {parsedSpec.groups.reduce((acc, g) => acc + g.endpoints.length, 0)} endpoints,{' '}
-              {parsedSpec.groups.length} groups — selection screen coming in phase 04.
+              {selectedIds.length} endpoints selected — configuration screen coming in phase 06.
             </p>
             {import.meta.env.DEV && (
               <details className="w-full text-left">
                 <summary className="font-mono cursor-pointer text-xs text-muted-foreground">
-                  Debug: ParsedSpec (dev only)
+                  Debug: selected ids (dev only)
                 </summary>
                 <pre className="font-mono mt-2 max-h-96 overflow-auto rounded bg-card/40 p-3 text-[10px]">
-                  {JSON.stringify(parsedSpec, null, 2)}
+                  {JSON.stringify(selectedIds, null, 2)}
                 </pre>
               </details>
             )}
