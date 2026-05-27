@@ -1,0 +1,96 @@
+openapi: "3.0.3"
+info:
+  title: Custom Sample
+  version: "1.0.0"
+  description: Synthetic 10-endpoint calibration fixture.
+servers:
+  - url: https://internal.example.com
+paths:
+  /items/0:
+    get:
+      tags: [Items]
+      summary: "List items #0"
+      description: "Internal API for tooling. Lorem ipsum dolor sit amet consectetur adipiscing elit"
+      responses: { "200": { description: ok } }
+  /users/1:
+    post:
+      tags: [Users]
+      summary: "Create users #1"
+      description: "Internal API for tooling. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /items/2:
+    put:
+      tags: [Items]
+      summary: "Update items #2"
+      description: "Internal API for tooling. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /users/3:
+    delete:
+      tags: [Users]
+      summary: "Delete users #3"
+      description: "Internal API for tooling. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /items/4:
+    get:
+      tags: [Items]
+      summary: "Get items #4"
+      description: "Internal API for tooling. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /users/5:
+    get:
+      tags: [Users]
+      summary: "List users #5"
+      description: "Internal API for tooling. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+  /items/6:
+    post:
+      tags: [Items]
+      summary: "Create items #6"
+      description: "Internal API for tooling. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /users/7:
+    put:
+      tags: [Users]
+      summary: "Update users #7"
+      description: "Internal API for tooling. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /items/8:
+    delete:
+      tags: [Items]
+      summary: "Delete items #8"
+      description: "Internal API for tooling. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /users/9:
+    get:
+      tags: [Users]
+      summary: "Get users #9"
+      description: "Internal API for tooling. elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }

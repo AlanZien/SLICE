@@ -11,6 +11,25 @@ A consulter en fin de DELIVER pour proposer la prochaine feature.
 
 - [ ] {{Idee moins prioritaire mais prevue}}
 
+## Upload par URL (V1.1) — issu de feedback UX 2026-05-27
+
+Actuellement seul le drag&drop / file picker est disponible sur l'écran 1. Beaucoup d'APIs publient leur OpenAPI à une URL bien connue (`https://api.stripe.com/openapi.json`, etc.). Permettre le paste d'URL réduit la friction et colle au positionnement "3 clics".
+
+**Protections SSRF obligatoires** (sinon vulnérabilité critique) :
+- [ ] Schémas autorisés : `https://` uniquement (bloquer `file://`, `gopher://`, `ftp://`, `http://`)
+- [ ] Bloquer les IPs privées (RFC 1918, loopback, link-local) après résolution DNS — pas seulement sur le hostname (anti DNS rebinding)
+- [ ] Timeout strict (5s)
+- [ ] Limite de taille 10 Mo (vérifier `Content-Length` + recheck en streaming)
+- [ ] Max 3 redirects, chaque hop re-vérifié anti-SSRF
+- [ ] User-Agent identifiable : `SLICE/1.0 (+https://slice.dev)`
+- [ ] Codes d'erreur dédiés : `URL_INVALID`, `URL_FETCH_FAILED`, `URL_PRIVATE_IP_BLOCKED`, `URL_TIMEOUT`
+
+**UI** :
+- [ ] Toggle "Coller une URL / Glisser un fichier" sur l'écran 1
+- [ ] Validation côté client : URL `https://` valide avant submit
+
+**Lib recommandée** : `undici` avec custom dispatcher, ou wrapper SSRF-safe écrit maison. NE PAS utiliser `axios` brut.
+
 ## MCP multi-API (V1.5+) — issu de réflexion produit 2026-05-27
 
 Aujourd'hui SLICE génère 1 MCP depuis 1 OpenAPI. Postman permet de piocher des endpoints depuis plusieurs APIs publiques et de les bundler dans un seul MCP. Intérêt : workflows agents cross-API (ex : "ops e-commerce" = Stripe + Shopify + Slack), économie de friction de config Claude Desktop, curation par cas d'usage métier plutôt que par éditeur.

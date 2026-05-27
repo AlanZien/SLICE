@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { Endpoint, ParsedSpec } from '@shared/types';
+import { computeEconomy } from '@shared/token-estimator';
 import { ApiHeader } from '@/components/api-header';
 import { BulkActions } from '@/components/bulk-actions';
 import { EndpointGroup } from '@/components/endpoint-group';
@@ -60,6 +61,15 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
     [spec, showDeprecated]
   );
 
+  // Recompute the savings counter on every selection change. The estimator
+  // is pure, scans the spec once — cheap even on Stripe-200 (~3k tokens).
+  // Depending on `selection.selected` (the Set itself, stable across renders
+  // that didn't mutate it) catches both size changes AND equal-size swaps.
+  const savedPercent = useMemo(
+    () => computeEconomy(spec, Array.from(selection.selected)).percent,
+    [spec, selection.selected]
+  );
+
   const isVisible = useCallback(
     (e: Endpoint) => {
       if (!showDeprecated && e.deprecated) return false;
@@ -111,6 +121,7 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
         <SelectionSidebar
           selectedCount={selection.count}
           totalCount={totalCount}
+          savedPercent={savedPercent}
           excludedCount={spec.excludedCount}
           deprecatedCount={deprecatedCount}
           showDeprecated={showDeprecated}

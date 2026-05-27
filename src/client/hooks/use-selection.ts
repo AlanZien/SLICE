@@ -4,6 +4,14 @@ import type { Endpoint, ParsedSpec } from '@shared/types';
 export interface UseSelectionApi {
   /** Number of currently selected endpoints. */
   count: number;
+  /**
+   * Stable reference to the current selection set. The same `Set` instance is
+   * preserved across renders that didn't mutate the selection, so it can be
+   * used as a memoisation dependency without false invalidations and — more
+   * importantly — without missing a swap-at-equal-size mutation that `count`
+   * alone would not catch.
+   */
+  selected: ReadonlySet<string>;
   /** Whether `id` is currently selected. */
   isSelected: (id: string) => boolean;
   /** Add or remove an endpoint from the selection. */
@@ -77,6 +85,7 @@ export function useSelection(spec: ParsedSpec): UseSelectionApi {
 
   return {
     count: selected.size,
+    selected,
     isSelected,
     toggle,
     bulkCheck,
