@@ -4,20 +4,29 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**Phase 04 — Écran de sélection (MERGÉE, 2026-05-27)** — PR #4 mergée dans main. Inclut la qualification light de la spec (refus OAuth2/Basic/Digest, exclusion endpoints non documentés, exclusion deprecated par défaut — tâche 12 a/b/c décidée 2026-05-27).
+**Phase 04bis — Refonte écran 2 en 3-col Raycast (MERGÉE, 2026-05-28)** — PR #6 mergée. Layout aligné sur la maquette JSX `hifi-screen-2.jsx` : rail tags gauche + liste centrale + panneau aperçu droit + sticky footer.
 
-**Phases mergées** : 01 (squelette, PR #1), 02 (upload & parsing, PR #2), 03 (conversion formats, PR #3), 04 (écran de sélection + qualification light, PR #4)
-**Prochaine phase** : **05 — Calibrage tokens + compteur d'économie de contexte** (différenciateur produit central, cf. `.workflow/POSITIONING.md`)
-**Branche courante** : `feature/04-selection-screen` (local en retard sur main après merge)
+**Phases mergées** : 01 (PR #1), 02 (PR #2), 03 (PR #3), 04 (PR #4), 05 token-counter (PR #5), **04bis 3-col refactor (PR #6)**
+**Prochaine phase** : **06 — Écran de configuration** (form nom MCP + URL base + auth + 3 cards mode + options avancées + bouton Générer)
+**Branche courante** : `main` (local synchro avec origin/main)
+
+**État technique** :
+- 187 tests verts, typecheck clean
+- Calibration tokens R1.2.8 sous ±15% (worst 2.6%)
+- Filtres qualification spec actifs : UNSUPPORTED_AUTH (oauth2/basic/digest), exclusion endpoints sans description, deprecated cachés par défaut
 
 **Reprise** :
-1. `git checkout main && git pull` pour resynchroniser
-2. Créer `feature/05-token-counter` depuis main
-3. Lire `.workflow/phases/05-token-counter/PLAN.md` (à vérifier qu'il existe, sinon REFINE)
-4. TDD strict
+1. Vérifier que `main` est à jour : `git pull --ff-only`
+2. Lire la **maquette JSX** d'abord : `.workflow/visuals/slice-design-system/project/hifi-screen-3.jsx` (leçon phase 04bis : la maquette JSX est la source de vérité visuelle, pas le wireframe ASCII du SPEC.md)
+3. Lire le PLAN : `.workflow/phases/06-config-screen/PLAN.md` — possiblement à raffiner si écart entre PLAN et maquette
+4. Créer `feature/06-config-screen` depuis main
+5. TDD strict, alignement maquette pendant l'implémentation
 
-Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 05 → 13 restantes).
-Positionnement marché : `.workflow/POSITIONING.md` (recadrage 2026-05-27, Speakeasy = concurrent #1, différenciateur = UX non-tech).
+**Optimisations en attente** : l'utilisateur a mentionné "quelques optimisations à prévoir" — à clarifier à la reprise (audit perf / UX / a11y / code quality à scope).
+
+Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 06 → 13 restantes).
+Positionnement marché : `.workflow/POSITIONING.md` (Speakeasy = concurrent #1, différenciateur = UX non-tech).
+Détails sessions précédentes : `.workflow/sessions/`.
 
 ## Stack
 
