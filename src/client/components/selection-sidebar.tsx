@@ -6,6 +6,14 @@ export interface SelectionSidebarProps {
   onContinue: () => void;
   /** Optional context-saved percentage (phase 05 will wire it). */
   savedPercent?: number | null;
+  /** Endpoints dropped by the parser for missing metadata (12.b). */
+  excludedCount?: number;
+  /** Whether deprecated endpoints are currently visible (12.c). */
+  showDeprecated?: boolean;
+  /** Toggle deprecated visibility (12.c). Omit to hide the toggle. */
+  onToggleDeprecated?: () => void;
+  /** How many deprecated endpoints exist (drives the toggle visibility). */
+  deprecatedCount?: number;
   className?: string;
 }
 
@@ -14,6 +22,10 @@ export function SelectionSidebar({
   totalCount,
   onContinue,
   savedPercent = null,
+  excludedCount = 0,
+  showDeprecated = false,
+  onToggleDeprecated,
+  deprecatedCount = 0,
   className,
 }: SelectionSidebarProps) {
   const disabled = selectedCount === 0;
@@ -29,6 +41,24 @@ export function SelectionSidebar({
       <p className="font-mono text-xs text-muted-foreground">
         {`${selectedCount} / ${totalCount} endpoints`}
       </p>
+
+      {excludedCount > 0 && (
+        <p className="font-mono text-[10px] text-muted-foreground">
+          {excludedCount} endpoint{excludedCount > 1 ? 's' : ''} excluded — missing description
+        </p>
+      )}
+
+      {deprecatedCount > 0 && onToggleDeprecated && (
+        <label className="font-mono flex cursor-pointer items-center gap-2 text-[10px] text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={showDeprecated}
+            onChange={onToggleDeprecated}
+            className="h-3 w-3 accent-primary"
+          />
+          Show deprecated ({deprecatedCount})
+        </label>
+      )}
 
       <div aria-label="context saved" className="rounded-md border border-border/60 bg-background/40 p-3 text-center">
         <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">

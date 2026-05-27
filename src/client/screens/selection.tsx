@@ -28,25 +28,45 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
   // screen sees the user's override. Today the edit lives only inside this
   // component and is dropped on the floor when leaving screen 2.
   const [baseUrl, setBaseUrl] = useState(spec.baseUrl);
+  // 12.c — deprecated endpoints hidden by default.
+  const [showDeprecated, setShowDeprecated] = useState(false);
 
-  // Pre-compute the filtered, group-by-group view. Memoised on (spec, query)
-  // so typing only rebuilds when the query actually changes. Empty groups
-  // are dropped so the user doesn't see headers with no rows.
+  const deprecatedCount = useMemo(
+    () => spec.groups.reduce((acc, g) => acc + g.endpoints.filter((e) => e.deprecated).length, 0),
+    [spec]
+  );
+
+  // Pre-compute the filtered, group-by-group view. Memoised on
+  // (spec, query, showDeprecated) so typing only rebuilds when needed.
+  // Empty groups are dropped so the user doesn't see headers with no rows.
   const visibleGroups = useMemo(() => {
     return spec.groups
       .map((g) => ({
         ...g,
-        endpoints: g.endpoints.filter((e) => matchesQuery(e, query)),
+        endpoints: g.endpoints.filter((e) => {
+          if (!showDeprecated && e.deprecated) return false;
+          return matchesQuery(e, query);
+        }),
       }))
       .filter((g) => g.endpoints.length > 0);
-  }, [spec, query]);
+  }, [spec, query, showDeprecated]);
 
   const totalCount = useMemo(
-    () => spec.groups.reduce((acc, g) => acc + g.endpoints.length, 0),
-    [spec]
+    () =>
+      spec.groups.reduce(
+        (acc, g) => acc + g.endpoints.filter((e) => showDeprecated || !e.deprecated).length,
+        0
+      ),
+    [spec, showDeprecated]
   );
 
-  const isVisible = useCallback((e: Endpoint) => matchesQuery(e, query), [query]);
+  const isVisible = useCallback(
+    (e: Endpoint) => {
+      if (!showDeprecated && e.deprecated) return false;
+      return matchesQuery(e, query);
+    },
+    [query, showDeprecated]
+  );
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-10">
@@ -91,6 +111,10 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
         <SelectionSidebar
           selectedCount={selection.count}
           totalCount={totalCount}
+          excludedCount={spec.excludedCount}
+          deprecatedCount={deprecatedCount}
+          showDeprecated={showDeprecated}
+          onToggleDeprecated={() => setShowDeprecated((s) => !s)}
           onContinue={() => onContinue(selection.selectedIds())}
         />
       </div>

@@ -66,4 +66,32 @@ describe('<SelectionScreen>', () => {
       expect.arrayContaining(['POST /products', 'GET /products', 'GET /orders'])
     );
   });
+
+  it('hides deprecated endpoints by default and reveals them via the sidebar toggle (12.c)', async () => {
+    const specWithDeprecated: ParsedSpec = {
+      ...SPEC,
+      groups: [
+        {
+          tag: 'Products',
+          endpoints: [
+            { id: 'GET /products', method: 'GET', path: '/products', label: 'List products', params: [] },
+            { id: 'GET /products/legacy', method: 'GET', path: '/products/legacy', label: 'Legacy products', params: [], deprecated: true },
+          ],
+        },
+      ],
+    };
+    render(<SelectionScreen spec={specWithDeprecated} onContinue={() => {}} />);
+    // Deprecated endpoint is hidden by default.
+    expect(screen.queryByText('Legacy products')).not.toBeInTheDocument();
+    expect(screen.getByText('List products')).toBeInTheDocument();
+    // The toggle is in the sidebar with a "(1)" counter.
+    await userEvent.click(screen.getByLabelText(/show deprecated/i));
+    expect(screen.getByText('Legacy products')).toBeInTheDocument();
+  });
+
+  it('shows the excluded-endpoints counter when normaliser reports one (12.b)', () => {
+    const specWithExcluded: ParsedSpec = { ...SPEC, excludedCount: 4 };
+    render(<SelectionScreen spec={specWithExcluded} onContinue={() => {}} />);
+    expect(screen.getByText(/4 endpoints excluded/i)).toBeInTheDocument();
+  });
 });

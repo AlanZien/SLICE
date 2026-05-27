@@ -37,6 +37,8 @@ export interface Endpoint {
   description?: string;
   /** Flattened parameter list. Phase 02 covers path + query + header + cookie. */
   params: EndpointParam[];
+  /** Marks the endpoint as deprecated per OpenAPI `deprecated: true` — phase 04 task 12.c. */
+  deprecated?: boolean;
   /** Estimated tokens for selection counter (phase 05 will calibrate). */
   tokens?: number;
 }
@@ -66,6 +68,13 @@ export interface ParsedSpec {
   authType: UpstreamAuthType;
   authHeader?: string;
   groups: EndpointGroup[];
+  /**
+   * Number of endpoints dropped during normalisation because they had no
+   * usable label source (no operationId, no summary, no description) — phase
+   * 04 task 12.b. Surfaced in the UI so users know the spec is missing
+   * descriptions, not that SLICE silently lost endpoints.
+   */
+  excludedCount?: number;
   /** Optional default config block — populated in phase 06. */
   defaultConfig?: DefaultConfig;
 }
