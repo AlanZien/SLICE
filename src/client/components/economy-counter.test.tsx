@@ -23,6 +23,11 @@ describe('<EconomyCounter>', () => {
     expect(screen.getByText('100%')).toBeInTheDocument();
   });
 
+  it('renders 0% when given NaN (defensive)', () => {
+    render(<EconomyCounter percent={NaN} />);
+    expect(screen.getByText('0%')).toBeInTheDocument();
+  });
+
   it('shows a caption explaining the comparison baseline', () => {
     render(<EconomyCounter percent={42} />);
     expect(screen.getByText(/vs\.?\s*exposing the full spec/i)).toBeInTheDocument();

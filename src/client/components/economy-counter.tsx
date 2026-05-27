@@ -7,6 +7,10 @@ export interface EconomyCounterProps {
 }
 
 function clamp(value: number, min: number, max: number): number {
+  // NaN propagates silently through every comparison and would render
+  // "NaN%" on screen. Treat it as the floor so the UI stays meaningful even
+  // if a future caller forgets the guard upstream.
+  if (Number.isNaN(value)) return min;
   if (value < min) return min;
   if (value > max) return max;
   return value;

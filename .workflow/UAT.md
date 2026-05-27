@@ -173,3 +173,43 @@ Path `:id.json` dans une Postman Collection devient `/{id.json}` après conversi
 - `baseUrl` édité dans `<ApiHeader>` n'est pas propagé à `App.tsx` — TODO inline dans `selection.tsx` pour phase 06.
 - Accent folding manquant (`matchesQuery`) — reporter V1.1 pour specs FR/ES/JP.
 - `selectedCount` recalculé sans memo dans `EndpointGroup` — watch perf si jank observé.
+
+---
+
+## Phase 05 : Compteur tokens (2026-05-26)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 173/173 verts (27 fichiers) | ✓ | +23 tests vs phase 04 |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | |
+| 3 | Calibration `pnpm tsx scripts/calibrate-tokens.ts` → PASS | ✓ | worst dev 2.6% sur 4 fixtures |
+| 4 | Tests calibration CI (`token-estimator.calibration.test.ts`) → 4 fixtures sous ±15% | ✓ | |
+| 5 | `estimateEndpointTokens(minimal)` = 25 (base seule) | ✓ | |
+| 6 | `computeEconomy(spec, [])` = 100% | ✓ | |
+| 7 | `computeEconomy(spec, all)` = 0% | ✓ | |
+| 8 | `computeEconomy(emptySpec, [])` = 100% (degenerate) | ✓ | |
+| 9 | `<EconomyCounter percent=-5>` clampe à 0% | ✓ | |
+| 10 | `<EconomyCounter percent=150>` clampe à 100% | ✓ | |
+| 11 | `<EconomyCounter percent=NaN>` clampe à 0% (defensive) | ✓ | |
+| 12 | `js-tiktoken` épinglé en exact version `1.0.21` | ✓ | |
+
+### Tests métier à valider
+
+- [ ] Upload `fixtures/shopify-50.yaml` → écran 2 : counter affiche un % entre 30-70% (50 endpoints, ~25 GETs pré-cochés = ~50% économisé)
+- [ ] Click "Check all writes" → le compteur baisse (plus d'endpoints sélectionnés = moins économisé)
+- [ ] Click "Uncheck all" → counter monte à 100%
+- [ ] Toggle individuel : counter change en live à chaque click
+- [ ] Continue désactivé tant que counter = 100% (R1.2.9)
+- [ ] Upload `fixtures/aws-500.yaml` → counter cohérent + recherche reste fluide
+- [ ] Upload une vraie spec publique (Stripe ou GitHub réelle) → counter dans la même fourchette que les fixtures synthétiques
+
+### Coefficients de la formule (frozen)
+```
+base = 25 tokens / endpoint
+perParam = 20 tokens / parameter
+charsPerToken = 5 (description.length / 5)
+```
+
+Methodologie complète : [docs/token-estimator.md](../docs/token-estimator.md).

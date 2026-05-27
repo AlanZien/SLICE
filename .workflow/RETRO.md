@@ -56,6 +56,14 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[UX i18n]** `matchesQuery` dans `screens/selection.tsx` ne fait pas d'accent-folding : taper "cafe" ne matche pas "café", "recuperer" ne matche pas "récupérer". Edge case pour specs FR/ES/DE/JP. Fix simple à l'avenir : `s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()`. Reporter en V1.1.
 - **[Perf]** `EndpointGroup.selectedCount` recalcule via `.filter().length` à chaque render. Sur Arii (565 endpoints × 94 groupes), un toggle déclenche ~30k ops. Acceptable aujourd'hui mais memoiser via `useMemo` si jank observé.
 
+### Après phase 05 — Compteur tokens (2026-05-26)
+
+- **[Cohérence]** Test de calibration `token-estimator.calibration.test.ts` placé dans `src/server/services/` (à cause des imports `node:fs` + `parseSpec`). Sémantiquement c'est un test de `src/shared/token-estimator.ts`. Acceptable, mais à reconsidérer si on ajoute d'autres tests cross-package — peut-être créer un `tests/integration/` dédié.
+- **[Robustesse]** `useSelection` expose désormais `selected: ReadonlySet<string>` (référence stable) en plus de `count`. Migration progressive : `SelectionScreen` l'utilise déjà pour `savedPercent`. Si d'autres consommateurs s'ajoutent, préférer ce point d'entrée stable plutôt que `selectedIds()` qui retourne un fresh array.
+- **[Tests]** Les fixtures de calibration ont été générées synthétiquement à partir de templates (lorem-ipsum + structure inspirée de Stripe/GitHub). Réalistes pour les volumes/structure mais pas pour le contenu littéral. Si la formule dévie sur une vraie spec en prod (au-delà des 15%), il faudra refaire la calibration avec un téléchargement live des specs officielles.
+- **[Sécurité]** `js-tiktoken` épinglé en exact version (`1.0.21`, plus de `^`) pour éviter qu'un bump mineur ne change le mapping `gpt-4` → encoding et fasse dévier silencieusement le test de calibration. À revisiter explicitement à chaque bump volontaire.
+- **[UX]** `EconomyCounter` clampe NaN à 0% défensivement. `computeEconomy` ne produit jamais NaN (garde `total === 0 → 100`), mais le composant est public et doit honorer son contrat.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

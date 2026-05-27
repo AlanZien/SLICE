@@ -63,10 +63,11 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
 
   // Recompute the savings counter on every selection change. The estimator
   // is pure, scans the spec once — cheap even on Stripe-200 (~3k tokens).
+  // Depending on `selection.selected` (the Set itself, stable across renders
+  // that didn't mutate it) catches both size changes AND equal-size swaps.
   const savedPercent = useMemo(
-    () => computeEconomy(spec, selection.selectedIds()).percent,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [spec, selection.count, selection.selectedIds]
+    () => computeEconomy(spec, Array.from(selection.selected)).percent,
+    [spec, selection.selected]
   );
 
   const isVisible = useCallback(
