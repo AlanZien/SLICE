@@ -53,6 +53,8 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Qualité]** `useKeyboardShortcut(id, cb)` accepte un id qui n'a qu'un seul cas géré (`'cmd+k'`). Abstraction qui ne paie pas son coût aujourd'hui — soit renommer `useCmdK`, soit assumer le switch en phase 06+ quand un autre raccourci arrivera (ex. Esc pour fermer modale).
 - **[UX]** Spec à 0 endpoint affichée par `SelectionScreen` produit un layout vide ("0 / 0 endpoints", pas de message). Cas théorique car le parser rejette les specs vides en amont (`EMPTY_SPEC`), mais un fallback explicite "No endpoints in this API" serait plus propre.
 - **[Tests]** Test perf `selection.perf.test.ts` mesure le filtre algorithmique en isolation, pas dans un render React. Conforme à R1.2.5 ("filtre côté client") mais ne couvre pas le coût de re-render. À ajouter un test bench dédié si on observe du jank en prod sur grosses specs (Arii API 565 endpoints par exemple).
+- **[UX i18n]** `matchesQuery` dans `screens/selection.tsx` ne fait pas d'accent-folding : taper "cafe" ne matche pas "café", "recuperer" ne matche pas "récupérer". Edge case pour specs FR/ES/DE/JP. Fix simple à l'avenir : `s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()`. Reporter en V1.1.
+- **[Perf]** `EndpointGroup.selectedCount` recalcule via `.filter().length` à chaque render. Sur Arii (565 endpoints × 94 groupes), un toggle déclenche ~30k ops. Acceptable aujourd'hui mais memoiser via `useMemo` si jank observé.
 
 ---
 Alimente par le workflow FORGE (phase LEARN).

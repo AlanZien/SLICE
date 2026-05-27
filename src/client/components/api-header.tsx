@@ -25,16 +25,18 @@ export function ApiHeader({
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (editing) {
-      setDraft(baseUrl);
-      // Focus + select on next tick to avoid colliding with the click that
-      // entered edit mode.
-      queueMicrotask(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      });
-    }
-  }, [editing, baseUrl]);
+    // Only sync draft when we ENTER edit mode (transitions false → true).
+    // Re-running the effect because `baseUrl` changed mid-edit would clobber
+    // whatever the user is currently typing — so depend on `editing` alone
+    // and read the current `baseUrl` imperatively.
+    if (!editing) return;
+    setDraft(baseUrl);
+    queueMicrotask(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing]);
 
   const commit = () => {
     if (cancellingRef.current) {

@@ -24,6 +24,9 @@ function matchesQuery(endpoint: Endpoint, query: string): boolean {
 export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
   const selection = useSelection(spec);
   const [query, setQuery] = useState('');
+  // TODO (phase 06): bubble baseUrl edits up to App.tsx so the config
+  // screen sees the user's override. Today the edit lives only inside this
+  // component and is dropped on the floor when leaving screen 2.
   const [baseUrl, setBaseUrl] = useState(spec.baseUrl);
 
   // Pre-compute the filtered, group-by-group view. Memoised on (spec, query)
