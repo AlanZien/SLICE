@@ -1,0 +1,824 @@
+openapi: "3.0.3"
+info:
+  title: GitHub Sample
+  version: "v3"
+  description: Synthetic 100-endpoint calibration fixture.
+servers:
+  - url: https://api.github.com
+paths:
+  /repos/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Repos]
+      summary: "List repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Repos]
+      summary: "Update repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Repos]
+      summary: "Get repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Repos]
+      summary: "Retrieve repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Repos]
+      summary: "Refund repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Repos]
+      summary: "List repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Repos]
+      summary: "Update repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Repos]
+      summary: "Get repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Repos]
+      summary: "Retrieve repos"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /issues/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Issues]
+      summary: "Create issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Issues]
+      summary: "Delete issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Issues]
+      summary: "Search issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Issues]
+      summary: "Cancel issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Issues]
+      summary: "Confirm issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Issues]
+      summary: "Create issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Issues]
+      summary: "Delete issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Issues]
+      summary: "Search issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Issues]
+      summary: "Cancel issues"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /pullrequests/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    put:
+      tags: [PullRequests]
+      summary: "Update pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "Get pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "Retrieve pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "Refund pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "List pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PullRequests]
+      summary: "Update pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "Get pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "Retrieve pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [PullRequests]
+      summary: "Refund pullrequests"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /branches/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    delete:
+      tags: [Branches]
+      summary: "Delete branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Branches]
+      summary: "Search branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Branches]
+      summary: "Cancel branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Branches]
+      summary: "Confirm branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Branches]
+      summary: "Create branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Branches]
+      summary: "Delete branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Branches]
+      summary: "Search branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Branches]
+      summary: "Cancel branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Branches]
+      summary: "Confirm branches"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /commits/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Commits]
+      summary: "Get commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Commits]
+      summary: "Retrieve commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Commits]
+      summary: "Refund commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Commits]
+      summary: "List commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Commits]
+      summary: "Update commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Commits]
+      summary: "Get commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Commits]
+      summary: "Retrieve commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Commits]
+      summary: "Refund commits"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /releases/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Releases]
+      summary: "Search releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Releases]
+      summary: "Cancel releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Releases]
+      summary: "Confirm releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Releases]
+      summary: "Create releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Releases]
+      summary: "Delete releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Releases]
+      summary: "Search releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Releases]
+      summary: "Cancel releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Releases]
+      summary: "Confirm releases"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /tags/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Tags]
+      summary: "Retrieve tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Tags]
+      summary: "Refund tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Tags]
+      summary: "List tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Tags]
+      summary: "Update tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Tags]
+      summary: "Get tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Tags]
+      summary: "Retrieve tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Tags]
+      summary: "Refund tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Tags]
+      summary: "List tags"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod"
+      responses: { "200": { description: ok } }
+  /webhooks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Webhooks]
+      summary: "Cancel webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Confirm webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Webhooks]
+      summary: "Create webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Webhooks]
+      summary: "Delete webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Search webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Cancel webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Confirm webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Webhooks]
+      summary: "Create webhooks"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /actions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Actions]
+      summary: "Refund actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Actions]
+      summary: "List actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Actions]
+      summary: "Update actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Actions]
+      summary: "Get actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Actions]
+      summary: "Retrieve actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Actions]
+      summary: "Refund actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Actions]
+      summary: "List actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Actions]
+      summary: "Update actions"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /workflows/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Workflows]
+      summary: "Confirm workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Workflows]
+      summary: "Create workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Workflows]
+      summary: "Delete workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Workflows]
+      summary: "Search workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Workflows]
+      summary: "Cancel workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Workflows]
+      summary: "Confirm workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Workflows]
+      summary: "Create workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Workflows]
+      summary: "Delete workflows"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /users/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Users]
+      summary: "List users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Users]
+      summary: "Update users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Users]
+      summary: "Get users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Users]
+      summary: "Retrieve users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Users]
+      summary: "Refund users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Users]
+      summary: "List users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Users]
+      summary: "Update users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Users]
+      summary: "Get users"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /orgs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Orgs]
+      summary: "Create orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Orgs]
+      summary: "Delete orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Orgs]
+      summary: "Search orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Orgs]
+      summary: "Cancel orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Orgs]
+      summary: "Confirm orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Orgs]
+      summary: "Create orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Orgs]
+      summary: "Delete orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Orgs]
+      summary: "Search orgs"
+      description: "GitHub REST API endpoint. Requires authentication via PAT. Subject to rate limiting (5000 req/h for authenticated users, 60 req/h otherwise). Returns JSON. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }

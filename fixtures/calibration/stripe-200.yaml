@@ -1,0 +1,1628 @@
+openapi: "3.0.3"
+info:
+  title: Stripe Sample
+  version: "2024-04"
+  description: Synthetic 200-endpoint calibration fixture.
+servers:
+  - url: https://api.stripe.com/v1
+paths:
+  /charges/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. amet consectetur adipiscing elit sed do eiusmod tempor"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Charges]
+      summary: "List charges"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. adipiscing elit sed do eiusmod tempor incididunt ut"
+      responses: { "200": { description: ok } }
+  /customers/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Customers]
+      summary: "Create customers"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /paymentintents/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PaymentIntents]
+      summary: "Update paymentintents"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /subscriptions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Subscriptions]
+      summary: "Delete subscriptions"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /invoices/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Invoices]
+      summary: "Get invoices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /refunds/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Refunds]
+      summary: "Search refunds"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+  /payouts/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Payouts]
+      summary: "Retrieve payouts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /disputes/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Disputes]
+      summary: "Cancel disputes"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /plans/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Plans]
+      summary: "Refund plans"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /products/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Products]
+      summary: "Confirm products"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /prices/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Prices]
+      summary: "List prices"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+  /coupons/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Coupons]
+      summary: "Create coupons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /sources/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Sources]
+      summary: "Update sources"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /tokens/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. "
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Tokens]
+      summary: "Delete tokens"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /files/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Files]
+      summary: "Get files"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+  /events/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Events]
+      summary: "Search events"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      responses: { "200": { description: ok } }
+  /webhooks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Webhooks]
+      summary: "Retrieve webhooks"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+      responses: { "200": { description: ok } }
+  /accounts/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Accounts]
+      summary: "Cancel accounts"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+      responses: { "200": { description: ok } }
+  /persons/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Persons]
+      summary: "Refund persons"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+      responses: { "200": { description: ok } }
+  /reviews/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
+    get:
+      tags: [Reviews]
+      summary: "Confirm reviews"
+      description: "Returns a Stripe object representing the resource. Pass a unique identifier; the response includes the full record with timestamps, status, and metadata. ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua"
+      parameters:
+        - { name: param0, in: query, schema: { type: string }, description: "Filter by attribute 0" }
+        - { name: param1, in: query, schema: { type: string }, description: "Filter by attribute 1" }
+        - { name: param2, in: query, schema: { type: string }, description: "Filter by attribute 2" }
+        - { name: param3, in: query, schema: { type: string }, description: "Filter by attribute 3" }
+      responses: { "200": { description: ok } }
