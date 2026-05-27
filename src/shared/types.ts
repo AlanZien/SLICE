@@ -80,10 +80,11 @@ export type ParseErrorCode =
   | 'INVALID_SPEC'                // malformed JSON/YAML or invalid OpenAPI structure
   | 'EMPTY_SPEC'                  // no `paths`, no endpoints (R1.1.7)
   | 'UNSUPPORTED_VERSION'         // OpenAPI 3.2+ only (Swagger 1.x routes via 'unknown' → UNSUPPORTED_FORMAT, Swagger 2.0 is auto-converted)
+  | 'UNSUPPORTED_AUTH'            // spec requires oauth2/openIdConnect/http-basic/http-digest (MVP supports none/apiKey/bearer — phase 04 task 12.a)
   | 'SWAGGER2_CONVERSION_FAILED'  // swagger2openapi could not convert the doc (phase 03)
   | 'POSTMAN_CONVERSION_FAILED'   // postman-to-openapi could not convert the collection (phase 03)
   | 'PARSE_TIMEOUT'               // > 5 s (R1.1.5)
-  | 'PARSE_DEPTH_EXCEEDED';       // > 20 levels (R1.1.6)
+  | 'PARSE_DEPTH_EXCEEDED';       // > 200k nodes (R1.1.6)
 
 export class ParseError extends Error {
   constructor(public readonly code: ParseErrorCode, message: string) {
