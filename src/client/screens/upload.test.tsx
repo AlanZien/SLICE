@@ -54,7 +54,7 @@ describe('<UploadScreen>', () => {
   it('renders the hero copy and dropzone hint', () => {
     render(<UploadScreen onParsed={() => {}} />);
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText(/dépose|drag|choisir/i)).toBeInTheDocument();
+    expect(screen.getByText(/drop|pick a file/i)).toBeInTheDocument();
   });
 
   it('uploads the file and calls onParsed with the spec on success', async () => {
@@ -76,7 +76,7 @@ describe('<UploadScreen>', () => {
   it('shows the server error message on 4xx', async () => {
     mockFetchOnce({
       status: 415,
-      body: { code: 'UNSUPPORTED_FORMAT', message: 'Format non supporté.' },
+      body: { code: 'UNSUPPORTED_FORMAT', message: 'Unsupported file format.' },
     });
     const onParsed = vi.fn();
     render(<UploadScreen onParsed={onParsed} />);
@@ -84,7 +84,7 @@ describe('<UploadScreen>', () => {
     await userEvent.upload(input, makeFile('demo.txt'));
 
     await waitFor(() => {
-      expect(screen.getByText(/format non supporté/i)).toBeInTheDocument();
+      expect(screen.getByText(/unsupported file format/i)).toBeInTheDocument();
     });
     expect(onParsed).not.toHaveBeenCalled();
   });

@@ -44,11 +44,11 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 px-6 py-16 text-center">
       <header className="space-y-3">
-        <p className="eyebrow">Étape 1 — Upload</p>
+        <p className="eyebrow">Step 1 — Upload</p>
         <h1 className="h1">Curated MCP servers for AI agents</h1>
         <p className="font-mono text-sm text-muted-foreground">
-          Ta spec OpenAPI 3.x devient un serveur MCP fidèle. On ne réécrit rien que tu
-          n'aies écrit toi-même.
+          Your API description becomes a faithful MCP server. We never rewrite anything
+          you didn't write yourself.
         </p>
       </header>
 
@@ -57,7 +57,7 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
       </div>
 
       <footer className="font-mono text-xs text-muted-foreground">
-        JSON ou YAML, jusqu'à 10&nbsp;Mo. Aucune donnée stockée.
+        JSON or YAML, up to 10&nbsp;MB. No data stored.
       </footer>
     </section>
   );

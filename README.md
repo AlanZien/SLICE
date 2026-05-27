@@ -1,6 +1,6 @@
 # SLICE — Curated MCP Servers for AI Agents
 
-Générateur web qui transforme une spec OpenAPI en serveur MCP (Model Context Protocol) sur-mesure. Sélectionne uniquement les endpoints à exposer à ton agent IA, télécharge le code prêt à l'emploi.
+Générateur web qui transforme une spec d'API en serveur MCP (Model Context Protocol) sur-mesure. Sélectionne uniquement les endpoints à exposer à ton agent IA, télécharge le code prêt à l'emploi.
 
 ## Pourquoi SLICE
 
@@ -8,6 +8,13 @@ Générateur web qui transforme une spec OpenAPI en serveur MCP (Model Context P
 - **Sécurité** : whitelist explicite des endpoints (l'agent ne peut pas appeler ce que tu n'as pas autorisé)
 - **Zéro code à écrire** : upload spec → coche endpoints → télécharge MCP
 - **Marche partout** : Claude Desktop, Cursor, Windsurf, n8n, Airia (transports stdio + HTTP Streamable)
+
+## Formats acceptés
+
+SLICE détecte et convertit silencieusement les formats sources suivants :
+- **OpenAPI 3.0 / 3.1** — utilisé tel quel
+- **Swagger 2.0** — converti automatiquement vers OpenAPI 3.0
+- **Postman Collection v2.x** — convertie automatiquement vers OpenAPI 3.0
 
 ## Stack
 

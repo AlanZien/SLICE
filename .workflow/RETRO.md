@@ -32,6 +32,19 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[UX/Dev]** Dev shortcuts en bas de App.tsx ne resettent plus `apiSlug`/`parsedSpec` au clic sur 1. Préviser comme dev-only ; à retirer en phase 11 (build prod a déjà `import.meta.env.DEV` qui les strip).
 - **[Robustesse]** `op.tags?.[0] ?? 'Autres'` ne gère pas le cas `tags: [""]` (groupe au libellé vide). Edge case, à durcir si rencontré dans des specs réelles.
 
+### Après phase 03 — Conversion formats (2026-05-25)
+
+- **[Sécurité]** swagger2openapi recopie `swagger.host` brut dans `servers[0].url` sans filtre. Une spec hostile peut injecter `host: "169.254.169.254"` (AWS metadata). Pas une SSRF côté serveur SLICE (le doc converti ne déclenche pas de requête), mais une **primitive SSRF embarquée dans le code MCP émis en phase 06**. À sanitiser à l'émission code en phase 06 (refus / warning si URL pointe vers RFC1918, link-local, ou metadata endpoints).
+- **[Tests]** Pas de tests perf p95 < 1s (conversion) / < 2s (parse Swagger 2) / < 2s (parse Postman) — drift PLAN/code identifié par verifier. Reporté en phase 04 dans le même batch perf que R1.1.9 (parse shopify-50 < 2s).
+- **[Qualité]** `isPlausibleOpenApi3` (`format-converter.ts`) vérifie seulement `openapi` + `paths` shape. Ne vérifie pas `info.title/version` requis par OpenAPI 3 schema. Conséquence : un doc converti sans `info` remonte un `INVALID_SPEC` (via SwaggerParser.validate) au lieu de `SWAGGER2_CONVERSION_FAILED`. Message moins clair, pas faux. À étendre si rencontré en UAT.
+- **[Cohérence]** `/^3\./` dans `format-detector` accepte `3.99.0` ; le check strict de version reste dans `assertVersion` (`/^3\.[01](\.\d+)?$/`). Cohérent en intention, à confirmer en phase 04 quand on testera avec des specs OpenAPI 3.1 réelles.
+- **[Tests]** Garantie `instanceof ParseError` n'est testée que sur un seul cas (`': not anything'`). À étendre si une régression où `throw new Error(...)` se glisse dans le converter.
+- **[Sécurité]** `withTimeout` ne cancel pas la conversion (Node sans cancel natif). Sous burst, un Postman de 9 Mo lourd peut consommer ~4.5s CPU avant timeout × 30 req/min/IP = ~150s de blocking CPU par minute par client. Acceptable MVP, à durcir en phase 11 (queue de tâches, ou worker thread avec AbortController).
+- **[Sécurité]** `yaml.load` est synchrone et bloque l'event loop. `Promise.race` ne peut pas interrompre du travail sync — un YAML de 10 Mo pathologique tient l'event loop > 5s. Mitigé par MAX_BYTES + CORE_SCHEMA (pas d'expansion d'anchors), à revisiter si un load CPU non négligeable est observé en prod.
+- **[Tests]** Test `vi.spyOn(converter, 'convertToOpenAPI3')` dans `parser.test.ts` repose sur ESM live bindings. Vitest+Vite gère bien aujourd'hui, mais une bump majeure pourrait casser. À pinner via `vi.mock('./format-converter', …)` si flake.
+- **[Cohérence]** `assertVersion` garde les branches `swaggerVersion` et `swagger=2.0` qui sont devenues dead code (le detector catche avant). Préservées en défense en profondeur si l'ordre detector→parser change. Commentaire de `UNSUPPORTED_VERSION` mis à jour.
+- **[UX / Postman]** Limite intrinsèque de `postman-to-openapi` : Postman représente `:id.json` comme un seul segment, qui devient `{id.json}` en OpenAPI au lieu de `{id}.json`. Pas un bug SLICE — c'est l'aller-retour Postman ↔ OpenAPI qui perd l'info. À documenter sur l'écran de sélection (phase 04) si on veut prévenir l'utilisateur : "Les collections Postman avec params suivis d'extensions (`:id.json`) peuvent générer des chemins inattendus." Cas observé en UAT phase 03 sur fixture `shopify-postman-v2.json`.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

@@ -1,0 +1,66 @@
+{
+  "info": {
+    "_postman_id": "00000000-0000-0000-0000-000000000001",
+    "name": "Shopify Storefront (Postman v2.1 fixture)",
+    "description": "Trimmed Postman Collection v2.1 fixture used to validate SLICE auto-conversion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "https://example.myshopify.com/admin/api/2024-04/products.json?limit=10",
+              "protocol": "https",
+              "host": ["example", "myshopify", "com"],
+              "path": ["admin", "api", "2024-04", "products.json"],
+              "query": [{ "key": "limit", "value": "10" }]
+            },
+            "description": "Returns a paginated list of products."
+          },
+          "response": []
+        },
+        {
+          "name": "Get product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://example.myshopify.com/admin/api/2024-04/products/:id.json",
+              "protocol": "https",
+              "host": ["example", "myshopify", "com"],
+              "path": ["admin", "api", "2024-04", "products", ":id.json"],
+              "variable": [{ "key": "id", "value": "1" }]
+            },
+            "description": "Fetch a single product by id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://example.myshopify.com/admin/api/2024-04/orders.json",
+              "protocol": "https",
+              "host": ["example", "myshopify", "com"],
+              "path": ["admin", "api", "2024-04", "orders.json"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

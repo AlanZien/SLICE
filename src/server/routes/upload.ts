@@ -12,12 +12,14 @@ function extension(filename: string): string {
   return idx === -1 ? '' : filename.slice(idx).toLowerCase();
 }
 
-const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE' | 'UNSUPPORTED_FORMAT', number> = {
+const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE', number> = {
   PAYLOAD_TOO_LARGE: 413,
   UNSUPPORTED_FORMAT: 415,
   INVALID_SPEC: 400,
   EMPTY_SPEC: 400,
   UNSUPPORTED_VERSION: 400,
+  SWAGGER2_CONVERSION_FAILED: 400,
+  POSTMAN_CONVERSION_FAILED: 400,
   PARSE_TIMEOUT: 504,
   PARSE_DEPTH_EXCEEDED: 400,
   NO_FILE: 400,
@@ -36,7 +38,7 @@ const handler: RequestHandler = async (req, res) => {
   if (!file) {
     res.status(STATUS_BY_CODE.NO_FILE).json({
       code: 'NO_FILE',
-      message: 'No file provided. Attach the OpenAPI spec under the "file" field.',
+      message: 'No file provided. Attach your API description under the "file" field.',
     });
     return;
   }
@@ -90,7 +92,7 @@ export function createUploadRouter(): Router {
         if (code === 'LIMIT_UNEXPECTED_FILE' || code === 'LIMIT_FILE_COUNT') {
           res.status(400).json({
             code: 'NO_FILE',
-            message: 'No file provided. Attach the OpenAPI spec under the "file" field.',
+            message: 'No file provided. Attach your API description under the "file" field.',
           });
           return;
         }

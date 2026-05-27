@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { parseSpec } from './parser';
 import { ParseError } from '@shared/types';
 
@@ -16,22 +16,6 @@ paths:
         "200": { description: ok }
 `;
 
-function deepYaml(depth: number): string {
-  let inner = 'leaf: true';
-  for (let i = 0; i < depth; i += 1) inner = `level:\n  ${inner.replace(/\n/g, '\n  ')}`;
-  return `openapi: "3.0.0"
-info: { title: deep, version: "1" }
-paths:
-  /x:
-    get:
-      summary: ok
-      responses:
-        "200": { description: ok }
-nested:
-${inner}
-`;
-}
-
 describe('parseSpec', () => {
   it('accepts a valid OpenAPI 3.0 YAML', async () => {
     const result = await parseSpec(VALID_OPENAPI_3, { sizeBytes: VALID_OPENAPI_3.length });
@@ -45,9 +29,11 @@ describe('parseSpec', () => {
     ).rejects.toMatchObject({ name: 'ParseError', code: 'PAYLOAD_TOO_LARGE' });
   });
 
-  it('rejects unparseable content with INVALID_SPEC', async () => {
+  it('rejects unrecognised content (parseable but not a known spec) with UNSUPPORTED_FORMAT', async () => {
+    // "not a spec" parses as a YAML string scalar — detector returns
+    // 'unknown', and the format-converter pipeline converts that to 415.
     await expect(parseSpec('not a spec', { sizeBytes: 10 })).rejects.toMatchObject({
-      code: 'INVALID_SPEC',
+      code: 'UNSUPPORTED_FORMAT',
     });
   });
 
@@ -61,31 +47,36 @@ paths: {}
     });
   });
 
-  it('rejects Swagger 2.0 with UNSUPPORTED_VERSION (phase 02 only; phase 03 will convert)', async () => {
+  it('accepts Swagger 2.0 via auto-conversion (phase 03)', async () => {
     const swagger2 = `swagger: "2.0"
 info: { title: old, version: "1" }
 paths:
   /x:
     get:
-      responses: { 200: { description: ok } }
+      summary: ok
+      responses: { "200": { description: ok } }
 `;
-    await expect(parseSpec(swagger2, { sizeBytes: swagger2.length })).rejects.toMatchObject({
-      code: 'UNSUPPORTED_VERSION',
-    });
+    const result = await parseSpec(swagger2, { sizeBytes: swagger2.length });
+    expect(result.apiName).toBe('old');
+    expect(result.groups.length).toBeGreaterThan(0);
   });
 
-  it('rejects Swagger 1.x with UNSUPPORTED_VERSION', async () => {
+  it('rejects Swagger 1.x with UNSUPPORTED_FORMAT (obsolete since 2014, no converter)', async () => {
     const swagger1 = `swaggerVersion: "1.2"
 info: { title: ancient, version: "1" }
 `;
     await expect(parseSpec(swagger1, { sizeBytes: swagger1.length })).rejects.toMatchObject({
-      code: 'UNSUPPORTED_VERSION',
+      code: 'UNSUPPORTED_FORMAT',
     });
   });
 
-  it('rejects pathologically deep YAML with PARSE_DEPTH_EXCEEDED', async () => {
-    const deep = deepYaml(25);
-    await expect(parseSpec(deep, { sizeBytes: deep.length })).rejects.toMatchObject({
+  it('rejects pathologically wide specs (> 200k nodes) with PARSE_DEPTH_EXCEEDED', async () => {
+    // Flat-but-wide YAML — would have slipped past the old depth check but
+    // is exactly what MAX_NODES catches now.
+    const lines = ['openapi: "3.0.3"', 'info: { title: huge, version: "1" }', 'paths:', '  /x:', '    get:', '      summary: g', '      responses: { "200": { description: ok } }', 'huge:'];
+    for (let i = 0; i < 250_000; i += 1) lines.push(`  k${i}: ${i}`);
+    const huge = lines.join('\n') + '\n';
+    await expect(parseSpec(huge, { sizeBytes: huge.length })).rejects.toMatchObject({
       code: 'PARSE_DEPTH_EXCEEDED',
     });
   });
@@ -158,9 +149,131 @@ evil: !!js/function "function(){return 1}"
 paths:
   /x: { get: { summary: g, responses: { "200": { description: ok } } } }
 `;
+    // CORE_SCHEMA throws on the non-standard tag — safeLoad returns null,
+    // the detector classifies the input as 'unknown' (we don't translate
+    // arbitrary-tag YAML) and the route surfaces it as UNSUPPORTED_FORMAT.
+    // The contract is "rejected"; the precise code is a side-effect of the
+    // detector taxonomy, not a security weakening.
     await expect(parseSpec(unsafe, { sizeBytes: unsafe.length })).rejects.toMatchObject({
-      code: 'INVALID_SPEC',
+      code: 'UNSUPPORTED_FORMAT',
     });
+  });
+
+  it('returns UNSUPPORTED_FORMAT on truly malformed YAML (e.g. tab-indented)', async () => {
+    // js-yaml rejects mixed-tab indentation. Detector classifies as
+    // 'unknown' → 415 UNSUPPORTED_FORMAT. Regression test for the path
+    // formerly covered by the phase-02 'malformed YAML → INVALID_SPEC'
+    // case (now rebranded since "we recognised nothing" is a more honest
+    // failure than "your spec is invalid").
+    const malformed = '\tfoo:\n\t\tbar: 1';
+    await expect(
+      parseSpec(malformed, { sizeBytes: malformed.length })
+    ).rejects.toMatchObject({ code: 'UNSUPPORTED_FORMAT' });
+  });
+
+  it('rejects external $ref hidden inside a Swagger 2.0 doc — defence in depth', async () => {
+    // The phase-02 assertNoExternalRefs ran on the user's raw YAML tree;
+    // after the phase-03 reshape it would run on the post-conversion tree
+    // (where swagger2openapi may rewrite refs). We add a pre-conversion
+    // scan so the original SSRF guard still fires regardless of what the
+    // converter does with `$ref`s.
+    const swagger2WithExternalRef = `swagger: "2.0"
+info: { title: ssrf, version: "1" }
+paths:
+  /x:
+    get:
+      summary: g
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: "http://169.254.169.254/latest/meta-data/"
+`;
+    await expect(
+      parseSpec(swagger2WithExternalRef, { sizeBytes: swagger2WithExternalRef.length })
+    ).rejects.toMatchObject({ code: 'INVALID_SPEC' });
+  });
+
+  it('PARSE_TIMEOUT covers the whole pipeline (conversion + validation)', async () => {
+    // Hijack the converter so it hangs indefinitely. If the timeout only
+    // wrapped SwaggerParser.validate (the phase-02 behaviour), this test
+    // would hang and time out the entire suite. With the phase-03 fix
+    // `withTimeout` envelops the conversion stage too, so we get the typed
+    // PARSE_TIMEOUT back well within Vitest's per-test budget.
+    const converter = await import('./format-converter');
+    const spy = vi
+      .spyOn(converter, 'convertToOpenAPI3')
+      .mockImplementation(() => new Promise(() => {}));
+    try {
+      await expect(
+        parseSpec('openapi: "3.0.3"', { sizeBytes: 20, timeoutMs: 30 })
+      ).rejects.toMatchObject({ code: 'PARSE_TIMEOUT' });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('accepts the Swashbuckle "scheme: Bearer" convention via sanitizer', async () => {
+    // Real-world bug from .NET Swashbuckle: `Bearer` (capitalised) instead
+    // of the RFC 7235 lowercase form. Without the sanitizer this would fail
+    // SwaggerParser.validate with a wall of unreadable schema errors.
+    const swashbuckleSpec = `openapi: "3.0.3"
+info: { title: dotnet, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security:
+        - Bearer: []
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT
+`;
+    const result = await parseSpec(swashbuckleSpec, {
+      sizeBytes: swashbuckleSpec.length,
+    });
+    expect(result.apiName).toBe('dotnet');
+    expect(result.groups.length).toBeGreaterThan(0);
+  });
+
+  it('truncates SwaggerParser validation errors to a readable single message', async () => {
+    // SwaggerParser concatenates every JSON-schema violation into one giant
+    // multi-line message — easily 50+ lines on a malformed spec. The user
+    // shouldn't see that wall of text; we keep the first cause + a hint.
+    const malformed = `openapi: "3.0.3"
+info: { title: bad, version: "1" }
+paths:
+  /x:
+    get:
+      summary: ok
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  # invalid: properties must be a map of name → schema,
+                  # not a nested object marker like this.
+                  type: object
+`;
+    try {
+      await parseSpec(malformed, { sizeBytes: malformed.length });
+      throw new Error('should have thrown');
+    } catch (err) {
+      const e = err as { code: string; message: string };
+      // First line of the error must be present, but the whole concatenated
+      // dump must not — cap the surfaced message length so the UI can render
+      // it in one paragraph.
+      expect(e.code).toBe('INVALID_SPEC');
+      expect(e.message.length).toBeLessThan(300);
+      expect(e.message.split('\n').length).toBeLessThanOrEqual(2);
+    }
   });
 
   it('returns a ParseError instance (not a plain object)', async () => {

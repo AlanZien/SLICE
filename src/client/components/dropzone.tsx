@@ -19,7 +19,7 @@ const DEFAULT_ACCEPT: Record<string, string[]> = {
   'text/plain': ['.yaml', '.yml', '.json'],
 };
 
-const HINT = 'Dépose ta spec OpenAPI ici, ou choisir un fichier (.json, .yaml).';
+const HINT = 'Drop your API description here, or pick a file (.json, .yaml).';
 
 export function Dropzone({
   onFile,
@@ -66,17 +66,17 @@ export function Dropzone({
       )}
 
       {state === 'uploading' && (
-        <p className="font-mono text-sm text-muted-foreground">Upload en cours…</p>
+        <p className="font-mono text-sm text-muted-foreground">Uploading…</p>
       )}
 
       {state === 'parsing' && (
-        <p className="font-mono text-sm text-muted-foreground">Analyse de la spec…</p>
+        <p className="font-mono text-sm text-muted-foreground">Parsing…</p>
       )}
 
       {state === 'error' && (
         <>
           <p className="font-mono text-sm font-semibold text-destructive">
-            {error ?? 'Une erreur est survenue.'}
+            {error ?? 'Something went wrong.'}
           </p>
           <p className="font-mono text-xs text-muted-foreground">{HINT}</p>
         </>

@@ -35,7 +35,7 @@ Note : le total dépasse l'estimation PRD (7-9 j) car les splits 07 et 09 sont p
 | R1.1.3 | OpenAPI 3.x + Swagger 2.0 + Postman v2 (conversion auto) | 03 | T1–T6, fixtures |
 | R1.1.4 | Parsing safe (no $ref externes, YAML safe) | 02 | T4 (parser.ts) |
 | R1.1.5 | Timeout parsing 5s | 02 | T4, test PARSE_TIMEOUT |
-| R1.1.6 | Profondeur max 20 | 02 | T4, test PARSE_DEPTH_EXCEEDED (fixture deep-25) |
+| R1.1.6 | Garde-fou anti-DoS (200k nœuds max) | 02 (révisé phase 03) | T4, test PARSE_DEPTH_EXCEEDED (>200k nodes). MAX_DEPTH supprimé phase 03 — false positives sur specs réelles. |
 | R1.1.7 | ≥ 1 endpoint requis | 02 | T4, test EMPTY_SPEC |
 | R1.1.8 | Pas de persistance spec | 02 + 11 | Test "no persistence post-upload" (phase 11) |
 | R1.1.9 | < 2s p95 sur 50 endpoints | 02 | Test perf `parser.perf.test.ts` |

@@ -64,10 +64,10 @@ describe('normalizeSpec', () => {
     const labels = result.groups
       .flatMap((g) => g.endpoints)
       .map((e) => `${e.method} ${e.label}`);
-    expect(labels).toContain('GET Lister les customers');
-    expect(labels).toContain('POST Créer un customers');
-    expect(labels).toContain('DELETE Supprimer un customers');
-    expect(labels).toContain('PUT Modifier un customers');
+    expect(labels).toContain('GET List customers');
+    expect(labels).toContain('POST Create a customers');
+    expect(labels).toContain('DELETE Delete a customers');
+    expect(labels).toContain('PUT Update a customers');
   });
 
   it('groups endpoints by their first tag (R1.2.3)', () => {
@@ -86,7 +86,7 @@ describe('normalizeSpec', () => {
     expect(beta?.endpoints).toHaveLength(1);
   });
 
-  it('falls back to "Autres" group when no tag is present (R1.2.3)', () => {
+  it('falls back to "Other" group when no tag is present (R1.2.3)', () => {
     const spec = {
       ...baseSpec,
       paths: {
@@ -94,7 +94,7 @@ describe('normalizeSpec', () => {
       },
     };
     const result = normalizeSpec(spec);
-    expect(result.groups[0].tag).toBe('Autres');
+    expect(result.groups[0].tag).toBe('Other');
   });
 
   it('excludes HEAD, OPTIONS and TRACE methods (cas limite SPEC 1.2)', () => {

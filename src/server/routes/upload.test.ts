@@ -60,10 +60,16 @@ describe('POST /api/upload', () => {
     expect(res.body.code).toBe('PAYLOAD_TOO_LARGE');
   });
 
-  it('returns 400 INVALID_SPEC on malformed YAML', async () => {
-    const res = await uploadFile(Buffer.from('::::: not yaml'), 'bad.yaml');
+  it('returns 400 INVALID_SPEC on empty content (nothing to translate)', async () => {
+    const res = await uploadFile(Buffer.from('   \n  '), 'empty.yaml');
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('INVALID_SPEC');
+  });
+
+  it('returns 415 UNSUPPORTED_FORMAT on parseable but unknown content (e.g. random YAML)', async () => {
+    const res = await uploadFile(Buffer.from('foo: { not: openapi }'), 'random.yaml');
+    expect(res.status).toBe(415);
+    expect(res.body.code).toBe('UNSUPPORTED_FORMAT');
   });
 
   it('returns 400 EMPTY_SPEC when the spec has no paths', async () => {
@@ -76,17 +82,35 @@ paths: {}
     expect(res.body.code).toBe('EMPTY_SPEC');
   });
 
-  it('returns 400 UNSUPPORTED_VERSION on Swagger 2.0 (phase 02 — converted in phase 03)', async () => {
-    const swagger2 = `swagger: "2.0"
-info: { title: old, version: "1" }
-paths:
-  /x:
-    get:
-      responses: { 200: { description: ok } }
-`;
-    const res = await uploadFile(Buffer.from(swagger2), 'old.yaml');
-    expect(res.status).toBe(400);
-    expect(res.body.code).toBe('UNSUPPORTED_VERSION');
+  it('returns 200 on Swagger 2.0 via auto-conversion (phase 03)', async () => {
+    const petstore = require('node:fs').readFileSync(
+      require('node:path').resolve(__dirname, '../../../fixtures/petstore-swagger2.json'),
+      'utf-8'
+    );
+    const res = await uploadFile(Buffer.from(petstore), 'petstore.json');
+    expect(res.status).toBe(200);
+    expect(res.body.apiName).toBe('Petstore (Swagger 2.0)');
+    expect(res.body.groups.length).toBeGreaterThan(0);
+  });
+
+  it('returns 200 on Postman Collection v2 via auto-conversion (phase 03)', async () => {
+    const postman = require('node:fs').readFileSync(
+      require('node:path').resolve(__dirname, '../../../fixtures/shopify-postman-v2.json'),
+      'utf-8'
+    );
+    const res = await uploadFile(Buffer.from(postman), 'shopify.json');
+    expect(res.status).toBe(200);
+    expect(res.body.apiName).toMatch(/shopify/i);
+  });
+
+  it('returns 415 UNSUPPORTED_FORMAT on GraphQL SDL renamed .yaml (phase 03)', async () => {
+    const graphql = require('node:fs').readFileSync(
+      require('node:path').resolve(__dirname, '../../../fixtures/graphql-sdl.txt'),
+      'utf-8'
+    );
+    const res = await uploadFile(Buffer.from(graphql), 'schema.yaml');
+    expect(res.status).toBe(415);
+    expect(res.body.code).toBe('UNSUPPORTED_FORMAT');
   });
 
   it('returns 400 when no file is provided', async () => {

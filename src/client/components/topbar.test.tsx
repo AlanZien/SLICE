@@ -38,7 +38,7 @@ describe('Topbar', () => {
 
   it('renders the Stepper with the current step', () => {
     render(<Topbar current={2} apiSlug="x" onReset={() => {}} onToggleTheme={() => {}} />);
-    expect(screen.getByRole('navigation', { name: /étapes/i })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: /steps/i })).toBeInTheDocument();
   });
 
   it('shows the ⌘K keyboard hint', () => {
@@ -47,11 +47,11 @@ describe('Topbar', () => {
     expect(screen.getByText('K')).toBeInTheDocument();
   });
 
-  it('calls onReset when the Recommencer button is clicked', async () => {
+  it('calls onReset when the Reset button is clicked', async () => {
     const user = userEvent.setup();
     const onReset = vi.fn();
     render(<Topbar current={2} apiSlug="x" onReset={onReset} onToggleTheme={() => {}} />);
-    await user.click(screen.getByRole('button', { name: /recommencer/i }));
+    await user.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledOnce();
   });
 
@@ -61,7 +61,7 @@ describe('Topbar', () => {
     render(
       <Topbar current={1} apiSlug={null} onReset={() => {}} onToggleTheme={onToggleTheme} />
     );
-    await user.click(screen.getByRole('button', { name: /thème/i }));
+    await user.click(screen.getByRole('button', { name: /toggle theme/i }));
     expect(onToggleTheme).toHaveBeenCalledOnce();
   });
 });

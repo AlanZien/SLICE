@@ -44,7 +44,7 @@ function collectGroups(doc: any): EndpointGroup[] {
       if (!op || typeof op !== 'object') continue;
 
       const upperMethod = method.toUpperCase() as HttpMethod;
-      const tag: string = op.tags?.[0] ?? 'Autres';
+      const tag: string = op.tags?.[0] ?? 'Other';
       const label = pickLabel(op, upperMethod, pathKey);
       const params = mergeParams(pathLevelParams, op.parameters);
 
@@ -90,14 +90,14 @@ function defaultLabel(method: HttpMethod, pathKey: string): string {
       .pop() ?? 'resource';
   switch (method) {
     case 'GET':
-      return `Lister les ${noun}`;
+      return `List ${noun}`;
     case 'POST':
-      return `Créer un ${noun}`;
+      return `Create a ${noun}`;
     case 'PUT':
     case 'PATCH':
-      return `Modifier un ${noun}`;
+      return `Update a ${noun}`;
     case 'DELETE':
-      return `Supprimer un ${noun}`;
+      return `Delete a ${noun}`;
   }
 }
 

@@ -1,11 +1,19 @@
 import yaml from 'js-yaml';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { ParseError, type ParsedSpec } from '@shared/types';
+import { convertToOpenAPI3 } from './format-converter';
 import { normalizeSpec } from './spec-normalizer';
+import { sanitizeSpec } from './spec-sanitizer';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
-const MAX_DEPTH = 20;                // Object/array depth ceiling (R1.1.6)
-const MAX_NODES = 200_000;           // Total nodes visited — bounds fanout DoS
+// SPEC R1.1.6 originally specified a depth ceiling (initially 20, raised to 50)
+// to bound recursive descent. After real-world testing (Stripe, GitHub, .NET
+// enterprise specs), we found legitimate deep schemas constantly tripped it
+// while CORE_SCHEMA already prevents YAML-bomb expansion (no anchors) and
+// MAX_NODES caps the total work. The depth guard was a false-positive factory
+// with no incremental security benefit, so it's been dropped. MAX_NODES is
+// the canonical anti-DoS bound now.
+const MAX_NODES = 200_000;           // Total nodes visited — bounds fanout DoS (R1.1.6)
 const PARSE_TIMEOUT_MS = 5_000;      // Hard timeout (R1.1.5)
 
 export interface ParseSpecOptions {
@@ -22,8 +30,9 @@ export interface ParseSpecOptions {
  * defensive checks (size, depth, timeout, ref scope) but we never rewrite
  * semantics. Anything we cannot vouch for is rejected with a typed error.
  *
- * Phase 02 supports OpenAPI 3.0.x and 3.1.x only.
- * Phase 03 will plug Swagger 2.0 and Postman v2 conversion in front of this.
+ * Accepts OpenAPI 3.x natively. Swagger 2.0 and Postman Collection v2 are
+ * auto-converted (phase 03) before the rest of the pipeline runs — the
+ * conversion is silent to the caller (SPEC R1.1.3).
  */
 export async function parseSpec(
   raw: string,
@@ -36,20 +45,46 @@ export async function parseSpec(
     );
   }
 
-  const tree = loadStructured(raw);
-  assertVersion(tree);
-  assertDepth(tree);
-  assertNoExternalRefs(tree);
-
   const timeoutMs = options.timeoutMs ?? PARSE_TIMEOUT_MS;
+  // The entire pipeline (conversion + structural checks + validation) is
+  // wrapped in a single timeout. Doing the conversion outside the envelope
+  // would create a DoS window: a pathological Postman collection or a
+  // combinatorial Swagger 2.0 doc could keep the event loop busy for tens
+  // of seconds before the parser ever ran. R1.1.5 promises 5 s total.
+  return withTimeout(runPipeline(raw), timeoutMs);
+}
+
+async function runPipeline(raw: string): Promise<ParsedSpec> {
+  // Defence in depth — scan the user's *original* tree for external $refs
+  // before handing the doc to swagger2openapi / postman-to-openapi. The
+  // converters are configured `fetch: false, resolve: false` and the
+  // post-conversion `assertNoExternalRefs` re-checks the output, but
+  // scanning the raw input too removes any dependency on what either
+  // upstream does with malicious refs.
+  const rawTree = tryLoadStructured(raw);
+  if (rawTree && typeof rawTree === 'object') {
+    assertNoExternalRefs(rawTree);
+  }
+
+  // Phase 03 — auto-convert Swagger 2.0 / Postman v2 → OpenAPI 3 string.
+  // OpenAPI 3.x is returned verbatim; `convertToOpenAPI3` throws typed
+  // ParseErrors which we let bubble up to the route handler.
+  const openapiRaw = await convertToOpenAPI3(raw);
+
+  const tree = loadStructured(openapiRaw);
+  assertVersion(tree);
+  assertSize(tree);
+  assertNoExternalRefs(tree);
+  // Narrow, non-semantic orthographic fixes (e.g. Swashbuckle's `scheme:
+  // Bearer` → `scheme: bearer`) so the downstream validator doesn't reject
+  // specs over IANA-constant casing. See `spec-sanitizer.ts` for the why.
+  const sanitised = sanitizeSpec(tree);
+
   // SwaggerParser.validate accepts an in-memory object at runtime but its
-  // type definitions only list `string | Document`. Casting keeps the runtime
-  // contract while satisfying tsc.
-  const validated = await withTimeout(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    SwaggerParser.validate(tree as any),
-    timeoutMs
-  );
+  // type definitions only list `string | Document`. Casting keeps the
+  // runtime contract while satisfying tsc.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const validated = await SwaggerParser.validate(sanitised as any);
 
   // R1.1.7 — at least one path is required to consider the spec usable.
   // `paths` may be missing for OpenAPI 3.1 specs that only define webhooks,
@@ -57,11 +92,25 @@ export async function parseSpec(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const paths = (validated as any).paths as Record<string, unknown> | undefined;
   if (!paths || Object.keys(paths).length === 0) {
-    throw new ParseError('EMPTY_SPEC', 'No endpoints found in the spec.');
+    throw new ParseError('EMPTY_SPEC', 'No endpoints found in the API description.');
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return normalizeSpec(validated as any);
+}
+
+/**
+ * Best-effort YAML/JSON load that swallows errors. Used to pre-scan the
+ * original input for external $refs before we hand it to a converter; we
+ * don't want to throw INVALID_SPEC for inputs that the converter knows how
+ * to handle (Postman v2 isn't strict YAML/JSON-compat in places).
+ */
+function tryLoadStructured(raw: string): unknown {
+  try {
+    return yaml.load(raw, { schema: yaml.CORE_SCHEMA });
+  } catch {
+    return undefined;
+  }
 }
 
 function loadStructured(raw: string): unknown {
@@ -84,7 +133,7 @@ function loadStructured(raw: string): unknown {
   }
 
   if (tree == null || typeof tree !== 'object') {
-    throw new ParseError('INVALID_SPEC', 'Spec must be a YAML or JSON object.');
+    throw new ParseError('INVALID_SPEC', 'The API description must be a YAML or JSON object.');
   }
 
   return tree;
@@ -112,7 +161,7 @@ function assertVersion(tree: unknown): void {
     // No version marker at all → not an OpenAPI document we can recognise.
     throw new ParseError(
       'INVALID_SPEC',
-      'Could not detect an OpenAPI version. The file does not look like an API spec.'
+      'Could not detect an OpenAPI version. The file does not look like an API description.'
     );
   }
 
@@ -124,31 +173,26 @@ function assertVersion(tree: unknown): void {
   }
 }
 
-function assertDepth(tree: unknown): void {
-  // Counter is shared across the traversal to bound total fanout, not just
-  // depth — a spec that's flat-but-wide (50k keys per object) would otherwise
-  // sail past the depth check and DoS downstream consumers.
+function assertSize(tree: unknown): void {
+  // Bounds the total amount of work the downstream pipeline will see. A spec
+  // that's flat-but-wide (50k keys per object) or just very large needs to be
+  // rejected before SwaggerParser.validate amplifies it. Depth itself is no
+  // longer checked — see the MAX_NODES comment up top.
   const counter = { nodes: 0 };
-  walkDepth(tree, 0, counter);
+  walk(tree, counter);
 }
 
-function walkDepth(tree: unknown, current: number, counter: { nodes: number }): void {
-  if (current > MAX_DEPTH) {
-    throw new ParseError(
-      'PARSE_DEPTH_EXCEEDED',
-      `Spec is nested deeper than the ${MAX_DEPTH} level limit.`
-    );
-  }
+function walk(tree: unknown, counter: { nodes: number }): void {
   if (!tree || typeof tree !== 'object') return;
   for (const value of Object.values(tree as Record<string, unknown>)) {
     counter.nodes += 1;
     if (counter.nodes > MAX_NODES) {
       throw new ParseError(
         'PARSE_DEPTH_EXCEEDED',
-        `Spec contains more than ${MAX_NODES} nodes — refusing to parse.`
+        `The API description contains more than ${MAX_NODES} nodes — refusing to parse.`
       );
     }
-    walkDepth(value, current + 1, counter);
+    walk(value, counter);
   }
 }
 
@@ -198,8 +242,21 @@ async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     return result as T;
   } catch (err) {
     if (err instanceof ParseError) throw err;
-    throw new ParseError('INVALID_SPEC', (err as Error).message);
+    const message = err instanceof Error ? err.message : String(err);
+    throw new ParseError('INVALID_SPEC', summariseValidatorMessage(message));
   } finally {
     clearTimeout(timer!);
   }
+}
+
+/**
+ * SwaggerParser concatenates every JSON-schema violation into one multi-line
+ * message that can be hundreds of lines long — unusable in a toast. Keep the
+ * headline (first line) and trim the rest. Callers who need full diagnostics
+ * can drop down to the validator directly.
+ */
+function summariseValidatorMessage(raw: string): string {
+  const firstLine = raw.split('\n')[0]?.trim() ?? raw;
+  const MAX_LEN = 250;
+  return firstLine.length > MAX_LEN ? `${firstLine.slice(0, MAX_LEN - 1)}…` : firstLine;
 }

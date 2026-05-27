@@ -4,9 +4,9 @@ export type StepDefinition = { k: number; name: string };
 
 export const STEPS: ReadonlyArray<StepDefinition> = [
   { k: 1, name: 'Upload' },
-  { k: 2, name: 'Sélection' },
-  { k: 3, name: 'Configuration' },
-  { k: 4, name: 'Terminé' },
+  { k: 2, name: 'Select' },
+  { k: 3, name: 'Configure' },
+  { k: 4, name: 'Done' },
 ];
 
 type StepState = 'done' | 'now' | 'upcoming';
@@ -25,7 +25,7 @@ export interface StepperProps {
 export function Stepper({ current, className }: StepperProps) {
   return (
     <nav
-      aria-label="Étapes"
+      aria-label="Steps"
       className={[
         'inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px]',
         className ?? '',
