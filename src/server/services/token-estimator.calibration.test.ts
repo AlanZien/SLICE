@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { encodingForModel } from 'js-tiktoken';
 
-import { parseSpec } from '../server/services/parser';
-import { estimateSpecTokens } from './token-estimator';
-import type { Endpoint, ParsedSpec } from './types';
+import { parseSpec } from './parser';
+import { estimateSpecTokens } from '../../shared/token-estimator';
+import type { Endpoint, ParsedSpec } from '../../shared/types';
 
 /**
  * SPEC R1.2.8 — the heuristic must stay within ±15% of the real tiktoken
@@ -17,7 +18,8 @@ import type { Endpoint, ParsedSpec } from './types';
  * Here we only verify the frozen coefficients still hold.
  */
 
-const FIXTURES_DIR = resolve(__dirname, '../../fixtures/calibration');
+const HERE = dirname(fileURLToPath(import.meta.url));
+const FIXTURES_DIR = resolve(HERE, '../../../fixtures/calibration');
 const TARGET_TOLERANCE = 0.15;
 
 const enc = encodingForModel('gpt-4');
@@ -50,7 +52,7 @@ function realTokenCount(spec: ParsedSpec): number {
 }
 
 describe('token-estimator calibration (SPEC R1.2.8 ±15%)', () => {
-  const fixtures = readdirSync(FIXTURES_DIR).filter((f) => /\.(yaml|json)$/.test(f));
+  const fixtures = readdirSync(FIXTURES_DIR).filter((f: string) => /\.(yaml|json)$/.test(f));
 
   for (const filename of fixtures) {
     const name = filename.replace(/\.(yaml|json)$/, '');

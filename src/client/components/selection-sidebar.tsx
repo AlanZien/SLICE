@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import { EconomyCounter } from './economy-counter';
 
 export interface SelectionSidebarProps {
   selectedCount: number;
@@ -60,19 +61,19 @@ export function SelectionSidebar({
         </label>
       )}
 
-      <div aria-label="context saved" className="rounded-md border border-border/60 bg-background/40 p-3 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-          Context saved
-        </p>
-        <p className="h2 mt-1 text-foreground">
-          {savedPercent === null ? '—' : `${savedPercent}%`}
-        </p>
-        <p className="font-mono text-[10px] text-muted-foreground">
-          {savedPercent === null
-            ? 'calibrating in next phase'
-            : 'vs. exposing the full spec'}
-        </p>
-      </div>
+      {savedPercent === null ? (
+        <div aria-label="context saved" className="rounded-md border border-border/60 bg-background/40 p-3 text-center">
+          <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+            Context saved
+          </p>
+          <p className="h2 mt-1 text-foreground">—</p>
+          <p className="font-mono text-[10px] text-muted-foreground">
+            calibrating
+          </p>
+        </div>
+      ) : (
+        <EconomyCounter percent={savedPercent} />
+      )}
 
       <button
         type="button"
