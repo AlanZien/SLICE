@@ -47,7 +47,7 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
         <p className="eyebrow">Étape 1 — Upload</p>
         <h1 className="h1">Curated MCP servers for AI agents</h1>
         <p className="font-mono text-sm text-muted-foreground">
-          Ta spec OpenAPI 3.x devient un serveur MCP fidèle. On ne réécrit rien que tu
+          Ta description d'API devient un serveur MCP fidèle. On ne réécrit rien que tu
           n'aies écrit toi-même.
         </p>
       </header>
