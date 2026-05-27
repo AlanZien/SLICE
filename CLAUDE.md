@@ -4,19 +4,20 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**Phase 03 — Conversion formats (DELIVER en cours, 2026-05-26)** — PR #3 ouverte avec hotfix MAX_DEPTH 20→50. 80/80 tests verts. En attente re-test UAT utilisateur sur la spec qui avait tilté.
+**Phase 04 — Écran de sélection (MERGÉE, 2026-05-27)** — PR #4 mergée dans main. Inclut la qualification light de la spec (refus OAuth2/Basic/Digest, exclusion endpoints non documentés, exclusion deprecated par défaut — tâche 12 a/b/c décidée 2026-05-27).
 
-**Phases mergées** : 01 (squelette, PR #1), 02 (upload & parsing, PR #2)
-**Phase courante** : 03 (PR #3)
-**Branche courante** : `feature/03-format-conversion` (HEAD `dd3ade6`)
+**Phases mergées** : 01 (squelette, PR #1), 02 (upload & parsing, PR #2), 03 (conversion formats, PR #3), 04 (écran de sélection + qualification light, PR #4)
+**Prochaine phase** : **05 — Calibrage tokens + compteur d'économie de contexte** (différenciateur produit central, cf. `.workflow/POSITIONING.md`)
+**Branche courante** : `feature/04-selection-screen` (local en retard sur main après merge)
 
 **Reprise** :
-1. Re-tester l'UAT phase 03 (drop la spec qui avait dépassé la profondeur 20)
-2. Merger PR #3 dans main
-3. Enchaîner **Phase 04 — Écran de sélection** (lire `.workflow/phases/04-selection-screen/PLAN.md`, créer `feature/04-selection-screen` depuis main, TDD strict)
+1. `git checkout main && git pull` pour resynchroniser
+2. Créer `feature/05-token-counter` depuis main
+3. Lire `.workflow/phases/05-token-counter/PLAN.md` (à vérifier qu'il existe, sinon REFINE)
+4. TDD strict
 
-Détails session précédente : `.workflow/sessions/2026-05-26-phase-02-03.md`.
-Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 04 → 13 restantes).
+Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 05 → 13 restantes).
+Positionnement marché : `.workflow/POSITIONING.md` (recadrage 2026-05-27, Speakeasy = concurrent #1, différenciateur = UX non-tech).
 
 ## Stack
 
