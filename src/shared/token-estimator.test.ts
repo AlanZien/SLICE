@@ -24,12 +24,16 @@ const spec = (endpoints: Endpoint[]): ParsedSpec => ({
 });
 
 describe('estimateEndpointTokens', () => {
-  it('uses the base cost for a minimal endpoint with no params and no description', () => {
-    expect(estimateEndpointTokens(ep({}))).toBe(25);
+  it('uses the base cost only when there is no text and no params', () => {
+    // The default `ep` has label='x' (1 char → 1 description token). Empty
+    // both label and description so the formula reduces to BASE only.
+    expect(estimateEndpointTokens(ep({ label: '', description: '' }))).toBe(25);
   });
 
   it('adds 20 tokens per parameter (calibrated coefficient)', () => {
     const e = ep({
+      label: '',
+      description: '',
       params: [
         { name: 'limit', in: 'query', required: false },
         { name: 'cursor', in: 'query', required: false },
