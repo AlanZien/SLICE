@@ -225,6 +225,33 @@ paths:
     }
   });
 
+  it('accepts the Swashbuckle "scheme: Bearer" convention via sanitizer', async () => {
+    // Real-world bug from .NET Swashbuckle: `Bearer` (capitalised) instead
+    // of the RFC 7235 lowercase form. Without the sanitizer this would fail
+    // SwaggerParser.validate with a wall of unreadable schema errors.
+    const swashbuckleSpec = `openapi: "3.0.3"
+info: { title: dotnet, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security:
+        - Bearer: []
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT
+`;
+    const result = await parseSpec(swashbuckleSpec, {
+      sizeBytes: swashbuckleSpec.length,
+    });
+    expect(result.apiName).toBe('dotnet');
+    expect(result.groups.length).toBeGreaterThan(0);
+  });
+
   it('returns a ParseError instance (not a plain object)', async () => {
     try {
       await parseSpec('garbage', { sizeBytes: 7 });

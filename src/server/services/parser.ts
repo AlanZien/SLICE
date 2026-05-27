@@ -3,6 +3,7 @@ import SwaggerParser from '@apidevtools/swagger-parser';
 import { ParseError, type ParsedSpec } from '@shared/types';
 import { convertToOpenAPI3 } from './format-converter';
 import { normalizeSpec } from './spec-normalizer';
+import { sanitizeSpec } from './spec-sanitizer';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
 const MAX_DEPTH = 50;                // Object/array depth ceiling (R1.1.6 — raised from 20 after real-world specs like Stripe/GitHub were rejected as false positives; CORE_SCHEMA already blocks YAML bombs, MAX_NODES caps total work)
@@ -68,12 +69,16 @@ async function runPipeline(raw: string): Promise<ParsedSpec> {
   assertVersion(tree);
   assertDepth(tree);
   assertNoExternalRefs(tree);
+  // Narrow, non-semantic orthographic fixes (e.g. Swashbuckle's `scheme:
+  // Bearer` → `scheme: bearer`) so the downstream validator doesn't reject
+  // specs over IANA-constant casing. See `spec-sanitizer.ts` for the why.
+  const sanitised = sanitizeSpec(tree);
 
   // SwaggerParser.validate accepts an in-memory object at runtime but its
   // type definitions only list `string | Document`. Casting keeps the
   // runtime contract while satisfying tsc.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const validated = await SwaggerParser.validate(tree as any);
+  const validated = await SwaggerParser.validate(sanitised as any);
 
   // R1.1.7 — at least one path is required to consider the spec usable.
   // `paths` may be missing for OpenAPI 3.1 specs that only define webhooks,
