@@ -13,35 +13,53 @@ const EP: Endpoint = {
 };
 
 describe('<EndpointRow>', () => {
-  it('renders label, method and path', () => {
-    render(<EndpointRow endpoint={EP} selected={false} onToggle={() => {}} />);
+  const baseProps = {
+    endpoint: EP,
+    selected: false,
+    focused: false,
+    estimatedTokens: 42,
+    onToggle: () => {},
+    onFocus: () => {},
+  };
+
+  it('renders label, method, path and estimated tokens', () => {
+    render(<EndpointRow {...baseProps} />);
     expect(screen.getByText('List things')).toBeInTheDocument();
     expect(screen.getByText('GET')).toBeInTheDocument();
     expect(screen.getByText('/things')).toBeInTheDocument();
+    expect(screen.getByText(/42/)).toBeInTheDocument();
   });
 
   it('reflects the selected state on the checkbox', () => {
-    const { rerender } = render(
-      <EndpointRow endpoint={EP} selected={false} onToggle={() => {}} />
-    );
+    const { rerender } = render(<EndpointRow {...baseProps} selected={false} />);
     expect(screen.getByRole('checkbox')).not.toBeChecked();
-    rerender(<EndpointRow endpoint={EP} selected={true} onToggle={() => {}} />);
+    rerender(<EndpointRow {...baseProps} selected={true} />);
     expect(screen.getByRole('checkbox')).toBeChecked();
   });
 
-  it('calls onToggle when the row label is clicked', async () => {
-    const onToggle = vi.fn();
-    render(<EndpointRow endpoint={EP} selected={false} onToggle={onToggle} />);
-    // Clicking the row text bubbles to the wrapping <label>, which toggles
-    // the associated checkbox and fires its `onChange`.
-    await userEvent.click(screen.getByText('List things'));
-    expect(onToggle).toHaveBeenCalledWith('GET /things');
+  it('marks the row with aria-current when focused', () => {
+    const { container, rerender } = render(<EndpointRow {...baseProps} focused={false} />);
+    const row = container.firstChild as HTMLElement;
+    expect(row).not.toHaveAttribute('aria-current');
+    rerender(<EndpointRow {...baseProps} focused={true} />);
+    expect(row).toHaveAttribute('aria-current', 'true');
   });
 
-  it('calls onToggle when the checkbox itself is clicked (no double-fire)', async () => {
+  it('clicking the row body fires onFocus (not onToggle)', async () => {
+    const onFocus = vi.fn();
     const onToggle = vi.fn();
-    render(<EndpointRow endpoint={EP} selected={false} onToggle={onToggle} />);
+    render(<EndpointRow {...baseProps} onFocus={onFocus} onToggle={onToggle} />);
+    await userEvent.click(screen.getByText('List things'));
+    expect(onFocus).toHaveBeenCalledWith('GET /things');
+    expect(onToggle).not.toHaveBeenCalled();
+  });
+
+  it('clicking the checkbox fires onToggle (not onFocus)', async () => {
+    const onFocus = vi.fn();
+    const onToggle = vi.fn();
+    render(<EndpointRow {...baseProps} onFocus={onFocus} onToggle={onToggle} />);
     await userEvent.click(screen.getByRole('checkbox'));
-    expect(onToggle).toHaveBeenCalledTimes(1);
+    expect(onToggle).toHaveBeenCalledWith('GET /things');
+    expect(onFocus).not.toHaveBeenCalled();
   });
 });
