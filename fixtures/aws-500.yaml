@@ -1,0 +1,2608 @@
+openapi: "3.0.3"
+info:
+  title: AWS Sample (500 endpoints)
+  version: "2024-04"
+  description: Synthetic 500-endpoint fixture for SLICE perf tests (R1.2.5).
+servers:
+  - url: https://aws.example.com
+paths:
+  /ec2:
+    get:
+      tags: [EC2]
+      summary: List ec2
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [EC2]
+      summary: Create a ec2
+      responses: { "201": { description: created } }
+  /ec2/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [EC2]
+      summary: Get a ec2
+      responses: { "200": { description: ok } }
+    put:
+      tags: [EC2]
+      summary: Update a ec2
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [EC2]
+      summary: Delete a ec2
+      responses: { "204": { description: deleted } }
+  /s3:
+    get:
+      tags: [S3]
+      summary: List s3
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [S3]
+      summary: Create a s3
+      responses: { "201": { description: created } }
+  /s3/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [S3]
+      summary: Get a s3
+      responses: { "200": { description: ok } }
+    put:
+      tags: [S3]
+      summary: Update a s3
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [S3]
+      summary: Delete a s3
+      responses: { "204": { description: deleted } }
+  /lambda:
+    get:
+      tags: [Lambda]
+      summary: List lambda
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Lambda]
+      summary: Create a lambda
+      responses: { "201": { description: created } }
+  /lambda/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Lambda]
+      summary: Get a lambda
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Lambda]
+      summary: Update a lambda
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Lambda]
+      summary: Delete a lambda
+      responses: { "204": { description: deleted } }
+  /dynamodb:
+    get:
+      tags: [DynamoDB]
+      summary: List dynamodb
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [DynamoDB]
+      summary: Create a dynamodb
+      responses: { "201": { description: created } }
+  /dynamodb/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [DynamoDB]
+      summary: Get a dynamodb
+      responses: { "200": { description: ok } }
+    put:
+      tags: [DynamoDB]
+      summary: Update a dynamodb
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [DynamoDB]
+      summary: Delete a dynamodb
+      responses: { "204": { description: deleted } }
+  /rds:
+    get:
+      tags: [RDS]
+      summary: List rds
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [RDS]
+      summary: Create a rds
+      responses: { "201": { description: created } }
+  /rds/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [RDS]
+      summary: Get a rds
+      responses: { "200": { description: ok } }
+    put:
+      tags: [RDS]
+      summary: Update a rds
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [RDS]
+      summary: Delete a rds
+      responses: { "204": { description: deleted } }
+  /cloudfront:
+    get:
+      tags: [CloudFront]
+      summary: List cloudfront
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CloudFront]
+      summary: Create a cloudfront
+      responses: { "201": { description: created } }
+  /cloudfront/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CloudFront]
+      summary: Get a cloudfront
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CloudFront]
+      summary: Update a cloudfront
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CloudFront]
+      summary: Delete a cloudfront
+      responses: { "204": { description: deleted } }
+  /route53:
+    get:
+      tags: [Route53]
+      summary: List route53
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Route53]
+      summary: Create a route53
+      responses: { "201": { description: created } }
+  /route53/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Route53]
+      summary: Get a route53
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Route53]
+      summary: Update a route53
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Route53]
+      summary: Delete a route53
+      responses: { "204": { description: deleted } }
+  /iam:
+    get:
+      tags: [IAM]
+      summary: List iam
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [IAM]
+      summary: Create a iam
+      responses: { "201": { description: created } }
+  /iam/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [IAM]
+      summary: Get a iam
+      responses: { "200": { description: ok } }
+    put:
+      tags: [IAM]
+      summary: Update a iam
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [IAM]
+      summary: Delete a iam
+      responses: { "204": { description: deleted } }
+  /ses:
+    get:
+      tags: [SES]
+      summary: List ses
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SES]
+      summary: Create a ses
+      responses: { "201": { description: created } }
+  /ses/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SES]
+      summary: Get a ses
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SES]
+      summary: Update a ses
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SES]
+      summary: Delete a ses
+      responses: { "204": { description: deleted } }
+  /sns:
+    get:
+      tags: [SNS]
+      summary: List sns
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SNS]
+      summary: Create a sns
+      responses: { "201": { description: created } }
+  /sns/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SNS]
+      summary: Get a sns
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SNS]
+      summary: Update a sns
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SNS]
+      summary: Delete a sns
+      responses: { "204": { description: deleted } }
+  /sqs:
+    get:
+      tags: [SQS]
+      summary: List sqs
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SQS]
+      summary: Create a sqs
+      responses: { "201": { description: created } }
+  /sqs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SQS]
+      summary: Get a sqs
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SQS]
+      summary: Update a sqs
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SQS]
+      summary: Delete a sqs
+      responses: { "204": { description: deleted } }
+  /kinesis:
+    get:
+      tags: [Kinesis]
+      summary: List kinesis
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Kinesis]
+      summary: Create a kinesis
+      responses: { "201": { description: created } }
+  /kinesis/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Kinesis]
+      summary: Get a kinesis
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Kinesis]
+      summary: Update a kinesis
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Kinesis]
+      summary: Delete a kinesis
+      responses: { "204": { description: deleted } }
+  /glue:
+    get:
+      tags: [Glue]
+      summary: List glue
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Glue]
+      summary: Create a glue
+      responses: { "201": { description: created } }
+  /glue/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Glue]
+      summary: Get a glue
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Glue]
+      summary: Update a glue
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Glue]
+      summary: Delete a glue
+      responses: { "204": { description: deleted } }
+  /athena:
+    get:
+      tags: [Athena]
+      summary: List athena
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Athena]
+      summary: Create a athena
+      responses: { "201": { description: created } }
+  /athena/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Athena]
+      summary: Get a athena
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Athena]
+      summary: Update a athena
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Athena]
+      summary: Delete a athena
+      responses: { "204": { description: deleted } }
+  /redshift:
+    get:
+      tags: [Redshift]
+      summary: List redshift
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Redshift]
+      summary: Create a redshift
+      responses: { "201": { description: created } }
+  /redshift/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Redshift]
+      summary: Get a redshift
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Redshift]
+      summary: Update a redshift
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Redshift]
+      summary: Delete a redshift
+      responses: { "204": { description: deleted } }
+  /eks:
+    get:
+      tags: [EKS]
+      summary: List eks
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [EKS]
+      summary: Create a eks
+      responses: { "201": { description: created } }
+  /eks/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [EKS]
+      summary: Get a eks
+      responses: { "200": { description: ok } }
+    put:
+      tags: [EKS]
+      summary: Update a eks
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [EKS]
+      summary: Delete a eks
+      responses: { "204": { description: deleted } }
+  /ecs:
+    get:
+      tags: [ECS]
+      summary: List ecs
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [ECS]
+      summary: Create a ecs
+      responses: { "201": { description: created } }
+  /ecs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ECS]
+      summary: Get a ecs
+      responses: { "200": { description: ok } }
+    put:
+      tags: [ECS]
+      summary: Update a ecs
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [ECS]
+      summary: Delete a ecs
+      responses: { "204": { description: deleted } }
+  /ecr:
+    get:
+      tags: [ECR]
+      summary: List ecr
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [ECR]
+      summary: Create a ecr
+      responses: { "201": { description: created } }
+  /ecr/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ECR]
+      summary: Get a ecr
+      responses: { "200": { description: ok } }
+    put:
+      tags: [ECR]
+      summary: Update a ecr
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [ECR]
+      summary: Delete a ecr
+      responses: { "204": { description: deleted } }
+  /fargate:
+    get:
+      tags: [Fargate]
+      summary: List fargate
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Fargate]
+      summary: Create a fargate
+      responses: { "201": { description: created } }
+  /fargate/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Fargate]
+      summary: Get a fargate
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Fargate]
+      summary: Update a fargate
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Fargate]
+      summary: Delete a fargate
+      responses: { "204": { description: deleted } }
+  /batch:
+    get:
+      tags: [Batch]
+      summary: List batch
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Batch]
+      summary: Create a batch
+      responses: { "201": { description: created } }
+  /batch/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Batch]
+      summary: Get a batch
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Batch]
+      summary: Update a batch
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Batch]
+      summary: Delete a batch
+      responses: { "204": { description: deleted } }
+  /stepfunctions:
+    get:
+      tags: [StepFunctions]
+      summary: List stepfunctions
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [StepFunctions]
+      summary: Create a stepfunctions
+      responses: { "201": { description: created } }
+  /stepfunctions/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [StepFunctions]
+      summary: Get a stepfunctions
+      responses: { "200": { description: ok } }
+    put:
+      tags: [StepFunctions]
+      summary: Update a stepfunctions
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [StepFunctions]
+      summary: Delete a stepfunctions
+      responses: { "204": { description: deleted } }
+  /cloudwatch:
+    get:
+      tags: [CloudWatch]
+      summary: List cloudwatch
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CloudWatch]
+      summary: Create a cloudwatch
+      responses: { "201": { description: created } }
+  /cloudwatch/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CloudWatch]
+      summary: Get a cloudwatch
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CloudWatch]
+      summary: Update a cloudwatch
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CloudWatch]
+      summary: Delete a cloudwatch
+      responses: { "204": { description: deleted } }
+  /cloudwatchlogs:
+    get:
+      tags: [CloudWatchLogs]
+      summary: List cloudwatchlogs
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CloudWatchLogs]
+      summary: Create a cloudwatchlogs
+      responses: { "201": { description: created } }
+  /cloudwatchlogs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CloudWatchLogs]
+      summary: Get a cloudwatchlogs
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CloudWatchLogs]
+      summary: Update a cloudwatchlogs
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CloudWatchLogs]
+      summary: Delete a cloudwatchlogs
+      responses: { "204": { description: deleted } }
+  /xray:
+    get:
+      tags: [XRay]
+      summary: List xray
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [XRay]
+      summary: Create a xray
+      responses: { "201": { description: created } }
+  /xray/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [XRay]
+      summary: Get a xray
+      responses: { "200": { description: ok } }
+    put:
+      tags: [XRay]
+      summary: Update a xray
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [XRay]
+      summary: Delete a xray
+      responses: { "204": { description: deleted } }
+  /apigateway:
+    get:
+      tags: [APIGateway]
+      summary: List apigateway
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [APIGateway]
+      summary: Create a apigateway
+      responses: { "201": { description: created } }
+  /apigateway/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [APIGateway]
+      summary: Get a apigateway
+      responses: { "200": { description: ok } }
+    put:
+      tags: [APIGateway]
+      summary: Update a apigateway
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [APIGateway]
+      summary: Delete a apigateway
+      responses: { "204": { description: deleted } }
+  /appsync:
+    get:
+      tags: [AppSync]
+      summary: List appsync
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [AppSync]
+      summary: Create a appsync
+      responses: { "201": { description: created } }
+  /appsync/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [AppSync]
+      summary: Get a appsync
+      responses: { "200": { description: ok } }
+    put:
+      tags: [AppSync]
+      summary: Update a appsync
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [AppSync]
+      summary: Delete a appsync
+      responses: { "204": { description: deleted } }
+  /eventbridge:
+    get:
+      tags: [EventBridge]
+      summary: List eventbridge
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [EventBridge]
+      summary: Create a eventbridge
+      responses: { "201": { description: created } }
+  /eventbridge/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [EventBridge]
+      summary: Get a eventbridge
+      responses: { "200": { description: ok } }
+    put:
+      tags: [EventBridge]
+      summary: Update a eventbridge
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [EventBridge]
+      summary: Delete a eventbridge
+      responses: { "204": { description: deleted } }
+  /cognito:
+    get:
+      tags: [Cognito]
+      summary: List cognito
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Cognito]
+      summary: Create a cognito
+      responses: { "201": { description: created } }
+  /cognito/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Cognito]
+      summary: Get a cognito
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Cognito]
+      summary: Update a cognito
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Cognito]
+      summary: Delete a cognito
+      responses: { "204": { description: deleted } }
+  /pinpoint:
+    get:
+      tags: [Pinpoint]
+      summary: List pinpoint
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Pinpoint]
+      summary: Create a pinpoint
+      responses: { "201": { description: created } }
+  /pinpoint/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Pinpoint]
+      summary: Get a pinpoint
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Pinpoint]
+      summary: Update a pinpoint
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Pinpoint]
+      summary: Delete a pinpoint
+      responses: { "204": { description: deleted } }
+  /mq:
+    get:
+      tags: [MQ]
+      summary: List mq
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [MQ]
+      summary: Create a mq
+      responses: { "201": { description: created } }
+  /mq/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [MQ]
+      summary: Get a mq
+      responses: { "200": { description: ok } }
+    put:
+      tags: [MQ]
+      summary: Update a mq
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [MQ]
+      summary: Delete a mq
+      responses: { "204": { description: deleted } }
+  /mediaconvert:
+    get:
+      tags: [MediaConvert]
+      summary: List mediaconvert
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [MediaConvert]
+      summary: Create a mediaconvert
+      responses: { "201": { description: created } }
+  /mediaconvert/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [MediaConvert]
+      summary: Get a mediaconvert
+      responses: { "200": { description: ok } }
+    put:
+      tags: [MediaConvert]
+      summary: Update a mediaconvert
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [MediaConvert]
+      summary: Delete a mediaconvert
+      responses: { "204": { description: deleted } }
+  /polly:
+    get:
+      tags: [Polly]
+      summary: List polly
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Polly]
+      summary: Create a polly
+      responses: { "201": { description: created } }
+  /polly/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Polly]
+      summary: Get a polly
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Polly]
+      summary: Update a polly
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Polly]
+      summary: Delete a polly
+      responses: { "204": { description: deleted } }
+  /translate:
+    get:
+      tags: [Translate]
+      summary: List translate
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Translate]
+      summary: Create a translate
+      responses: { "201": { description: created } }
+  /translate/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Translate]
+      summary: Get a translate
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Translate]
+      summary: Update a translate
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Translate]
+      summary: Delete a translate
+      responses: { "204": { description: deleted } }
+  /comprehend:
+    get:
+      tags: [Comprehend]
+      summary: List comprehend
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Comprehend]
+      summary: Create a comprehend
+      responses: { "201": { description: created } }
+  /comprehend/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Comprehend]
+      summary: Get a comprehend
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Comprehend]
+      summary: Update a comprehend
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Comprehend]
+      summary: Delete a comprehend
+      responses: { "204": { description: deleted } }
+  /rekognition:
+    get:
+      tags: [Rekognition]
+      summary: List rekognition
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Rekognition]
+      summary: Create a rekognition
+      responses: { "201": { description: created } }
+  /rekognition/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Rekognition]
+      summary: Get a rekognition
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Rekognition]
+      summary: Update a rekognition
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Rekognition]
+      summary: Delete a rekognition
+      responses: { "204": { description: deleted } }
+  /textract:
+    get:
+      tags: [Textract]
+      summary: List textract
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Textract]
+      summary: Create a textract
+      responses: { "201": { description: created } }
+  /textract/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Textract]
+      summary: Get a textract
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Textract]
+      summary: Update a textract
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Textract]
+      summary: Delete a textract
+      responses: { "204": { description: deleted } }
+  /sagemaker:
+    get:
+      tags: [SageMaker]
+      summary: List sagemaker
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SageMaker]
+      summary: Create a sagemaker
+      responses: { "201": { description: created } }
+  /sagemaker/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SageMaker]
+      summary: Get a sagemaker
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SageMaker]
+      summary: Update a sagemaker
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SageMaker]
+      summary: Delete a sagemaker
+      responses: { "204": { description: deleted } }
+  /forecast:
+    get:
+      tags: [Forecast]
+      summary: List forecast
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Forecast]
+      summary: Create a forecast
+      responses: { "201": { description: created } }
+  /forecast/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Forecast]
+      summary: Get a forecast
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Forecast]
+      summary: Update a forecast
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Forecast]
+      summary: Delete a forecast
+      responses: { "204": { description: deleted } }
+  /personalize:
+    get:
+      tags: [Personalize]
+      summary: List personalize
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Personalize]
+      summary: Create a personalize
+      responses: { "201": { description: created } }
+  /personalize/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Personalize]
+      summary: Get a personalize
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Personalize]
+      summary: Update a personalize
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Personalize]
+      summary: Delete a personalize
+      responses: { "204": { description: deleted } }
+  /quicksight:
+    get:
+      tags: [QuickSight]
+      summary: List quicksight
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [QuickSight]
+      summary: Create a quicksight
+      responses: { "201": { description: created } }
+  /quicksight/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [QuickSight]
+      summary: Get a quicksight
+      responses: { "200": { description: ok } }
+    put:
+      tags: [QuickSight]
+      summary: Update a quicksight
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [QuickSight]
+      summary: Delete a quicksight
+      responses: { "204": { description: deleted } }
+  /codebuild:
+    get:
+      tags: [CodeBuild]
+      summary: List codebuild
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CodeBuild]
+      summary: Create a codebuild
+      responses: { "201": { description: created } }
+  /codebuild/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CodeBuild]
+      summary: Get a codebuild
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CodeBuild]
+      summary: Update a codebuild
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CodeBuild]
+      summary: Delete a codebuild
+      responses: { "204": { description: deleted } }
+  /codedeploy:
+    get:
+      tags: [CodeDeploy]
+      summary: List codedeploy
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CodeDeploy]
+      summary: Create a codedeploy
+      responses: { "201": { description: created } }
+  /codedeploy/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CodeDeploy]
+      summary: Get a codedeploy
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CodeDeploy]
+      summary: Update a codedeploy
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CodeDeploy]
+      summary: Delete a codedeploy
+      responses: { "204": { description: deleted } }
+  /codepipeline:
+    get:
+      tags: [CodePipeline]
+      summary: List codepipeline
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CodePipeline]
+      summary: Create a codepipeline
+      responses: { "201": { description: created } }
+  /codepipeline/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CodePipeline]
+      summary: Get a codepipeline
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CodePipeline]
+      summary: Update a codepipeline
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CodePipeline]
+      summary: Delete a codepipeline
+      responses: { "204": { description: deleted } }
+  /secretsmanager:
+    get:
+      tags: [SecretsManager]
+      summary: List secretsmanager
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SecretsManager]
+      summary: Create a secretsmanager
+      responses: { "201": { description: created } }
+  /secretsmanager/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SecretsManager]
+      summary: Get a secretsmanager
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SecretsManager]
+      summary: Update a secretsmanager
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SecretsManager]
+      summary: Delete a secretsmanager
+      responses: { "204": { description: deleted } }
+  /ssm:
+    get:
+      tags: [SSM]
+      summary: List ssm
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SSM]
+      summary: Create a ssm
+      responses: { "201": { description: created } }
+  /ssm/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SSM]
+      summary: Get a ssm
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SSM]
+      summary: Update a ssm
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SSM]
+      summary: Delete a ssm
+      responses: { "204": { description: deleted } }
+  /kms:
+    get:
+      tags: [KMS]
+      summary: List kms
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [KMS]
+      summary: Create a kms
+      responses: { "201": { description: created } }
+  /kms/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [KMS]
+      summary: Get a kms
+      responses: { "200": { description: ok } }
+    put:
+      tags: [KMS]
+      summary: Update a kms
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [KMS]
+      summary: Delete a kms
+      responses: { "204": { description: deleted } }
+  /waf:
+    get:
+      tags: [WAF]
+      summary: List waf
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [WAF]
+      summary: Create a waf
+      responses: { "201": { description: created } }
+  /waf/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [WAF]
+      summary: Get a waf
+      responses: { "200": { description: ok } }
+    put:
+      tags: [WAF]
+      summary: Update a waf
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [WAF]
+      summary: Delete a waf
+      responses: { "204": { description: deleted } }
+  /shield:
+    get:
+      tags: [Shield]
+      summary: List shield
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Shield]
+      summary: Create a shield
+      responses: { "201": { description: created } }
+  /shield/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Shield]
+      summary: Get a shield
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Shield]
+      summary: Update a shield
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Shield]
+      summary: Delete a shield
+      responses: { "204": { description: deleted } }
+  /guardduty:
+    get:
+      tags: [GuardDuty]
+      summary: List guardduty
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [GuardDuty]
+      summary: Create a guardduty
+      responses: { "201": { description: created } }
+  /guardduty/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [GuardDuty]
+      summary: Get a guardduty
+      responses: { "200": { description: ok } }
+    put:
+      tags: [GuardDuty]
+      summary: Update a guardduty
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [GuardDuty]
+      summary: Delete a guardduty
+      responses: { "204": { description: deleted } }
+  /inspector:
+    get:
+      tags: [Inspector]
+      summary: List inspector
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Inspector]
+      summary: Create a inspector
+      responses: { "201": { description: created } }
+  /inspector/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Inspector]
+      summary: Get a inspector
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Inspector]
+      summary: Update a inspector
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Inspector]
+      summary: Delete a inspector
+      responses: { "204": { description: deleted } }
+  /cloudtrail:
+    get:
+      tags: [CloudTrail]
+      summary: List cloudtrail
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CloudTrail]
+      summary: Create a cloudtrail
+      responses: { "201": { description: created } }
+  /cloudtrail/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CloudTrail]
+      summary: Get a cloudtrail
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CloudTrail]
+      summary: Update a cloudtrail
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CloudTrail]
+      summary: Delete a cloudtrail
+      responses: { "204": { description: deleted } }
+  /config:
+    get:
+      tags: [Config]
+      summary: List config
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Config]
+      summary: Create a config
+      responses: { "201": { description: created } }
+  /config/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Config]
+      summary: Get a config
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Config]
+      summary: Update a config
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Config]
+      summary: Delete a config
+      responses: { "204": { description: deleted } }
+  /organizationsaccount:
+    get:
+      tags: [OrganizationsAccount]
+      summary: List organizationsaccount
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [OrganizationsAccount]
+      summary: Create a organizationsaccount
+      responses: { "201": { description: created } }
+  /organizationsaccount/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [OrganizationsAccount]
+      summary: Get a organizationsaccount
+      responses: { "200": { description: ok } }
+    put:
+      tags: [OrganizationsAccount]
+      summary: Update a organizationsaccount
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [OrganizationsAccount]
+      summary: Delete a organizationsaccount
+      responses: { "204": { description: deleted } }
+  /organizationspolicy:
+    get:
+      tags: [OrganizationsPolicy]
+      summary: List organizationspolicy
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [OrganizationsPolicy]
+      summary: Create a organizationspolicy
+      responses: { "201": { description: created } }
+  /organizationspolicy/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [OrganizationsPolicy]
+      summary: Get a organizationspolicy
+      responses: { "200": { description: ok } }
+    put:
+      tags: [OrganizationsPolicy]
+      summary: Update a organizationspolicy
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [OrganizationsPolicy]
+      summary: Delete a organizationspolicy
+      responses: { "204": { description: deleted } }
+  /controltower:
+    get:
+      tags: [ControlTower]
+      summary: List controltower
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [ControlTower]
+      summary: Create a controltower
+      responses: { "201": { description: created } }
+  /controltower/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ControlTower]
+      summary: Get a controltower
+      responses: { "200": { description: ok } }
+    put:
+      tags: [ControlTower]
+      summary: Update a controltower
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [ControlTower]
+      summary: Delete a controltower
+      responses: { "204": { description: deleted } }
+  /servicecatalog:
+    get:
+      tags: [ServiceCatalog]
+      summary: List servicecatalog
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [ServiceCatalog]
+      summary: Create a servicecatalog
+      responses: { "201": { description: created } }
+  /servicecatalog/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ServiceCatalog]
+      summary: Get a servicecatalog
+      responses: { "200": { description: ok } }
+    put:
+      tags: [ServiceCatalog]
+      summary: Update a servicecatalog
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [ServiceCatalog]
+      summary: Delete a servicecatalog
+      responses: { "204": { description: deleted } }
+  /resourcegroups:
+    get:
+      tags: [ResourceGroups]
+      summary: List resourcegroups
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [ResourceGroups]
+      summary: Create a resourcegroups
+      responses: { "201": { description: created } }
+  /resourcegroups/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ResourceGroups]
+      summary: Get a resourcegroups
+      responses: { "200": { description: ok } }
+    put:
+      tags: [ResourceGroups]
+      summary: Update a resourcegroups
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [ResourceGroups]
+      summary: Delete a resourcegroups
+      responses: { "204": { description: deleted } }
+  /taggingapi:
+    get:
+      tags: [TaggingAPI]
+      summary: List taggingapi
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [TaggingAPI]
+      summary: Create a taggingapi
+      responses: { "201": { description: created } }
+  /taggingapi/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [TaggingAPI]
+      summary: Get a taggingapi
+      responses: { "200": { description: ok } }
+    put:
+      tags: [TaggingAPI]
+      summary: Update a taggingapi
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [TaggingAPI]
+      summary: Delete a taggingapi
+      responses: { "204": { description: deleted } }
+  /systemsmanager:
+    get:
+      tags: [SystemsManager]
+      summary: List systemsmanager
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SystemsManager]
+      summary: Create a systemsmanager
+      responses: { "201": { description: created } }
+  /systemsmanager/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SystemsManager]
+      summary: Get a systemsmanager
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SystemsManager]
+      summary: Update a systemsmanager
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SystemsManager]
+      summary: Delete a systemsmanager
+      responses: { "204": { description: deleted } }
+  /licensemanager:
+    get:
+      tags: [LicenseManager]
+      summary: List licensemanager
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [LicenseManager]
+      summary: Create a licensemanager
+      responses: { "201": { description: created } }
+  /licensemanager/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [LicenseManager]
+      summary: Get a licensemanager
+      responses: { "200": { description: ok } }
+    put:
+      tags: [LicenseManager]
+      summary: Update a licensemanager
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [LicenseManager]
+      summary: Delete a licensemanager
+      responses: { "204": { description: deleted } }
+  /directconnect:
+    get:
+      tags: [DirectConnect]
+      summary: List directconnect
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [DirectConnect]
+      summary: Create a directconnect
+      responses: { "201": { description: created } }
+  /directconnect/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [DirectConnect]
+      summary: Get a directconnect
+      responses: { "200": { description: ok } }
+    put:
+      tags: [DirectConnect]
+      summary: Update a directconnect
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [DirectConnect]
+      summary: Delete a directconnect
+      responses: { "204": { description: deleted } }
+  /vpcendpoint:
+    get:
+      tags: [VPCEndpoint]
+      summary: List vpcendpoint
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [VPCEndpoint]
+      summary: Create a vpcendpoint
+      responses: { "201": { description: created } }
+  /vpcendpoint/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [VPCEndpoint]
+      summary: Get a vpcendpoint
+      responses: { "200": { description: ok } }
+    put:
+      tags: [VPCEndpoint]
+      summary: Update a vpcendpoint
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [VPCEndpoint]
+      summary: Delete a vpcendpoint
+      responses: { "204": { description: deleted } }
+  /transitgateway:
+    get:
+      tags: [TransitGateway]
+      summary: List transitgateway
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [TransitGateway]
+      summary: Create a transitgateway
+      responses: { "201": { description: created } }
+  /transitgateway/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [TransitGateway]
+      summary: Get a transitgateway
+      responses: { "200": { description: ok } }
+    put:
+      tags: [TransitGateway]
+      summary: Update a transitgateway
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [TransitGateway]
+      summary: Delete a transitgateway
+      responses: { "204": { description: deleted } }
+  /globalaccelerator:
+    get:
+      tags: [GlobalAccelerator]
+      summary: List globalaccelerator
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [GlobalAccelerator]
+      summary: Create a globalaccelerator
+      responses: { "201": { description: created } }
+  /globalaccelerator/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [GlobalAccelerator]
+      summary: Get a globalaccelerator
+      responses: { "200": { description: ok } }
+    put:
+      tags: [GlobalAccelerator]
+      summary: Update a globalaccelerator
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [GlobalAccelerator]
+      summary: Delete a globalaccelerator
+      responses: { "204": { description: deleted } }
+  /networkfirewall:
+    get:
+      tags: [NetworkFirewall]
+      summary: List networkfirewall
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [NetworkFirewall]
+      summary: Create a networkfirewall
+      responses: { "201": { description: created } }
+  /networkfirewall/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [NetworkFirewall]
+      summary: Get a networkfirewall
+      responses: { "200": { description: ok } }
+    put:
+      tags: [NetworkFirewall]
+      summary: Update a networkfirewall
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [NetworkFirewall]
+      summary: Delete a networkfirewall
+      responses: { "204": { description: deleted } }
+  /privatelink:
+    get:
+      tags: [PrivateLink]
+      summary: List privatelink
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [PrivateLink]
+      summary: Create a privatelink
+      responses: { "201": { description: created } }
+  /privatelink/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [PrivateLink]
+      summary: Get a privatelink
+      responses: { "200": { description: ok } }
+    put:
+      tags: [PrivateLink]
+      summary: Update a privatelink
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [PrivateLink]
+      summary: Delete a privatelink
+      responses: { "204": { description: deleted } }
+  /appmesh:
+    get:
+      tags: [AppMesh]
+      summary: List appmesh
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [AppMesh]
+      summary: Create a appmesh
+      responses: { "201": { description: created } }
+  /appmesh/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [AppMesh]
+      summary: Get a appmesh
+      responses: { "200": { description: ok } }
+    put:
+      tags: [AppMesh]
+      summary: Update a appmesh
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [AppMesh]
+      summary: Delete a appmesh
+      responses: { "204": { description: deleted } }
+  /cloudmap:
+    get:
+      tags: [CloudMap]
+      summary: List cloudmap
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CloudMap]
+      summary: Create a cloudmap
+      responses: { "201": { description: created } }
+  /cloudmap/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CloudMap]
+      summary: Get a cloudmap
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CloudMap]
+      summary: Update a cloudmap
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CloudMap]
+      summary: Delete a cloudmap
+      responses: { "204": { description: deleted } }
+  /ram:
+    get:
+      tags: [RAM]
+      summary: List ram
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [RAM]
+      summary: Create a ram
+      responses: { "201": { description: created } }
+  /ram/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [RAM]
+      summary: Get a ram
+      responses: { "200": { description: ok } }
+    put:
+      tags: [RAM]
+      summary: Update a ram
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [RAM]
+      summary: Delete a ram
+      responses: { "204": { description: deleted } }
+  /outpostsrack:
+    get:
+      tags: [OutpostsRack]
+      summary: List outpostsrack
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [OutpostsRack]
+      summary: Create a outpostsrack
+      responses: { "201": { description: created } }
+  /outpostsrack/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [OutpostsRack]
+      summary: Get a outpostsrack
+      responses: { "200": { description: ok } }
+    put:
+      tags: [OutpostsRack]
+      summary: Update a outpostsrack
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [OutpostsRack]
+      summary: Delete a outpostsrack
+      responses: { "204": { description: deleted } }
+  /workspaces:
+    get:
+      tags: [WorkSpaces]
+      summary: List workspaces
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [WorkSpaces]
+      summary: Create a workspaces
+      responses: { "201": { description: created } }
+  /workspaces/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [WorkSpaces]
+      summary: Get a workspaces
+      responses: { "200": { description: ok } }
+    put:
+      tags: [WorkSpaces]
+      summary: Update a workspaces
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [WorkSpaces]
+      summary: Delete a workspaces
+      responses: { "204": { description: deleted } }
+  /appstream:
+    get:
+      tags: [AppStream]
+      summary: List appstream
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [AppStream]
+      summary: Create a appstream
+      responses: { "201": { description: created } }
+  /appstream/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [AppStream]
+      summary: Get a appstream
+      responses: { "200": { description: ok } }
+    put:
+      tags: [AppStream]
+      summary: Update a appstream
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [AppStream]
+      summary: Delete a appstream
+      responses: { "204": { description: deleted } }
+  /worklink:
+    get:
+      tags: [WorkLink]
+      summary: List worklink
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [WorkLink]
+      summary: Create a worklink
+      responses: { "201": { description: created } }
+  /worklink/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [WorkLink]
+      summary: Get a worklink
+      responses: { "200": { description: ok } }
+    put:
+      tags: [WorkLink]
+      summary: Update a worklink
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [WorkLink]
+      summary: Delete a worklink
+      responses: { "204": { description: deleted } }
+  /workdocs:
+    get:
+      tags: [WorkDocs]
+      summary: List workdocs
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [WorkDocs]
+      summary: Create a workdocs
+      responses: { "201": { description: created } }
+  /workdocs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [WorkDocs]
+      summary: Get a workdocs
+      responses: { "200": { description: ok } }
+    put:
+      tags: [WorkDocs]
+      summary: Update a workdocs
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [WorkDocs]
+      summary: Delete a workdocs
+      responses: { "204": { description: deleted } }
+  /workmail:
+    get:
+      tags: [WorkMail]
+      summary: List workmail
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [WorkMail]
+      summary: Create a workmail
+      responses: { "201": { description: created } }
+  /workmail/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [WorkMail]
+      summary: Get a workmail
+      responses: { "200": { description: ok } }
+    put:
+      tags: [WorkMail]
+      summary: Update a workmail
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [WorkMail]
+      summary: Delete a workmail
+      responses: { "204": { description: deleted } }
+  /chime:
+    get:
+      tags: [Chime]
+      summary: List chime
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Chime]
+      summary: Create a chime
+      responses: { "201": { description: created } }
+  /chime/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Chime]
+      summary: Get a chime
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Chime]
+      summary: Update a chime
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Chime]
+      summary: Delete a chime
+      responses: { "204": { description: deleted } }
+  /connect:
+    get:
+      tags: [Connect]
+      summary: List connect
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Connect]
+      summary: Create a connect
+      responses: { "201": { description: created } }
+  /connect/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Connect]
+      summary: Get a connect
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Connect]
+      summary: Update a connect
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Connect]
+      summary: Delete a connect
+      responses: { "204": { description: deleted } }
+  /alexaforbusiness:
+    get:
+      tags: [AlexaForBusiness]
+      summary: List alexaforbusiness
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [AlexaForBusiness]
+      summary: Create a alexaforbusiness
+      responses: { "201": { description: created } }
+  /alexaforbusiness/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [AlexaForBusiness]
+      summary: Get a alexaforbusiness
+      responses: { "200": { description: ok } }
+    put:
+      tags: [AlexaForBusiness]
+      summary: Update a alexaforbusiness
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [AlexaForBusiness]
+      summary: Delete a alexaforbusiness
+      responses: { "204": { description: deleted } }
+  /honeycode:
+    get:
+      tags: [Honeycode]
+      summary: List honeycode
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Honeycode]
+      summary: Create a honeycode
+      responses: { "201": { description: created } }
+  /honeycode/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Honeycode]
+      summary: Get a honeycode
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Honeycode]
+      summary: Update a honeycode
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Honeycode]
+      summary: Delete a honeycode
+      responses: { "204": { description: deleted } }
+  /honeycodeapp:
+    get:
+      tags: [HoneycodeApp]
+      summary: List honeycodeapp
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [HoneycodeApp]
+      summary: Create a honeycodeapp
+      responses: { "201": { description: created } }
+  /honeycodeapp/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [HoneycodeApp]
+      summary: Get a honeycodeapp
+      responses: { "200": { description: ok } }
+    put:
+      tags: [HoneycodeApp]
+      summary: Update a honeycodeapp
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [HoneycodeApp]
+      summary: Delete a honeycodeapp
+      responses: { "204": { description: deleted } }
+  /backup:
+    get:
+      tags: [Backup]
+      summary: List backup
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Backup]
+      summary: Create a backup
+      responses: { "201": { description: created } }
+  /backup/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Backup]
+      summary: Get a backup
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Backup]
+      summary: Update a backup
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Backup]
+      summary: Delete a backup
+      responses: { "204": { description: deleted } }
+  /dlm:
+    get:
+      tags: [DLM]
+      summary: List dlm
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [DLM]
+      summary: Create a dlm
+      responses: { "201": { description: created } }
+  /dlm/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [DLM]
+      summary: Get a dlm
+      responses: { "200": { description: ok } }
+    put:
+      tags: [DLM]
+      summary: Update a dlm
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [DLM]
+      summary: Delete a dlm
+      responses: { "204": { description: deleted } }
+  /storage:
+    get:
+      tags: [Storage]
+      summary: List storage
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Storage]
+      summary: Create a storage
+      responses: { "201": { description: created } }
+  /storage/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Storage]
+      summary: Get a storage
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Storage]
+      summary: Update a storage
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Storage]
+      summary: Delete a storage
+      responses: { "204": { description: deleted } }
+  /efs:
+    get:
+      tags: [EFS]
+      summary: List efs
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [EFS]
+      summary: Create a efs
+      responses: { "201": { description: created } }
+  /efs/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [EFS]
+      summary: Get a efs
+      responses: { "200": { description: ok } }
+    put:
+      tags: [EFS]
+      summary: Update a efs
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [EFS]
+      summary: Delete a efs
+      responses: { "204": { description: deleted } }
+  /fsx:
+    get:
+      tags: [FSx]
+      summary: List fsx
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [FSx]
+      summary: Create a fsx
+      responses: { "201": { description: created } }
+  /fsx/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [FSx]
+      summary: Get a fsx
+      responses: { "200": { description: ok } }
+    put:
+      tags: [FSx]
+      summary: Update a fsx
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [FSx]
+      summary: Delete a fsx
+      responses: { "204": { description: deleted } }
+  /s3glacier:
+    get:
+      tags: [S3Glacier]
+      summary: List s3glacier
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [S3Glacier]
+      summary: Create a s3glacier
+      responses: { "201": { description: created } }
+  /s3glacier/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [S3Glacier]
+      summary: Get a s3glacier
+      responses: { "200": { description: ok } }
+    put:
+      tags: [S3Glacier]
+      summary: Update a s3glacier
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [S3Glacier]
+      summary: Delete a s3glacier
+      responses: { "204": { description: deleted } }
+  /snowball:
+    get:
+      tags: [Snowball]
+      summary: List snowball
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Snowball]
+      summary: Create a snowball
+      responses: { "201": { description: created } }
+  /snowball/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Snowball]
+      summary: Get a snowball
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Snowball]
+      summary: Update a snowball
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Snowball]
+      summary: Delete a snowball
+      responses: { "204": { description: deleted } }
+  /datasync:
+    get:
+      tags: [DataSync]
+      summary: List datasync
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [DataSync]
+      summary: Create a datasync
+      responses: { "201": { description: created } }
+  /datasync/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [DataSync]
+      summary: Get a datasync
+      responses: { "200": { description: ok } }
+    put:
+      tags: [DataSync]
+      summary: Update a datasync
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [DataSync]
+      summary: Delete a datasync
+      responses: { "204": { description: deleted } }
+  /transfer:
+    get:
+      tags: [Transfer]
+      summary: List transfer
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Transfer]
+      summary: Create a transfer
+      responses: { "201": { description: created } }
+  /transfer/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Transfer]
+      summary: Get a transfer
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Transfer]
+      summary: Update a transfer
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Transfer]
+      summary: Delete a transfer
+      responses: { "204": { description: deleted } }
+  /storagegateway:
+    get:
+      tags: [StorageGateway]
+      summary: List storagegateway
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [StorageGateway]
+      summary: Create a storagegateway
+      responses: { "201": { description: created } }
+  /storagegateway/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [StorageGateway]
+      summary: Get a storagegateway
+      responses: { "200": { description: ok } }
+    put:
+      tags: [StorageGateway]
+      summary: Update a storagegateway
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [StorageGateway]
+      summary: Delete a storagegateway
+      responses: { "204": { description: deleted } }
+  /macie:
+    get:
+      tags: [Macie]
+      summary: List macie
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Macie]
+      summary: Create a macie
+      responses: { "201": { description: created } }
+  /macie/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Macie]
+      summary: Get a macie
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Macie]
+      summary: Update a macie
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Macie]
+      summary: Delete a macie
+      responses: { "204": { description: deleted } }
+  /securityhub:
+    get:
+      tags: [SecurityHub]
+      summary: List securityhub
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SecurityHub]
+      summary: Create a securityhub
+      responses: { "201": { description: created } }
+  /securityhub/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SecurityHub]
+      summary: Get a securityhub
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SecurityHub]
+      summary: Update a securityhub
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SecurityHub]
+      summary: Delete a securityhub
+      responses: { "204": { description: deleted } }
+  /accessanalyzer:
+    get:
+      tags: [AccessAnalyzer]
+      summary: List accessanalyzer
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [AccessAnalyzer]
+      summary: Create a accessanalyzer
+      responses: { "201": { description: created } }
+  /accessanalyzer/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [AccessAnalyzer]
+      summary: Get a accessanalyzer
+      responses: { "200": { description: ok } }
+    put:
+      tags: [AccessAnalyzer]
+      summary: Update a accessanalyzer
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [AccessAnalyzer]
+      summary: Delete a accessanalyzer
+      responses: { "204": { description: deleted } }
+  /resourceexplorer:
+    get:
+      tags: [ResourceExplorer]
+      summary: List resourceexplorer
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [ResourceExplorer]
+      summary: Create a resourceexplorer
+      responses: { "201": { description: created } }
+  /resourceexplorer/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [ResourceExplorer]
+      summary: Get a resourceexplorer
+      responses: { "200": { description: ok } }
+    put:
+      tags: [ResourceExplorer]
+      summary: Update a resourceexplorer
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [ResourceExplorer]
+      summary: Delete a resourceexplorer
+      responses: { "204": { description: deleted } }
+  /billingdashboard:
+    get:
+      tags: [BillingDashboard]
+      summary: List billingdashboard
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [BillingDashboard]
+      summary: Create a billingdashboard
+      responses: { "201": { description: created } }
+  /billingdashboard/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [BillingDashboard]
+      summary: Get a billingdashboard
+      responses: { "200": { description: ok } }
+    put:
+      tags: [BillingDashboard]
+      summary: Update a billingdashboard
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [BillingDashboard]
+      summary: Delete a billingdashboard
+      responses: { "204": { description: deleted } }
+  /costexplorer:
+    get:
+      tags: [CostExplorer]
+      summary: List costexplorer
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [CostExplorer]
+      summary: Create a costexplorer
+      responses: { "201": { description: created } }
+  /costexplorer/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [CostExplorer]
+      summary: Get a costexplorer
+      responses: { "200": { description: ok } }
+    put:
+      tags: [CostExplorer]
+      summary: Update a costexplorer
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [CostExplorer]
+      summary: Delete a costexplorer
+      responses: { "204": { description: deleted } }
+  /budgets:
+    get:
+      tags: [Budgets]
+      summary: List budgets
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [Budgets]
+      summary: Create a budgets
+      responses: { "201": { description: created } }
+  /budgets/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Budgets]
+      summary: Get a budgets
+      responses: { "200": { description: ok } }
+    put:
+      tags: [Budgets]
+      summary: Update a budgets
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [Budgets]
+      summary: Delete a budgets
+      responses: { "204": { description: deleted } }
+  /savingsplans:
+    get:
+      tags: [SavingsPlans]
+      summary: List savingsplans
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [SavingsPlans]
+      summary: Create a savingsplans
+      responses: { "201": { description: created } }
+  /savingsplans/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [SavingsPlans]
+      summary: Get a savingsplans
+      responses: { "200": { description: ok } }
+    put:
+      tags: [SavingsPlans]
+      summary: Update a savingsplans
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [SavingsPlans]
+      summary: Delete a savingsplans
+      responses: { "204": { description: deleted } }
+  /marketplacecatalog:
+    get:
+      tags: [MarketplaceCatalog]
+      summary: List marketplacecatalog
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [MarketplaceCatalog]
+      summary: Create a marketplacecatalog
+      responses: { "201": { description: created } }
+  /marketplacecatalog/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [MarketplaceCatalog]
+      summary: Get a marketplacecatalog
+      responses: { "200": { description: ok } }
+    put:
+      tags: [MarketplaceCatalog]
+      summary: Update a marketplacecatalog
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [MarketplaceCatalog]
+      summary: Delete a marketplacecatalog
+      responses: { "204": { description: deleted } }
+  /licenseconfigurations:
+    get:
+      tags: [LicenseConfigurations]
+      summary: List licenseconfigurations
+      parameters:
+        - { name: limit, in: query, schema: { type: integer } }
+      responses: { "200": { description: ok } }
+    post:
+      tags: [LicenseConfigurations]
+      summary: Create a licenseconfigurations
+      responses: { "201": { description: created } }
+  /licenseconfigurations/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [LicenseConfigurations]
+      summary: Get a licenseconfigurations
+      responses: { "200": { description: ok } }
+    put:
+      tags: [LicenseConfigurations]
+      summary: Update a licenseconfigurations
+      responses: { "200": { description: ok } }
+    delete:
+      tags: [LicenseConfigurations]
+      summary: Delete a licenseconfigurations
+      responses: { "204": { description: deleted } }

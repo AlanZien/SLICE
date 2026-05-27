@@ -35,6 +35,10 @@ Implémenter l'écran 2 : liste des endpoints groupés par tag, sélection par c
 - [ ] 9. Implémenter `screens/selection.tsx` : layout 2 colonnes (liste 1fr + sidebar 280px), responsive (sidebar passe en bottom sheet < 768px)
 - [ ] 10. Câbler navigation : "Continuer" → callback `onContinue(selectedIds)` → écran 3
 - [ ] 11. Créer fixture `fixtures/aws-500.yaml` (peut être un JSON OpenAPI réel d'AWS ou une fixture générée avec 500 endpoints)
+- [ ] 12. Qualification light de la spec (3 filtres pré-écran, décidés 2026-05-27) :
+  - 12.a. **Refus dur côté serveur si auth non supportée** : si la spec déclare un `securityScheme` de type `oauth2`, `openIdConnect`, ou `http` scheme `basic`/`digest` sur un endpoint sélectionnable, rejeter le parsing avec code `UNSUPPORTED_AUTH` (MVP supporte uniquement None / API Key / Bearer)
+  - 12.b. **Exclusion auto** des endpoints sans `operationId` ET sans `summary` ET sans `description` exploitable. Compteur "X endpoints ignorés (descriptions manquantes)" affiché dans `<ApiHeader>` ou `<SelectionSidebar>`
+  - 12.c. **Exclusion par défaut** des endpoints `deprecated: true`. Toggle "Afficher les endpoints dépréciés" dans la sidebar (off par défaut)
 
 ## Tests TDD
 
@@ -52,6 +56,11 @@ Implémenter l'écran 2 : liste des endpoints groupés par tag, sélection par c
 - [ ] `<SelectionSidebar>` désactive le bouton "Continuer" si count==0 — `selection-sidebar.test.tsx`
 - [ ] `<ApiHeader>` mode édition au click URL, sauvegarde sur Enter — `api-header.test.tsx`
 - [ ] `screens/selection` p95 < 100ms sur fixture aws-500 (test perf) — `selection.perf.test.ts`
+- [ ] Parser rejette une spec avec `oauth2` security scheme (code `UNSUPPORTED_AUTH`) — `spec-qualifier.test.ts`
+- [ ] Parser rejette une spec avec `http basic` security scheme — idem
+- [ ] Parser accepte `apiKey` et `http bearer` — idem
+- [ ] Endpoint sans `operationId`, `summary`, ni `description` → exclu de `selectableEndpoints`, présent dans `ignoredEndpoints` — idem
+- [ ] Endpoint `deprecated: true` → exclu par défaut, présent si `includeDeprecated: true` — idem
 
 ## Tests E2E
 
