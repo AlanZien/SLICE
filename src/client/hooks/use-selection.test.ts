@@ -28,6 +28,25 @@ const SPEC: ParsedSpec = {
 };
 
 describe('useSelection', () => {
+  it('does not pre-select deprecated GETs (consistent with the hidden-by-default toggle, 12.c)', () => {
+    const specWithDeprecated = {
+      ...SPEC,
+      groups: [
+        {
+          tag: 'Things',
+          endpoints: [
+            { id: 'GET /things', method: 'GET' as const, path: '/things', label: 'list', params: [] },
+            { id: 'GET /things/legacy', method: 'GET' as const, path: '/things/legacy', label: 'legacy', params: [], deprecated: true },
+          ],
+        },
+      ],
+    };
+    const { result } = renderHook(() => useSelection(specWithDeprecated));
+    expect(result.current.isSelected('GET /things')).toBe(true);
+    expect(result.current.isSelected('GET /things/legacy')).toBe(false);
+    expect(result.current.count).toBe(1);
+  });
+
   it('initialises with every GET pre-selected and writes unselected (R1.2.7)', () => {
     const { result } = renderHook(() => useSelection(SPEC));
     const selected = result.current.selectedIds();

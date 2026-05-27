@@ -30,9 +30,12 @@ function flattenEndpoints(spec: ParsedSpec): Endpoint[] {
 function initialSelection(spec: ParsedSpec): Set<string> {
   // R1.2.7 — every GET pre-selected, writes off by default. A read accidentally
   // forgotten is cheaper than a write enabled unintentionally.
+  // 12.c — deprecated endpoints are hidden by default in the UI, so they
+  // must not silently land in the selection set either (would produce the
+  // confusing "4 / 3 endpoints" counter once the toggle is off).
   const set = new Set<string>();
   for (const ep of flattenEndpoints(spec)) {
-    if (ep.method === 'GET') set.add(ep.id);
+    if (ep.method === 'GET' && !ep.deprecated) set.add(ep.id);
   }
   return set;
 }
