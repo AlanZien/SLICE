@@ -42,7 +42,7 @@ describe('<TagRail>', () => {
         fullTokens={1000}
       />
     );
-    const orders = screen.getByRole('button', { name: /orders/i });
+    const orders = screen.getByRole('button', { name: /tag: orders/i });
     expect(orders).toHaveAttribute('aria-current', 'true');
   });
 
@@ -60,7 +60,7 @@ describe('<TagRail>', () => {
         fullTokens={1000}
       />
     );
-    await userEvent.click(screen.getByRole('button', { name: /orders/i }));
+    await userEvent.click(screen.getByRole('button', { name: /tag: orders/i }));
     expect(onSelectTag).toHaveBeenCalledWith('Orders');
   });
 
@@ -78,7 +78,7 @@ describe('<TagRail>', () => {
         fullTokens={1000}
       />
     );
-    await userEvent.click(screen.getByRole('button', { name: /^all$/i }));
+    await userEvent.click(screen.getByRole('button', { name: /tag: all/i }));
     expect(onSelectTag).toHaveBeenCalledWith(null);
   });
 
@@ -115,7 +115,7 @@ describe('<TagRail>', () => {
       />
     );
     // Products: 5/8 → both numbers visible
-    const productsItem = screen.getByRole('button', { name: /products/i });
+    const productsItem = screen.getByRole('button', { name: /tag: products/i });
     expect(productsItem).toHaveTextContent('5');
     expect(productsItem).toHaveTextContent('8');
   });

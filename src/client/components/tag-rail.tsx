@@ -103,7 +103,7 @@ function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
     <button
       type="button"
       onClick={onClick}
-      aria-label={name}
+      aria-label={`Tag: ${name}`}
       aria-current={active ? 'true' : undefined}
       className={cn(
         'flex items-center justify-between rounded px-2.5 py-1 text-left text-xs transition-colors',

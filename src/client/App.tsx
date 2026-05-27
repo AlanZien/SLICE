@@ -59,7 +59,11 @@ function App() {
         {screen === 1 && <UploadScreen onParsed={handleParsed} />}
 
         {screen === 2 && parsedSpec && (
-          <SelectionScreen spec={parsedSpec} onContinue={handleSelectionDone} />
+          <SelectionScreen
+            spec={parsedSpec}
+            onContinue={handleSelectionDone}
+            onBack={handleReset}
+          />
         )}
 
         {screen === 3 && parsedSpec && (
