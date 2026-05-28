@@ -310,3 +310,35 @@ Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquett
 - Types OpenAPI custom non remontés à l'utilisateur (toast/log à ajouter)
 - `FALLBACK_DEFAULT` dans `config.tsx` produit `mcpServerToken: ''` (cas inatteignable en pratique)
 - Couplage phase 03 ↔ phase 06 à documenter (read-only auth dépend du filtre amont)
+
+
+## Phase 07 : Templates MCP + générateur de fichiers (2026-05-28)
+
+### Tests techniques (générés depuis PLAN 07)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 309 verts (44 fichiers) | ✓ | inclut snapshot + tsc smoke |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict |
+| 3 | `generateMcp(req)` retourne 8 fichiers avec les bons chemins | ✓ | `mcp-generator.test.ts` |
+| 4 | `src/tools.ts` contient autant de `server.tool(` que de `selectedIds` | ✓ | snapshot test |
+| 5 | `src/index.ts` contient les transports attendus selon `mode` (`local`/`remote`/`both`) | ✓ | 3 tests dédiés |
+| 6 | `http-client.ts` injecte le header d'auth correct selon `upstreamAuth.type` | ✓ | apiKey / bearer / none |
+| 7 | `.env.example` contient les bonnes variables selon auth + mode | ✓ | |
+| 8 | `package.json` interpole `mcpName`, déclare SDK + zod | ✓ | |
+| 9 | README contient snippet Claude Desktop si stdio actif, snippet Bearer si http actif | ✓ | |
+| 10 | Bundle généré sur `fixtures/shopify-50.yaml` compile via `tsc --noEmit` | ✓ | smoke test fin de pipeline |
+
+### Tests métier / UX (à valider plus tard quand l'endpoint `/api/generate` sera branché)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Télécharger un ZIP pour `shopify-50.yaml` + 10 endpoints sélectionnés | ⏳ | nécessite phase 08 |
+| 2 | `pnpm install && pnpm build` dans le bundle téléchargé → exit 0 | ⏳ | manuel |
+| 3 | `MCP_TRANSPORT=stdio pnpm start` lance le serveur, accepte requête `tools/list` | ⏳ | manuel |
+| 4 | `MCP_TRANSPORT=http pnpm start` écoute sur :8787, refuse sans Bearer | ⏳ | manuel |
+
+### Observations
+
+- Le smoke `tsc --noEmit` du bundle a forcé deux corrections clés : passage à `McpServer` (le `Server` bas-niveau n'a pas `.tool()`), et schémas d'inputs en `ZodRawShape` plutôt qu'en `z.object({...})` (exigence du SDK).
+- Mode `'http'` n'existe pas dans `DeploymentMode` — la valeur correcte est `'remote'`. À refléter dans la doc utilisateur de l'écran config.

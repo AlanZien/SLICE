@@ -10,7 +10,8 @@
     "dev:server": "tsx watch src/server/index.ts",
     "build": "pnpm build:client && pnpm build:server",
     "build:client": "tsc -p tsconfig.app.json && vite build",
-    "build:server": "tsc -p tsconfig.server.json",
+    "build:server": "tsc -p tsconfig.server.json && pnpm copy:templates",
+    "copy:templates": "node -e \"require('node:fs').cpSync('src/server/templates','dist/server/server/templates',{recursive:true})\"",
     "start": "NODE_ENV=production node dist/server/server/index.js",
     "typecheck": "tsc -b",
     "test": "vitest run",
@@ -51,6 +52,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@tailwindcss/vite": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

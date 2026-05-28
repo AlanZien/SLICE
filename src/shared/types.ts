@@ -124,6 +124,26 @@ export type ParseErrorCode =
   | 'PARSE_TIMEOUT'               // > 5 s (R1.1.5)
   | 'PARSE_DEPTH_EXCEEDED';       // > 200k nodes (R1.1.6)
 
+/**
+ * Payload posted by the client to `/api/generate` (phase 08). Held in shared
+ * types because the same shape feeds the front-end submission, the back-end
+ * Zod guard, and the unit tests for `mcp-generator` (phase 07).
+ */
+export interface GenerateRequest {
+  /** Result of phase 02 / 03 parsing — drives endpoint/tool emission. */
+  parsedSpec: ParsedSpec;
+  /** Subset of endpoint ids the user picked on screen 2. */
+  selectedIds: string[];
+  /** Final user-confirmed configuration. */
+  config: SliceConfig;
+}
+
+/** Single file emitted by the generator. `path` is the in-ZIP relative path. */
+export interface GeneratedFile {
+  path: string;
+  content: string;
+}
+
 export class ParseError extends Error {
   constructor(public readonly code: ParseErrorCode, message: string) {
     super(message);

@@ -4,25 +4,28 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**Phase 04bis — Refonte écran 2 en 3-col Raycast (MERGÉE, 2026-05-28)** — PR #6 mergée. Layout aligné sur la maquette JSX `hifi-screen-2.jsx` : rail tags gauche + liste centrale + panneau aperçu droit + sticky footer.
+**Phase 06 — Écran de configuration (MERGÉE, 2026-05-28)** — PR #8 mergée. 2-pane : form (nom MCP + URL + auth + 3 dest cards + advanced) + live preview (MCP card + ZIP tree + post-gen steps). Auth amont read-only quand détectée de la spec, éditable sinon.
 
-**Phases mergées** : 01 (PR #1), 02 (PR #2), 03 (PR #3), 04 (PR #4), 05 token-counter (PR #5), **04bis 3-col refactor (PR #6)**
-**Prochaine phase** : **06 — Écran de configuration** (form nom MCP + URL base + auth + 3 cards mode + options avancées + bouton Générer)
-**Branche courante** : `main` (local synchro avec origin/main)
+**Phases mergées** : 01 (PR #1), 02 (PR #2), 03 (PR #3), 04 (PR #4), 05 token-counter (PR #5), 04bis 3-col refactor (PR #6), 04ter polish (PR #7), **06 config screen (PR #8)**
+**Prochaine phase** : **07 — Templates MCP + endpoint `/api/generate` + ZIP streaming** (grosse phase serveur : Handlebars templates, génération code TS, archiver pour streaming ZIP)
+**Branche courante** : `main` (synchro avec origin/main)
 
 **État technique** :
-- 187 tests verts, typecheck clean
-- Calibration tokens R1.2.8 sous ±15% (worst 2.6%)
-- Filtres qualification spec actifs : UNSUPPORTED_AUTH (oauth2/basic/digest), exclusion endpoints sans description, deprecated cachés par défaut
+- 269 tests verts, typecheck strict clean
+- Validation Zod partagée front/back (`@shared/config-schema.ts`)
+- Token MCP_SERVER_TOKEN généré via `crypto.randomBytes(16).toString('hex')`
+- `SliceConfig` prêt à être POST'é sur `/api/generate` en phase 07
 
 **Reprise** :
-1. Vérifier que `main` est à jour : `git pull --ff-only`
-2. Lire la **maquette JSX** d'abord : `.workflow/visuals/slice-design-system/project/hifi-screen-3.jsx` (leçon phase 04bis : la maquette JSX est la source de vérité visuelle, pas le wireframe ASCII du SPEC.md)
-3. Lire le PLAN : `.workflow/phases/06-config-screen/PLAN.md` — possiblement à raffiner si écart entre PLAN et maquette
-4. Créer `feature/06-config-screen` depuis main
-5. TDD strict, alignement maquette pendant l'implémentation
+1. `git pull --ff-only` pour resynchroniser main
+2. Lire le PLAN : `.workflow/phases/07-mcp-templates/PLAN.md`
+3. Décider stratégie templates : Handlebars (D001 SPEC) — confirmer que la décision tient
+4. Créer `feature/07-mcp-templates` depuis main
+5. TDD strict avec fixtures de référence pour les templates (ce qu'on attend du code généré)
 
-**Optimisations en attente** : l'utilisateur a mentionné "quelques optimisations à prévoir" — à clarifier à la reprise (audit perf / UX / a11y / code quality à scope).
+**Optimisations en attente** : aucune en attente, toutes les remarques utilisateur ont été traitées en phases 04ter et 06.
+
+Détails sessions précédentes : `.workflow/sessions/`.
 
 Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 06 → 13 restantes).
 Positionnement marché : `.workflow/POSITIONING.md` (Speakeasy = concurrent #1, différenciateur = UX non-tech).
