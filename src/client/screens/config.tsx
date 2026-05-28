@@ -143,49 +143,76 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
 
               <div className="flex flex-col gap-2">
                 <label className="eyebrow">Upstream authentication</label>
-                <div className="flex flex-wrap gap-2">
-                  <AuthOption
-                    value="none"
-                    active={config.upstreamAuth.type === 'none'}
-                    onSelect={handleAuthSelect}
-                    title="None"
-                    hint="public API"
-                  />
-                  <AuthOption
-                    value="apiKey"
-                    active={config.upstreamAuth.type === 'apiKey'}
-                    onSelect={handleAuthSelect}
-                    title="API Key"
-                    hint={
-                      config.upstreamAuth.type === 'apiKey'
+                {detectedAuthType !== 'none' ? (
+                  // Auth was declared in the spec — pin it. Changing the
+                  // scheme here would only produce an MCP that the upstream
+                  // API rejects at runtime. If the spec is wrong, the user
+                  // fixes it at the source rather than guessing in SLICE.
+                  <div
+                    role="status"
+                    aria-label="Upstream authentication detected from the spec"
+                    className="flex flex-col gap-1 rounded-md border border-border bg-card/40 px-3 py-2.5"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {detectedAuthType === 'apiKey' ? 'API Key' : 'Bearer'}
+                      </span>
+                      <span className="ml-auto rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-emerald-500">
+                        auto-detected
+                      </span>
+                    </div>
+                    <span className="font-mono text-[11px] text-muted-foreground">
+                      {detectedAuthType === 'apiKey' && config.upstreamAuth.type === 'apiKey'
                         ? `header · ${config.upstreamAuth.headerName}`
-                        : 'header-based token'
-                    }
-                    detected={detectedAuthType === 'apiKey'}
-                  />
-                  <AuthOption
-                    value="bearer"
-                    active={config.upstreamAuth.type === 'bearer'}
-                    onSelect={handleAuthSelect}
-                    title="Bearer"
-                    hint="Authorization: Bearer …"
-                    detected={detectedAuthType === 'bearer'}
-                  />
-                </div>
-                {errors.upstreamAuth && (
-                  <span className="font-mono text-[11px] text-destructive">
-                    {errors.upstreamAuth}
-                  </span>
-                )}
-                {config.upstreamAuth.type === 'apiKey' && (
-                  <Field
-                    label="Header name"
-                    value={config.upstreamAuth.headerName ?? ''}
-                    onChange={(v) =>
-                      setUpstreamAuth({ type: 'apiKey', headerName: v })
-                    }
-                    mono
-                  />
+                        : 'Authorization: Bearer …'}
+                    </span>
+                  </div>
+                ) : (
+                  // Spec declared nothing — let the user fill it in.
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      <AuthOption
+                        value="none"
+                        active={config.upstreamAuth.type === 'none'}
+                        onSelect={handleAuthSelect}
+                        title="None"
+                        hint="public API"
+                      />
+                      <AuthOption
+                        value="apiKey"
+                        active={config.upstreamAuth.type === 'apiKey'}
+                        onSelect={handleAuthSelect}
+                        title="API Key"
+                        hint={
+                          config.upstreamAuth.type === 'apiKey'
+                            ? `header · ${config.upstreamAuth.headerName}`
+                            : 'header-based token'
+                        }
+                      />
+                      <AuthOption
+                        value="bearer"
+                        active={config.upstreamAuth.type === 'bearer'}
+                        onSelect={handleAuthSelect}
+                        title="Bearer"
+                        hint="Authorization: Bearer …"
+                      />
+                    </div>
+                    {errors.upstreamAuth && (
+                      <span className="font-mono text-[11px] text-destructive">
+                        {errors.upstreamAuth}
+                      </span>
+                    )}
+                    {config.upstreamAuth.type === 'apiKey' && (
+                      <Field
+                        label="Header name"
+                        value={config.upstreamAuth.headerName ?? ''}
+                        onChange={(v) =>
+                          setUpstreamAuth({ type: 'apiKey', headerName: v })
+                        }
+                        mono
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </div>

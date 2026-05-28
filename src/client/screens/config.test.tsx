@@ -19,7 +19,40 @@ const SPEC: ParsedSpec = {
   },
 };
 
+const SPEC_NO_AUTH: ParsedSpec = {
+  ...SPEC,
+  authType: 'none',
+  authHeader: undefined,
+  defaultConfig: {
+    mcpName: 'shopify',
+    baseUrl: 'https://api.shopify.com/v1',
+    upstreamAuth: { type: 'none' },
+    mcpServerToken: 'a'.repeat(32),
+  },
+};
+
 describe('<ConfigScreen> (phase 06)', () => {
+  it('pins the upstream auth in read-only mode when detected from the spec', () => {
+    render(
+      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
+    );
+    // Pinned state: status block + "auto-detected" badge, no clickable
+    // None/Bearer alternatives.
+    expect(screen.getByRole('status', { name: /upstream authentication/i })).toBeInTheDocument();
+    expect(screen.getByText(/auto-detected/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^bearer$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^none$/i })).not.toBeInTheDocument();
+  });
+
+  it('exposes the 3 auth options when the spec did not declare any', () => {
+    render(
+      <ConfigScreen spec={SPEC_NO_AUTH} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
+    );
+    expect(screen.getByRole('button', { name: /none\s+public api/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /api key/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /bearer/i })).toBeInTheDocument();
+  });
+
   it('renders the form fields, dest cards, advanced toggle and generate button', () => {
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
