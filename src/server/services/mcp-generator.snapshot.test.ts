@@ -16,6 +16,33 @@ const FIXTURE_PATH = 'fixtures/shopify-50.yaml';
  * generated package's tsconfig is honest about what it claims to compile.
  */
 describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
+  it('loads .env automatically at startup (R: generated MCP runs without manual env)', async () => {
+    const raw = readFileSync(FIXTURE_PATH, 'utf-8');
+    const parsed = await parseSpec(raw, { sizeBytes: raw.length });
+    const selectedIds = parsed.groups
+      .flatMap((g) => g.endpoints.map((e) => e.id))
+      .slice(0, 2);
+    const req: GenerateRequest = {
+      parsedSpec: parsed,
+      rawSpec: raw,
+      selectedIds,
+      config: {
+        mcpName: 'env-smoke',
+        baseUrl: parsed.baseUrl,
+        upstreamAuth: { type: 'none' },
+        mode: 'local',
+        includeParamDescriptions: false,
+        retryOnServerError: false,
+      },
+    };
+    const files = generateMcp(req);
+    const index = files.find((f) => f.path === 'src/index.ts')!.content;
+    // The generated entry point must self-load `.env` so `node dist/index.js`
+    // works out of the box. Without this import, a freshly-unzipped bundle
+    // throws `UPSTREAM_BASE_URL is required` even with a valid .env on disk.
+    expect(index).toMatch(/import\s+['"]dotenv\/config['"]/);
+  });
+
   it('produces a fully type-checkable bundle for a real spec', async () => {
     const raw = readFileSync(FIXTURE_PATH, 'utf-8');
     const parsed = await parseSpec(raw, { sizeBytes: raw.length });
