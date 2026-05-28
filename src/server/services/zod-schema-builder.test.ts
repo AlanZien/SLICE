@@ -44,12 +44,24 @@ describe('buildZodExpression', () => {
   });
 
   describe('objects', () => {
-    it('object with single property → z.object({ a: z.string() })', () => {
+    it('object property is optional by default per OpenAPI semantics', () => {
+      // OpenAPI: properties not listed in `required` are optional.
       expect(
         buildZodExpression({
           type: 'object',
           required: true,
           properties: { a: { type: 'string' } },
+        })
+      ).toBe('z.object({ a: z.string().optional() })');
+    });
+
+    it('object property listed in requiredFields drops .optional()', () => {
+      expect(
+        buildZodExpression({
+          type: 'object',
+          required: true,
+          properties: { a: { type: 'string' } },
+          requiredFields: ['a'],
         })
       ).toBe('z.object({ a: z.string() })');
     });
