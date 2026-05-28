@@ -38,20 +38,24 @@ export function TagRail({
   return (
     <aside
       className={cn(
-        'flex w-[200px] flex-col border-r border-border bg-card/40',
+        // `h-full min-h-0` is the key: it lets the tags-list flex-child
+        // shrink so the savings footer stays visible at the bottom of the
+        // viewport instead of being pushed off-screen by a long tag list.
+        // Width matches the preview pane on the right (290px) so the central
+        // list sits symmetrically between two equal-weight rails.
+        'flex h-full min-h-0 w-[290px] flex-col border-r border-border bg-card/40',
         className
       )}
     >
-      <p className="eyebrow px-3 pb-1.5 pt-3">Tags</p>
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2">
+      {/* No 'Tags' eyebrow — the list of tag names is self-evident. */}
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2 pt-3">
         <RailItem
           name="All"
-          picked={selectedCount}
-          total={totalCount}
+          // Count intentionally omitted: it would just mirror the
+          // "selected / total" line in the footer below.
           active={activeTag === null}
           onClick={() => onSelectTag(null)}
         />
-        <div className="my-1.5 h-px bg-border/60" aria-hidden />
         {tags.map((tag) => (
           <RailItem
             key={tag.name}
@@ -64,11 +68,11 @@ export function TagRail({
         ))}
       </nav>
 
-      <footer className="flex flex-col gap-2 border-t border-border/60 bg-background/40 p-3">
+      <footer className="flex shrink-0 flex-col gap-1.5 border-t border-border/60 bg-background/40 px-3 py-2.5">
         <p className="eyebrow">Context saved</p>
         <p className="h2 leading-none text-foreground">
           −{safePercent}
-          <span className="font-mono ml-1 text-base text-muted-foreground">%</span>
+          <span className="font-mono ml-1 text-sm text-muted-foreground">%</span>
         </p>
         <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
           <div
@@ -77,13 +81,16 @@ export function TagRail({
             aria-hidden
           />
         </div>
-        <div className="font-mono mt-1 flex justify-between text-[10px] text-muted-foreground">
-          <span>selected</span>
-          <span>{`${selectedCount} / ${totalCount}`}</span>
+        {/* Bump from 10px muted to 12px foreground so the counts stop
+            blending into the background dots. Labels stay muted so the
+            numbers carry the visual weight. */}
+        <div className="font-mono mt-1 flex justify-between text-xs">
+          <span className="text-muted-foreground">selected</span>
+          <span className="text-foreground">{`${selectedCount} / ${totalCount}`}</span>
         </div>
-        <div className="font-mono flex justify-between text-[10px] text-muted-foreground">
-          <span>tokens</span>
-          <span>{`${sliceTokens} / ${fullTokens}`}</span>
+        <div className="font-mono flex justify-between text-xs">
+          <span className="text-muted-foreground">tokens</span>
+          <span className="text-foreground">{`${sliceTokens} / ${fullTokens}`}</span>
         </div>
       </footer>
     </aside>
@@ -92,13 +99,15 @@ export function TagRail({
 
 interface RailItemProps {
   name: string;
-  picked: number;
-  total: number;
+  /** Omitted on the "All" item — its counts duplicate the rail footer. */
+  picked?: number;
+  total?: number;
   active: boolean;
   onClick: () => void;
 }
 
 function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
+  const showCount = typeof picked === 'number' && typeof total === 'number';
   return (
     <button
       type="button"
@@ -106,27 +115,29 @@ function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
       aria-label={`Tag: ${name}`}
       aria-current={active ? 'true' : undefined}
       className={cn(
-        'flex items-center justify-between rounded px-2.5 py-1 text-left text-xs transition-colors',
+        // Active state uses both a left accent border (2px primary) AND a
+        // higher-contrast background so the cursor's location is obvious
+        // even at a glance in dark mode. Inactive: muted, no border.
+        'relative flex items-center justify-between rounded-md py-1.5 pr-2.5 text-left text-xs transition-colors',
         active
-          ? 'bg-[var(--slice-highlight)] text-foreground'
-          : 'text-muted-foreground hover:bg-[var(--slice-highlight)]/60 hover:text-foreground'
+          ? 'bg-[var(--slice-highlight)] pl-3 font-medium text-foreground shadow-[inset_2px_0_0_var(--primary)]'
+          : 'pl-3 text-muted-foreground hover:bg-[var(--slice-highlight)]/60 hover:text-foreground'
       )}
     >
-      <span className="flex items-center gap-2">
-        {active && <span className="h-1 w-1 rounded-full bg-foreground" aria-hidden />}
-        <span>{name}</span>
-      </span>
-      <span className="font-mono text-[10px]">
-        {picked > 0 && (
-          <>
-            <span className={cn(picked === total ? 'text-emerald-500' : 'text-foreground')}>
-              {picked}
-            </span>
-            <span className="text-muted-foreground"> / </span>
-          </>
-        )}
-        <span className={picked > 0 ? 'text-muted-foreground' : ''}>{total}</span>
-      </span>
+      <span>{name}</span>
+      {showCount && (
+        <span className="font-mono text-[10px]">
+          {picked > 0 && (
+            <>
+              <span className={cn(picked === total ? 'text-emerald-500' : 'text-foreground')}>
+                {picked}
+              </span>
+              <span className="text-muted-foreground"> / </span>
+            </>
+          )}
+          <span className={picked > 0 ? 'text-muted-foreground' : ''}>{total}</span>
+        </span>
+      )}
     </button>
   );
 }

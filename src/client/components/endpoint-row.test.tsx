@@ -17,17 +17,20 @@ describe('<EndpointRow>', () => {
     endpoint: EP,
     selected: false,
     focused: false,
-    estimatedTokens: 42,
     onToggle: () => {},
     onFocus: () => {},
   };
 
-  it('renders label, method, path and estimated tokens', () => {
+  it('renders label, method and path', () => {
     render(<EndpointRow {...baseProps} />);
     expect(screen.getByText('List things')).toBeInTheDocument();
     expect(screen.getByText('GET')).toBeInTheDocument();
     expect(screen.getByText('/things')).toBeInTheDocument();
-    expect(screen.getByText(/42/)).toBeInTheDocument();
+  });
+
+  it('does not render any token count (lives in the preview pane)', () => {
+    render(<EndpointRow {...baseProps} />);
+    expect(screen.queryByText(/~\s*\d+\s*tk/i)).not.toBeInTheDocument();
   });
 
   it('reflects the selected state on the checkbox', () => {

@@ -149,9 +149,6 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
               {spec.excludedCount} excluded · missing description
             </span>
           ) : null}
-          <span className="font-mono rounded-full border border-border bg-card/40 px-3 py-1 text-[10px] text-muted-foreground">
-            {allEndpoints.length} endpoints detected
-          </span>
         </div>
       </div>
 
@@ -220,7 +217,6 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
                   endpoint={ep}
                   selected={selection.isSelected(ep.id)}
                   focused={selection.focused === ep.id}
-                  estimatedTokens={tokensById.get(ep.id) ?? 0}
                   onFocus={selection.setFocused}
                   onToggle={selection.toggle}
                 />
@@ -248,15 +244,12 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
 
         <EndpointPreview
           endpoint={focusedEndpoint}
-          selected={focusedEndpoint ? selection.isSelected(focusedEndpoint.id) : false}
           estimatedTokens={focusedEndpoint ? tokensById.get(focusedEndpoint.id) ?? 0 : 0}
-          onToggle={selection.toggle}
         />
       </div>
 
       <StickyFooter
         selectedCount={selection.count}
-        savedPercent={economy.percent}
         onBack={onBack}
         onContinue={() => onContinue(selection.selectedIds())}
       />
