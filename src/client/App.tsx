@@ -8,19 +8,6 @@ import { useTheme } from './hooks/use-theme';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
 
-function slugify(name: string): string {
-  // CJK / emoji titles collapse to an empty string under [^\w\s-], so we
-  // fall back to a stable placeholder instead of propagating "" to apiSlug
-  // (which downstream would render as broken URLs / filenames).
-  const slug = name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
-  return slug.length > 0 ? slug : 'api';
-}
-
 function App() {
   const { theme, toggle } = useTheme();
   const [screen, setScreen] = useState<ScreenIndex>(1);
@@ -37,7 +24,10 @@ function App() {
 
   const handleParsed = (spec: ParsedSpec) => {
     setParsedSpec(spec);
-    setApiSlug(slugify(spec.apiName));
+    // Reuse the slug produced by the server-side `slug.ts` (injected into
+    // `defaultConfig` by the normaliser). Keeps the topbar breadcrumb
+    // identical to the MCP name suggested on the config screen.
+    setApiSlug(spec.defaultConfig?.mcpName ?? null);
     setScreen(2);
   };
 
@@ -47,10 +37,13 @@ function App() {
   };
 
   const handleGenerate = (config: SliceConfig) => {
-    // Phase 07 will POST this to /api/generate. For now we just log it so
-    // the boundary is real and the UX can be UAT-tested end-to-end.
-    // eslint-disable-next-line no-console
-    console.info('[SLICE] generate payload', { config, selectedIds });
+    // Phase 07 will POST this to /api/generate. For now we just gate a
+    // dev-only log behind DEV so the Bearer-style mcpServerToken never
+    // leaks to the production console.
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.info('[SLICE] generate payload', { config, selectedIds });
+    }
     setScreen(4);
   };
 

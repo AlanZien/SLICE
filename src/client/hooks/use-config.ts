@@ -30,8 +30,22 @@ function initialConfig(defaults: DefaultConfig): SliceConfig {
   };
 }
 
+/**
+ * Normalise an empty `mcpServerToken` to `undefined` so it never leaks to
+ * downstream consumers as an empty string. Zod's `.optional()` branch
+ * relies on `undefined`, and the generation endpoint (phase 07) will reject
+ * an empty-string token immediately.
+ */
+function normalise(config: SliceConfig): SliceConfig {
+  if (config.mcpServerToken === '') {
+    return { ...config, mcpServerToken: undefined };
+  }
+  return config;
+}
+
 export function useConfig(defaults: DefaultConfig): UseConfigApi {
-  const [config, setConfig] = useState<SliceConfig>(() => initialConfig(defaults));
+  const [rawConfig, setConfig] = useState<SliceConfig>(() => initialConfig(defaults));
+  const config = useMemo(() => normalise(rawConfig), [rawConfig]);
 
   const setField = useCallback(<K extends ConfigField>(field: K, value: SliceConfig[K]) => {
     setConfig((prev) => ({ ...prev, [field]: value }));
@@ -42,14 +56,7 @@ export function useConfig(defaults: DefaultConfig): UseConfigApi {
   }, []);
 
   const { errors, isValid } = useMemo(() => {
-    // Normalise an empty mcpServerToken to undefined so Zod's "optional()"
-    // branch fires in local mode. An empty string is neither a valid token
-    // nor "absent" without this nudge.
-    const normalised = {
-      ...config,
-      mcpServerToken: config.mcpServerToken === '' ? undefined : config.mcpServerToken,
-    };
-    const result = sliceConfigSchema.safeParse(normalised);
+    const result = sliceConfigSchema.safeParse(config);
     if (result.success) return { errors: {}, isValid: true };
     const errs: Partial<Record<ConfigField, string>> = {};
     for (const issue of result.error.issues) {

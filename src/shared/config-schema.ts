@@ -31,7 +31,12 @@ const upstreamAuthSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('none') }),
   z.object({
     type: z.literal('apiKey'),
-    headerName: z.string().min(1, 'header name required for API key auth'),
+    // Trim before checking length so a whitespace-only value is treated as
+    // empty rather than passing as a "1-char" valid header name.
+    headerName: z
+      .string()
+      .transform((s) => s.trim())
+      .pipe(z.string().min(1, 'header name required for API key auth')),
   }),
   z.object({ type: z.literal('bearer') }),
 ]);
