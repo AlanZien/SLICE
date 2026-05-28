@@ -127,7 +127,6 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
             <div className="flex flex-col gap-4">
               <Field
                 label="MCP server name"
-                hint="auto-detected from the spec title"
                 value={config.mcpName}
                 error={errors.mcpName}
                 onChange={(v) => setField('mcpName', v)}
