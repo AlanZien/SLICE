@@ -78,3 +78,28 @@ describe('sliceConfigSchema', () => {
     expect(sliceConfigSchema.safeParse(oauth).success).toBe(false);
   });
 });
+
+describe('generateRequestSchema', () => {
+  const validRequest = {
+    parsedSpec: { apiName: 'X', apiVersion: '1', baseUrl: '', authType: 'none', groups: [] },
+    selectedIds: ['GET /things'],
+    config: valid,
+  };
+
+  it('accepts a valid request', async () => {
+    const { generateRequestSchema } = await import('./config-schema');
+    expect(generateRequestSchema.safeParse(validRequest).success).toBe(true);
+  });
+
+  it('rejects an empty selectedIds array (must pick at least one)', async () => {
+    const { generateRequestSchema } = await import('./config-schema');
+    const empty = { ...validRequest, selectedIds: [] };
+    expect(generateRequestSchema.safeParse(empty).success).toBe(false);
+  });
+
+  it('rejects an invalid config inside the request (delegated to sliceConfigSchema)', async () => {
+    const { generateRequestSchema } = await import('./config-schema');
+    const bad = { ...validRequest, config: { ...valid, mcpName: 'Bad Name' } };
+    expect(generateRequestSchema.safeParse(bad).success).toBe(false);
+  });
+});

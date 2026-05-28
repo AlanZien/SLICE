@@ -70,3 +70,17 @@ export const sliceConfigSchema = z
 
 export type SliceConfigInput = z.input<typeof sliceConfigSchema>;
 export type SliceConfigOutput = z.output<typeof sliceConfigSchema>;
+
+/**
+ * Validator for the `/api/generate` payload (phase 08). Keeps the same
+ * single source of truth as the config form. We don't re-validate the
+ * `parsedSpec` shape here — it comes straight from our own parser, never
+ * from arbitrary client input.
+ */
+export const generateRequestSchema = z.object({
+  parsedSpec: z.unknown(),
+  selectedIds: z.array(z.string().min(1)).min(1, 'pick at least one endpoint'),
+  config: sliceConfigSchema,
+});
+
+export type GenerateRequestInput = z.input<typeof generateRequestSchema>;
