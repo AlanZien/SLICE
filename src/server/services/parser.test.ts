@@ -407,6 +407,52 @@ components:
     expect(result.apiName).toBe('declared-not-used');
   });
 
+  it('accepts a spec where an endpoint offers bearer OR basic (picks the supported one)', async () => {
+    // Real-world case: Notion's OpenAPI declares both `bearerAuth` and
+    // `basicAuth`. Pre-fix, SLICE rejected any spec that *mentioned* basic
+    // anywhere — even when a supported scheme was available. We now tolerate
+    // the mix as long as at least one supported scheme is referenced.
+    const spec = `openapi: "3.0.3"
+info: { title: notion-like, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security:
+        - bearerAuth: []
+        - basicAuth: []
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+    basicAuth: { type: http, scheme: basic }
+`;
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.apiName).toBe('notion-like');
+    expect(result.authType).toBe('bearer');
+  });
+
+  it('still rejects when ALL referenced schemes are unsupported', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: only-basic, version: "1" }
+paths:
+  /things:
+    get:
+      summary: list
+      security:
+        - basicAuth: []
+        - digestAuth: []
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    basicAuth: { type: http, scheme: basic }
+    digestAuth: { type: http, scheme: digest }
+`;
+    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
+      code: 'UNSUPPORTED_AUTH',
+    });
+  });
+
   it('returns a ParseError instance (not a plain object)', async () => {
     try {
       await parseSpec('garbage', { sizeBytes: 7 });
