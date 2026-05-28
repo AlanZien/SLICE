@@ -380,3 +380,41 @@ Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquett
 - **parsedSpec dans le body est redondant avec rawSpec** : seul `rawSpec` est réellement utilisé côté serveur (re-parse). À considérer en V1.1 de retirer pour alléger le payload.
 - **Bypass conditionnel global json sur `/api/generate`** : fonctionne mais fragile pour de futurs sous-chemins. Pattern à documenter ou refactor en route-spécifique.
 - **archiver v8 + @types/archiver v7** : shim local `src/server/types/archiver-v8.d.ts`. À supprimer dès que `@types/archiver` rattrape la v8.
+
+
+## Phase 10 : Écran de succès + câblage Generate → Success (2026-05-28)
+
+### Tests techniques (générés depuis PLAN 10)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 356 verts (55 fichiers) | ✓ | inclut snippet builders + ConnectionTabs + SuccessScreen |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict |
+| 3 | `buildClaudeDesktopSnippet` produit un JSON valide avec env (apiKey/bearer/none) | ✓ | snippets.test.ts |
+| 4 | `buildN8nSnippet` / `buildAiriaSnippet` incluent le MCP_SERVER_TOKEN | ✓ | |
+| 5 | `useDownload` déclenche le download au mount + expose redownload() qui réutilise le blob | ✓ | use-download.test.ts |
+| 6 | `<Toast>` success auto-dismiss 4 s, error auto-dismiss 6 s avec role=alert | ✓ | toast.test.tsx |
+| 7 | `<CodeSnippet>` copie clipboard + affiche "Copied" pendant 1.5 s | ✓ | code-snippet.test.tsx |
+| 8 | `<ConnectionTabs>` désactive Claude Desktop si mode=remote, n8n/Airia si mode=local | ✓ | connection-tabs.test.tsx |
+| 9 | `<ConnectionTabs>` navigation ArrowRight cycle d'onglet | ✓ | |
+| 10 | `<SuccessScreen>` affiche economy snapshot transmis (R1.5.6) | ✓ | success.test.tsx |
+| 11 | App.tsx : clic Generate → POST /api/generate → state SuccessScreen | ✓ | wire complet |
+
+### Tests métier / UX (à valider par utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Upload spec → sélection → config → clic "Generate" → écran 4 avec animation check | ⏳ | manuel |
+| 2 | ZIP téléchargé automatiquement par le navigateur | ⏳ | manuel |
+| 3 | Clic "Download again" → re-télécharge le même blob (pas de re-fetch serveur) | ⏳ | manuel |
+| 4 | Onglet "Claude Desktop" actif par défaut (mode both) → snippet visible | ⏳ | manuel |
+| 5 | Clic "Copy" → toast "Copied" + clipboard rempli | ⏳ | manuel |
+| 6 | Mode local → onglets n8n/Airia grisés avec tooltip explicatif | ⏳ | manuel |
+| 7 | "Generate another MCP" → retour écran 1 propre | ⏳ | manuel |
+| 8 | "Back to selection" → écran 2 avec sélection préservée | ⏳ | manuel |
+| 9 | Erreur serveur (ex. coupure réseau) → toast error visible | ⏳ | manuel |
+
+### Findings reportés (RETRO)
+
+- `URL.createObjectURL` non-implémenté en JSDOM : le test SuccessScreen le stub localement. Acceptable mais on pourrait factoriser via `test-setup.ts`.
+- `apiGenerate` côté client utilise `res.blob()` → matérialise tout en mémoire. OK pour <1 MB. Si les bundles grossissent, envisager `res.body` streaming.
