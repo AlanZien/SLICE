@@ -165,6 +165,34 @@ describe('normalizeSpec', () => {
     expect(normalizeSpec(spec).apiName).toBe('Untitled API');
   });
 
+  it('produces a defaultConfig with slugified name + detected auth + token (phase 06)', () => {
+    const spec = {
+      ...baseSpec,
+      info: { title: 'Shopify Admin API', version: 'v1' },
+      paths: { '/x': { get: { summary: 'x', responses: { '200': {} } } } },
+      components: {
+        securitySchemes: {
+          ApiKey: { type: 'apiKey', name: 'X-Shopify-Access-Token', in: 'header' },
+        },
+      },
+    };
+    const result = normalizeSpec(spec);
+    expect(result.defaultConfig).toBeDefined();
+    expect(result.defaultConfig?.mcpName).toBe('shopify-admin-api');
+    expect(result.defaultConfig?.baseUrl).toBe(baseSpec.servers[0].url);
+    expect(result.defaultConfig?.upstreamAuth).toEqual({
+      type: 'apiKey',
+      headerName: 'X-Shopify-Access-Token',
+    });
+    expect(result.defaultConfig?.mcpServerToken).toMatch(/^[a-f0-9]{32}$/);
+  });
+
+  it('falls back to mcp-server-<hash> when info.title is missing in defaultConfig', () => {
+    const spec = { openapi: '3.0.0', info: {}, paths: { '/x': { get: { summary: 'x', responses: { '200': {} } } } } };
+    const result = normalizeSpec(spec);
+    expect(result.defaultConfig?.mcpName).toMatch(/^mcp-server-[a-f0-9]{4}$/);
+  });
+
   it('excludes endpoints that have no operationId AND no summary AND no usable description (12.b)', () => {
     const spec = {
       ...baseSpec,

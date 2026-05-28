@@ -1,0 +1,47 @@
+# UAT fixture for phase 06 — config screen, API Key declared in the spec.
+#
+# Use this to test the *read-only* upstream auth block on screen 3.
+#
+# Expected on screen 3:
+#   - "Upstream authentication" shows a single read-only card:
+#       "API Key"   +  green "AUTO-DETECTED" badge
+#       "header · X-Shopify-Access-Token"
+#   - No clickable None / Bearer alternatives, no editable header field.
+#
+# Companion fixture for the editable case: uat-no-auth.yaml
+
+openapi: "3.0.3"
+info:
+  title: Shopify Sample (with API Key)
+  version: "2024-04"
+  description: Minimal spec exercising the read-only upstream auth UI.
+servers:
+  - url: https://example.myshopify.com/admin/api/2024-04
+security:
+  - ApiKey: []
+paths:
+  /products:
+    get:
+      tags: [Products]
+      summary: List products
+      responses:
+        "200": { description: ok }
+    post:
+      tags: [Products]
+      summary: Create a product
+      responses:
+        "201": { description: created }
+  /products/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Products]
+      summary: Get a product
+      responses:
+        "200": { description: ok }
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: X-Shopify-Access-Token
+      in: header

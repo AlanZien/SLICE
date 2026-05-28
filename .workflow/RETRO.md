@@ -64,6 +64,14 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Sécurité]** `js-tiktoken` épinglé en exact version (`1.0.21`, plus de `^`) pour éviter qu'un bump mineur ne change le mapping `gpt-4` → encoding et fasse dévier silencieusement le test de calibration. À revisiter explicitement à chaque bump volontaire.
 - **[UX]** `EconomyCounter` clampe NaN à 0% défensivement. `computeEconomy` ne produit jamais NaN (garde `total === 0 → 100`), mais le composant est public et doit honorer son contrat.
 
+### Après phase 06 — Écran de configuration (2026-05-28)
+
+- **[Sécurité] Prototype pollution défensif** — `auth-detector.ts:32` itère `Object.values(schemes)` sans guard `hasOwn`. Les objets venant de swagger-parser sont propres (parsed JSON natif), donc pas d'exploit réel, mais ajouter `Object.hasOwn(schemes, key)` ferme définitivement la classe. Reporté V1.1 (pas critique).
+- **[Sécurité] Types OpenAPI custom (`mutualTLS`, …) ignorés silencieusement** — `detectAuth` retourne `'none'` quand un type non reconnu est rencontré (déjà filtré phase 03 pour oauth2/openIdConnect/basic/digest, mais le filtre est ouvert sur les types futurs). L'UI tombe en mode éditable → l'utilisateur configure manuellement. Comportement défendable, manque juste un log/toast pour explicitement signaler "type X non supporté, configurez à la main". À traiter quand un cas réel sera observé.
+- **[Architecture] Décision read-only auth basée sur le type détecté** — `defaults.upstreamAuth.type !== 'none'`. Si la phase 03 commence un jour à laisser passer des types custom (cf. point précédent), la décision read-only ne s'appliquera plus à eux. Documenter le couplage explicite phase 03 ↔ phase 06 dans `docs/`.
+- **[UX] FALLBACK_DEFAULT dans `config.tsx:73`** — produit `mcpServerToken: ''` si une vieille payload sans `defaultConfig` atterrit. Pas atteignable dans le flow normal (parser injecte toujours `defaultConfig`), mais à supprimer une fois la rétro-compat assurée par tous les déploiements (probablement post-MVP).
+- **[Process / leçon]** L'arbitrage produit "auth read-only quand détectée" a émergé d'un échange UAT (utilisateur a remarqué "pourquoi est-ce paramétrable ?"). À garder en tête : les questions naïves de l'utilisateur signalent souvent un design implicite qu'on n'a pas justifié. Réflexe : vérifier en early UAT si un champ est mieux verrouillé qu'éditable.
+
 ### Après phase 04bis — Refonte écran sélection 3-col (2026-05-28)
 
 - **[Process / leçon]** **La maquette JSX (`*.workflow/visuals/*.jsx`) est la source de vérité visuelle, pas le wireframe ASCII du SPEC.md.** Phase 04 a livré un layout 2-col en suivant le wireframe ASCII alors que la maquette validée décrivait un 3-col Raycast split. Coût : phase 04bis dédiée au refactor. À enchaîner sur écrans 3-4 : **toujours ouvrir et lire la maquette JSX correspondante avant d'implémenter** (`hifi-screen-3.jsx`, `hifi-screen-4.jsx` pour les prochaines phases).

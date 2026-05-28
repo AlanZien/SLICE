@@ -254,3 +254,59 @@ Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquett
 - [ ] Continue désactivé si count=0, sinon enabled avec raccourci ↵
 - [ ] Click Back → retour écran 1 (reset)
 - [ ] Toggle "Show deprecated" reste fonctionnel
+
+---
+
+## Phase 06 : Écran de configuration (2026-05-28)
+
+### Tests techniques
+
+| # | Scenario | Résultat |
+|---|----------|----------|
+| 1 | `pnpm test` → 269/269 verts (41 fichiers) | ✓ |
+| 2 | `pnpm typecheck` → exit 0 | ✓ |
+| 3 | `slugify` couvre kebab-case + accents + fallbacks `-mcp` / `mcp-server-<hash>` | ✓ |
+| 4 | `auth-detector` priorise bearer > apiKey/header > apiKey/query | ✓ |
+| 5 | `auth-detector` retourne `{type:'none'}` sur oauth2/basic/digest/custom | ✓ |
+| 6 | `generateMcpServerToken` produit 32 chars hex uniques (crypto.randomBytes) | ✓ |
+| 7 | `spec-normalizer` injecte `defaultConfig` avec slug + auth + token | ✓ |
+| 8 | Schéma Zod `sliceConfigSchema` valide en discriminated union, exige `mcpServerToken` si mode != local | ✓ |
+| 9 | `useConfig` normalise `mcpServerToken: ''` → `undefined` dans `config` ET la validation | ✓ |
+| 10 | `<ConfigScreen>` rend les 3 dest cards + advanced toggle + generate button | ✓ |
+| 11 | Auth read-only si détectée de la spec, éditable sinon | ✓ |
+| 12 | Bouton Generate désactivé si form invalide | ✓ |
+| 13 | Bouton Generate appelle `onGenerate(config)` avec payload complet | ✓ |
+| 14 | Bouton Back appelle `onBack` (retour écran 2) | ✓ |
+| 15 | Live preview rend MCP package card + ZIP structure + post-gen steps | ✓ |
+| 16 | ZIP structure réagit au mode (`local`/`remote`/`both`) avec ✓ / — | ✓ |
+
+### Tests métier à valider
+
+**Cas 1 — Auth détectée (verrouillé)** : `fixtures/uat-apikey-auth.yaml`
+- [ ] Section "Upstream authentication" = un seul bloc avec badge `AUTO-DETECTED` + `header · X-Shopify-Access-Token`
+- [ ] Pas de boutons None/Bearer cliquables
+
+**Cas 2 — Auth absente (éditable)** : `fixtures/uat-no-auth.yaml`
+- [ ] 3 cards : None (active) / API Key / Bearer
+- [ ] Click "API Key" → champ "Header name" éditable apparaît
+- [ ] Click "Bearer" → le champ disparaît
+
+**Live preview** :
+- [ ] Changer le nom MCP → bignum + arborescence ZIP s'actualisent
+- [ ] Changer le mode `local` → `remote` → l'arborescence ZIP montre ✓/— sur stdio vs http
+- [ ] Sample des tools (jusqu'à 6) listé + "+ N more…" si plus
+- [ ] Chips résumé : X endpoints, −Y% context (couleur emerald/amber/muted selon valeur), transport, auth
+
+**Validation form** :
+- [ ] Nom MCP avec espace → erreur "lowercase letters, digits and dashes only"
+- [ ] URL invalide → erreur "must be a valid http(s) URL"
+- [ ] Mode `remote` + `mcpServerToken` vide → bouton Generate désactivé
+- [ ] Mode `local` + `mcpServerToken` vide → OK
+- [ ] Click Generate (état valide) → écran 4 placeholder + log console (DEV only)
+
+### Findings reportés (RETRO)
+
+- Prototype pollution défensif sur `auth-detector` (low-risk, V1.1)
+- Types OpenAPI custom non remontés à l'utilisateur (toast/log à ajouter)
+- `FALLBACK_DEFAULT` dans `config.tsx` produit `mcpServerToken: ''` (cas inatteignable en pratique)
+- Couplage phase 03 ↔ phase 06 à documenter (read-only auth dépend du filtre amont)

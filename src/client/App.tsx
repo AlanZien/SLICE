@@ -1,24 +1,12 @@
 import { useState } from 'react';
-import type { ParsedSpec } from '@shared/types';
+import type { ParsedSpec, SliceConfig } from '@shared/types';
 import { Topbar } from './components/topbar';
 import { UploadScreen } from './screens/upload';
 import { SelectionScreen } from './screens/selection';
+import { ConfigScreen } from './screens/config';
 import { useTheme } from './hooks/use-theme';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
-
-function slugify(name: string): string {
-  // CJK / emoji titles collapse to an empty string under [^\w\s-], so we
-  // fall back to a stable placeholder instead of propagating "" to apiSlug
-  // (which downstream would render as broken URLs / filenames).
-  const slug = name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[^\w\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-');
-  return slug.length > 0 ? slug : 'api';
-}
 
 function App() {
   const { theme, toggle } = useTheme();
@@ -36,13 +24,27 @@ function App() {
 
   const handleParsed = (spec: ParsedSpec) => {
     setParsedSpec(spec);
-    setApiSlug(slugify(spec.apiName));
+    // Reuse the slug produced by the server-side `slug.ts` (injected into
+    // `defaultConfig` by the normaliser). Keeps the topbar breadcrumb
+    // identical to the MCP name suggested on the config screen.
+    setApiSlug(spec.defaultConfig?.mcpName ?? null);
     setScreen(2);
   };
 
   const handleSelectionDone = (ids: string[]) => {
     setSelectedIds(ids);
     setScreen(3);
+  };
+
+  const handleGenerate = (config: SliceConfig) => {
+    // Phase 07 will POST this to /api/generate. For now we just gate a
+    // dev-only log behind DEV so the Bearer-style mcpServerToken never
+    // leaks to the production console.
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.info('[SLICE] generate payload', { config, selectedIds });
+    }
+    setScreen(4);
   };
 
   return (
@@ -67,23 +69,12 @@ function App() {
         )}
 
         {screen === 3 && parsedSpec && (
-          <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 px-6 py-16 text-center">
-            <p className="eyebrow">Step 3 — Configure</p>
-            <h2 className="h2">{parsedSpec.apiName}</h2>
-            <p className="font-mono text-sm text-muted-foreground">
-              {selectedIds.length} endpoints selected — configuration screen coming in phase 06.
-            </p>
-            {import.meta.env.DEV && (
-              <details className="w-full text-left">
-                <summary className="font-mono cursor-pointer text-xs text-muted-foreground">
-                  Debug: selected ids (dev only)
-                </summary>
-                <pre className="font-mono mt-2 max-h-96 overflow-auto rounded bg-card/40 p-3 text-[10px]">
-                  {JSON.stringify(selectedIds, null, 2)}
-                </pre>
-              </details>
-            )}
-          </section>
+          <ConfigScreen
+            spec={parsedSpec}
+            selectedIds={selectedIds}
+            onBack={() => setScreen(2)}
+            onGenerate={handleGenerate}
+          />
         )}
 
         {/* Dev-only shortcuts to preview stepper states. Stripped from prod. */}

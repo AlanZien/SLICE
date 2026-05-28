@@ -127,7 +127,7 @@ importers:
         specifier: ^9.2.1
         version: 9.2.1
       js-tiktoken:
-        specifier: ^1.0.21
+        specifier: 1.0.21
         version: 1.0.21
       jsdom:
         specifier: ^29.1.1

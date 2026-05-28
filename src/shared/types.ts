@@ -51,13 +51,42 @@ export interface EndpointGroup {
 
 export type UpstreamAuthType = 'none' | 'apiKey' | 'bearer';
 
+export interface UpstreamAuth {
+  type: UpstreamAuthType;
+  /** Only meaningful for `apiKey`. */
+  headerName?: string;
+}
+
 export interface DefaultConfig {
   /** Slugified MCP server name (phase 06 finalises). */
   mcpName: string;
   /** Base URL detected from `servers[0].url`. */
   baseUrl: string;
   /** Auth type detected from `securitySchemes`. */
-  upstreamAuth: { type: UpstreamAuthType; headerName?: string };
+  upstreamAuth: UpstreamAuth;
+  /** Pre-generated MCP_SERVER_TOKEN candidate (32 hex chars). */
+  mcpServerToken: string;
+}
+
+/** Where the generated MCP will live — drives the transports we emit. */
+export type DeploymentMode = 'local' | 'remote' | 'both';
+
+/** Final user-confirmed config, sent to `/api/generate` in phase 07. */
+export interface SliceConfig {
+  /** Validated MCP server name: lowercase ASCII + dashes, 3–40 chars. */
+  mcpName: string;
+  /** Base URL the generated MCP will call. */
+  baseUrl: string;
+  /** Auth scheme the generated MCP will forward to the upstream API. */
+  upstreamAuth: UpstreamAuth;
+  /** Deployment target (stdio / HTTP / both). */
+  mode: DeploymentMode;
+  /** Bearer token for the agent → MCP hop (only required when mode != local). */
+  mcpServerToken?: string;
+  /** If true, the generator embeds parameter descriptions in the tool schema. */
+  includeParamDescriptions: boolean;
+  /** If true, the generated client retries failed 5xx calls with backoff. */
+  retryOnServerError: boolean;
 }
 
 export interface ParsedSpec {
