@@ -45,6 +45,69 @@ function asMap(files: ReturnType<typeof generateMcp>): Map<string, string> {
   return new Map(files.map((f) => [f.path, f.content]));
 }
 
+describe('generateMcp — logic files (07-4)', () => {
+  it('emits src/http-client.ts that injects the configured auth header', () => {
+    const files = asMap(generateMcp(buildRequest()));
+    const httpClient = files.get('src/http-client.ts');
+    expect(httpClient).toBeDefined();
+    expect(httpClient).toContain('process.env.UPSTREAM_BASE_URL');
+    expect(httpClient).toContain("'X-Shopify-Access-Token'");
+    expect(httpClient).toContain('process.env.UPSTREAM_API_KEY');
+  });
+
+  it('emits a bearer-style http-client when upstream auth is bearer', () => {
+    const files = asMap(generateMcp(buildRequest({ upstreamAuth: { type: 'bearer' } })));
+    const httpClient = files.get('src/http-client.ts')!;
+    expect(httpClient).toContain('UPSTREAM_BEARER_TOKEN');
+    expect(httpClient).toContain('`Bearer ${');
+    expect(httpClient).not.toContain('UPSTREAM_API_KEY');
+  });
+
+  it('emits a no-auth http-client when upstream auth is none', () => {
+    const files = asMap(generateMcp(buildRequest({ upstreamAuth: { type: 'none' } })));
+    const httpClient = files.get('src/http-client.ts')!;
+    expect(httpClient).not.toContain('UPSTREAM_BEARER_TOKEN');
+    expect(httpClient).not.toContain('UPSTREAM_API_KEY');
+  });
+
+  it('emits src/tools.ts with one server.tool() call per selected endpoint', () => {
+    const files = asMap(generateMcp(buildRequest()));
+    const tools = files.get('src/tools.ts')!;
+    expect(tools.match(/server\.tool\(/g)?.length).toBe(1);
+    expect(tools).toContain('list_products');
+  });
+
+  it('omits non-selected endpoints from src/tools.ts', () => {
+    const richSpec: ParsedSpec = {
+      ...SPEC,
+      groups: [
+        {
+          tag: 'X',
+          endpoints: [
+            { id: 'GET /a', method: 'GET', path: '/a', label: 'List a', params: [] },
+            { id: 'POST /b', method: 'POST', path: '/b', label: 'Create b', params: [] },
+            { id: 'DELETE /c', method: 'DELETE', path: '/c', label: 'Delete c', params: [] },
+          ],
+        },
+      ],
+    };
+    const req: GenerateRequest = {
+      parsedSpec: richSpec,
+      selectedIds: ['GET /a', 'DELETE /c'],
+      config: buildRequest().config,
+    };
+    const tools = asMap(generateMcp(req)).get('src/tools.ts')!;
+    expect(tools).toContain('list_a');
+    expect(tools).not.toContain('create_b');
+    expect(tools).toContain('delete_c');
+  });
+
+  it('builds the Zod input schema from endpoint params (R1.4.7)', () => {
+    const tools = asMap(generateMcp(buildRequest())).get('src/tools.ts')!;
+    expect(tools).toContain('limit: z.number().int().optional()');
+  });
+});
+
 describe('generateMcp — static files (07-3)', () => {
   it('emits package.json with the MCP name interpolated', () => {
     const files = asMap(generateMcp(buildRequest()));
