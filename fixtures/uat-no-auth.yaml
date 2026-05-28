@@ -1,0 +1,44 @@
+# UAT fixture for phase 06 — config screen, no auth declared.
+#
+# This spec deliberately OMITS `components.securitySchemes` so SLICE
+# falls back to "none" detection. The config screen should then show
+# the 3 clickable auth options (None / API Key / Bearer) instead of
+# the pinned read-only block.
+#
+# Expected on screen 3:
+#   - "Upstream authentication" section shows 3 cards, "None" pre-active
+#   - No "auto-detected" badge
+#   - Clicking "API Key" reveals the editable "Header name" field
+
+openapi: "3.0.3"
+info:
+  title: Anonymous Sample
+  version: "1.0.0"
+  description: API without declared authentication — exercises the editable auth UI.
+servers:
+  - url: https://api.anonymous.example
+paths:
+  /items:
+    get:
+      tags: [Items]
+      summary: List items
+      responses:
+        "200": { description: ok }
+    post:
+      tags: [Items]
+      summary: Create an item
+      responses:
+        "201": { description: created }
+  /items/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string } }
+    get:
+      tags: [Items]
+      summary: Get an item
+      responses:
+        "200": { description: ok }
+    delete:
+      tags: [Items]
+      summary: Delete an item
+      responses:
+        "204": { description: deleted }
