@@ -109,16 +109,16 @@ function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
       aria-label={`Tag: ${name}`}
       aria-current={active ? 'true' : undefined}
       className={cn(
-        'flex items-center justify-between rounded px-2.5 py-1 text-left text-xs transition-colors',
+        // Active state uses both a left accent border (2px primary) AND a
+        // higher-contrast background so the cursor's location is obvious
+        // even at a glance in dark mode. Inactive: muted, no border.
+        'relative flex items-center justify-between rounded-md py-1.5 pr-2.5 text-left text-xs transition-colors',
         active
-          ? 'bg-[var(--slice-highlight)] text-foreground'
-          : 'text-muted-foreground hover:bg-[var(--slice-highlight)]/60 hover:text-foreground'
+          ? 'bg-[var(--slice-highlight)] pl-3 font-medium text-foreground shadow-[inset_2px_0_0_var(--primary)]'
+          : 'pl-3 text-muted-foreground hover:bg-[var(--slice-highlight)]/60 hover:text-foreground'
       )}
     >
-      <span className="flex items-center gap-2">
-        {active && <span className="h-1 w-1 rounded-full bg-foreground" aria-hidden />}
-        <span>{name}</span>
-      </span>
+      <span>{name}</span>
       <span className="font-mono text-[10px]">
         {picked > 0 && (
           <>

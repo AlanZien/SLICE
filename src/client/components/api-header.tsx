@@ -56,7 +56,10 @@ export function ApiHeader({
   return (
     <header className={cn('flex flex-col gap-1', className)}>
       <div className="flex items-baseline gap-3">
-        <h1 className="h1">{apiName}</h1>
+        {/* H2 (28px) instead of H1 (44px) — the API title is metadata, not
+            the page hero. The savings bignum in the rail can claim the
+            primary focal weight. */}
+        <h2 className="h2">{apiName}</h2>
         <span className="font-mono text-xs text-muted-foreground">v{apiVersion}</span>
       </div>
 
