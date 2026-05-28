@@ -32,6 +32,8 @@ const STATIC_TEMPLATES: ReadonlyArray<TemplateBinding> = [
   { source: 'gitignore.hbs', dest: '.gitignore' },
   { source: 'http-client.ts.hbs', dest: 'src/http-client.ts' },
   { source: 'tools.ts.hbs', dest: 'src/tools.ts' },
+  { source: 'index.ts.hbs', dest: 'src/index.ts' },
+  { source: 'readme.md.hbs', dest: 'README.md' },
 ];
 
 interface ToolBinding {
@@ -144,6 +146,7 @@ interface TemplateContext {
   upstreamAuth: { type: string; headerName?: string };
   mode: string;
   modeLocalOnly: boolean;
+  modeHttpOnly: boolean;
   mcpServerToken?: string;
   tools: ToolBinding[];
 }
@@ -163,6 +166,7 @@ function buildContext(req: GenerateRequest): TemplateContext {
     upstreamAuth: config.upstreamAuth,
     mode: config.mode,
     modeLocalOnly: config.mode === 'local',
+    modeHttpOnly: config.mode === 'http',
     mcpServerToken: config.mode === 'local' ? undefined : config.mcpServerToken,
     tools,
   };
