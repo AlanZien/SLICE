@@ -1,12 +1,57 @@
+import { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import type { ParsedSpec, SliceConfig, UpstreamAuthType } from '@shared/types';
+import type {
+  DeploymentMode,
+  Endpoint,
+  ParsedSpec,
+  SliceConfig,
+  UpstreamAuthType,
+} from '@shared/types';
+import { computeEconomy } from '@shared/token-estimator';
 import { AdvancedOptions } from '@/components/advanced-options';
 import { AuthOption } from '@/components/auth-option';
 import { DestCard } from '@/components/dest-card';
 import { Field } from '@/components/field';
+import { McpPackageCard } from '@/components/mcp-package-card';
+import { PostGenSteps } from '@/components/post-gen-steps';
 import { ToggleRow } from '@/components/toggle-row';
+import { ZipStructurePreview } from '@/components/zip-structure-preview';
 import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
+
+const SAMPLE_TOOL_COUNT = 6;
+
+function transportLabelFor(mode: DeploymentMode): string {
+  switch (mode) {
+    case 'local':
+      return 'stdio';
+    case 'remote':
+      return 'http';
+    case 'both':
+      return 'stdio + http';
+  }
+}
+
+function authLabelFor(type: UpstreamAuthType): string {
+  switch (type) {
+    case 'none':
+      return 'no auth';
+    case 'apiKey':
+      return 'api key';
+    case 'bearer':
+      return 'bearer';
+  }
+}
+
+function toolIdFor(endpoint: Endpoint): string {
+  const path = endpoint.path
+    .replace(/^\/+/, '')
+    .replace(/\{(\w+)\}/g, '$1')
+    .replace(/[^a-zA-Z0-9_/]/g, '_')
+    .replace(/\/+/g, '.')
+    .replace(/\.+$/, '');
+  return `tools.${endpoint.method.toLowerCase()}_${path || 'root'}`;
+}
 
 export interface ConfigScreenProps {
   spec: ParsedSpec;
@@ -29,6 +74,23 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
   const { config, errors, isValid, setField, setUpstreamAuth } = useConfig(defaults);
 
   const detectedAuthType = defaults.upstreamAuth.type;
+
+  // Pre-compute everything the right preview needs from (spec, selectedIds).
+  const { sampleTools, extraToolsCount, savedPercent } = useMemo(() => {
+    const allEndpoints = spec.groups.flatMap((g) => g.endpoints);
+    const selectedSet = new Set(selectedIds);
+    const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
+    const sample = chosen.slice(0, SAMPLE_TOOL_COUNT).map((e) => ({
+      id: toolIdFor(e),
+      method: e.method,
+    }));
+    const economy = computeEconomy(spec, selectedIds);
+    return {
+      sampleTools: sample,
+      extraToolsCount: Math.max(0, chosen.length - SAMPLE_TOOL_COUNT),
+      savedPercent: economy.percent,
+    };
+  }, [spec, selectedIds]);
 
   const handleAuthSelect = (next: UpstreamAuthType) => {
     if (next === 'apiKey') {
@@ -199,13 +261,33 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
           </div>
         </section>
 
-        {/* RIGHT — preview placeholder (wave 2: McpPackageCard + ZipStructure + PostGenSteps) */}
-        <aside className="flex w-[380px] shrink-0 flex-col border-l border-border bg-card/30 p-6">
-          <p className="eyebrow">Live preview</p>
-          <p className="font-mono mt-4 text-xs text-muted-foreground">
-            {selectedIds.length} endpoints will ship. Detailed preview lands in
-            the next iteration of this screen.
-          </p>
+        {/* RIGHT — live preview pane */}
+        <aside className="flex w-[380px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-border bg-card/30 p-6">
+          <div className="flex items-center gap-2">
+            <p className="eyebrow">Live preview</p>
+            <span className="grow" />
+            <span className="font-mono inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span
+                aria-hidden
+                className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"
+              />
+              sync
+            </span>
+          </div>
+
+          <McpPackageCard
+            name={config.mcpName}
+            endpointCount={selectedIds.length}
+            savedPercent={savedPercent}
+            transportLabel={transportLabelFor(config.mode)}
+            authLabel={authLabelFor(config.upstreamAuth.type)}
+            sampleTools={sampleTools}
+            extraToolsCount={extraToolsCount}
+          />
+
+          <ZipStructurePreview packageName={config.mcpName} mode={config.mode} />
+
+          <PostGenSteps />
         </aside>
       </div>
 
