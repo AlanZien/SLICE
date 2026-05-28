@@ -218,30 +218,42 @@ function assertSupportedAuth(doc: any): void {
     }
   }
 
+  // OpenAPI security entries are OR'd — an endpoint that lists `[bearer,
+  // basic]` accepts either. So we only fail the whole spec when *every*
+  // referenced scheme is unsupported; otherwise we let the auth-detector
+  // pick the supported one and move on. This matches real-world specs like
+  // Notion that ship `basicAuth` alongside `bearerAuth` for historical
+  // reasons (10.2 hotfix).
+  let supportedFound = false;
+  let firstUnsupported: { name: string; reason: string } | null = null;
+
   for (const name of referenced) {
     const scheme = schemes[name];
     if (!scheme) continue;
     const type = String(scheme.type ?? '').toLowerCase();
     const httpScheme = String(scheme.scheme ?? '').toLowerCase();
 
+    if (type === 'apikey' || (type === 'http' && httpScheme === 'bearer')) {
+      supportedFound = true;
+      continue;
+    }
+
+    let reason: string | null = null;
     if (type === 'oauth2') {
-      throw new ParseError(
-        'UNSUPPORTED_AUTH',
-        `Auth scheme "${name}" uses OAuth2, which SLICE does not generate MCP code for yet. Re-export your API description with API Key or Bearer auth, or wait for V1.5.`
-      );
+      reason = `Auth scheme "${name}" uses OAuth2, which SLICE does not generate MCP code for yet. Re-export your API description with API Key or Bearer auth, or wait for V1.5.`;
+    } else if (type === 'openidconnect') {
+      reason = `Auth scheme "${name}" uses OpenID Connect, which SLICE does not generate MCP code for yet.`;
+    } else if (type === 'http' && (httpScheme === 'basic' || httpScheme === 'digest')) {
+      reason = `Auth scheme "${name}" uses HTTP ${httpScheme}, which SLICE does not generate MCP code for yet. Use Bearer or API Key instead.`;
     }
-    if (type === 'openidconnect') {
-      throw new ParseError(
-        'UNSUPPORTED_AUTH',
-        `Auth scheme "${name}" uses OpenID Connect, which SLICE does not generate MCP code for yet.`
-      );
+
+    if (reason && !firstUnsupported) {
+      firstUnsupported = { name, reason };
     }
-    if (type === 'http' && (httpScheme === 'basic' || httpScheme === 'digest')) {
-      throw new ParseError(
-        'UNSUPPORTED_AUTH',
-        `Auth scheme "${name}" uses HTTP ${httpScheme}, which SLICE does not generate MCP code for yet. Use Bearer or API Key instead.`
-      );
-    }
+  }
+
+  if (!supportedFound && firstUnsupported) {
+    throw new ParseError('UNSUPPORTED_AUTH', firstUnsupported.reason);
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
