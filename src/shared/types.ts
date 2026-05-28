@@ -132,6 +132,12 @@ export type ParseErrorCode =
 export interface GenerateRequest {
   /** Result of phase 02 / 03 parsing — drives endpoint/tool emission. */
   parsedSpec: ParsedSpec;
+  /**
+   * Original spec source (OpenAPI YAML/JSON) the client uploaded. The server
+   * re-parses it on every request to enforce its own validation (R1.4.1bis),
+   * never trusting the client-side `parsedSpec` blindly.
+   */
+  rawSpec: string;
   /** Subset of endpoint ids the user picked on screen 2. */
   selectedIds: string[];
   /** Final user-confirmed configuration. */

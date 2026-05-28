@@ -24,6 +24,7 @@ describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
 
     const req: GenerateRequest = {
       parsedSpec: parsed,
+      rawSpec: raw,
       selectedIds,
       config: {
         mcpName: parsed.defaultConfig?.mcpName ?? 'snapshot-mcp',

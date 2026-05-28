@@ -78,7 +78,8 @@ export type SliceConfigOutput = z.output<typeof sliceConfigSchema>;
  * from arbitrary client input.
  */
 export const generateRequestSchema = z.object({
-  parsedSpec: z.unknown(),
+  parsedSpec: z.object({}).passthrough(),
+  rawSpec: z.string().min(1, 'rawSpec required'),
   selectedIds: z.array(z.string().min(1)).min(1, 'pick at least one endpoint'),
   config: sliceConfigSchema,
 });

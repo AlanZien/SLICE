@@ -27,6 +27,7 @@ const SPEC: ParsedSpec = {
 function buildRequest(over: Partial<GenerateRequest['config']> = {}): GenerateRequest {
   return {
     parsedSpec: SPEC,
+    rawSpec: '',
     selectedIds: ['GET /products'],
     config: {
       mcpName: 'shopify-admin',
@@ -93,6 +94,7 @@ describe('generateMcp — logic files (07-4)', () => {
     };
     const req: GenerateRequest = {
       parsedSpec: richSpec,
+      rawSpec: '',
       selectedIds: ['GET /a', 'DELETE /c'],
       config: buildRequest().config,
     };

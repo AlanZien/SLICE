@@ -4,6 +4,7 @@ import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createUploadRouter } from './routes/upload';
+import { createGenerateRouter } from './routes/generate';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
   const app = express();
 
   app.use(cors());
-  app.use(express.json({ limit: '10mb' }));
+  // Global JSON parser at 10 MB for the default API. The /api/generate
+  // route ships its own 15 MB parser; we skip the global one on that path
+  // so the larger limit is the only one applied (R1.6.8).
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/generate')) return next();
+    return express.json({ limit: '10mb' })(req, res, next);
+  });
 
   // Rate limiting: 30 req/min per IP on sensitive endpoints (R1.1.10, R1.4.5)
   const apiLimiter = rateLimit({
@@ -40,7 +47,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // POST /api/upload — phase 02 (multer applies its own 10 MB limit before json parser)
   app.use('/api/upload', createUploadRouter());
 
-  // TODO: POST /api/generate — implemented in phase 08
+  // POST /api/generate — phase 08. Mounts its own 15 MB JSON parser; the
+  // 10 MB app-level one is bypassed by the path-specific router order.
+  app.use('/api/generate', createGenerateRouter());
 
   if (nodeEnv === 'production') {
     const clientDist = options.clientDist ?? path.resolve(__dirname, '../client');

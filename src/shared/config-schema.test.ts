@@ -82,6 +82,7 @@ describe('sliceConfigSchema', () => {
 describe('generateRequestSchema', () => {
   const validRequest = {
     parsedSpec: { apiName: 'X', apiVersion: '1', baseUrl: '', authType: 'none', groups: [] },
+    rawSpec: 'openapi: "3.0.3"\ninfo: { title: x, version: "1" }\npaths: {}\n',
     selectedIds: ['GET /things'],
     config: valid,
   };
