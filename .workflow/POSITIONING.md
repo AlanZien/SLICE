@@ -69,8 +69,64 @@ Speakeasy reste générique SDK-first. SLICE assume les 3 cibles d'agent et four
 - Pas de génération de SDK complet. SLICE génère des **MCPs**, point.
 - Pas d'usage CLI/DevOps. Si l'utilisateur cherche `npx generate-mcp`, il ira chez Speakeasy.
 
+## Inflexion stratégique — API publique + MCP SLICE (2026-05-28)
+
+Discussion produit : le PRD prévoit l'API publique en V1.5. **À reconsidérer : la sortir en V1.1-V1.2, juste après le MVP web.**
+
+Raisonnement :
+- Exposer une API publique permet de générer un **MCP SLICE** (méta-MCP) qu'un agent (Claude Desktop, n8n, Airia) ajoute à son stack une fois
+- Une fois installé, l'agent peut générer n'importe quel MCP en langage naturel : *"crée-moi un MCP Shopify pour produits/prix/catégories"* → l'agent appelle SLICE → ZIP généré → installé
+- Pattern "agent qui s'auto-équipe" : différenciateur fort face à Speakeasy (dev-centric, pas pensé agent)
+- L'app web reste indispensable (acquisition non-tech, démo, conversion) — l'API ne la remplace pas, elle la prolonge
+
+Conditions techniques :
+- API doit être **stable, versionnée (`/v1/generate`), documentée en OpenAPI publique, authentifiée**
+- Endpoint dédié `/v1/suggest-endpoints` à prévoir : mapping texte libre ("produits, prix") → opérations OpenAPI (sinon l'agent ne sait pas quoi cocher)
+- Auth amont configurable par l'agent (Shopify = API key custom app ou OAuth selon contexte)
+
+À arbitrer : promouvoir l'API + MCP SLICE en feature phare de V1.1 plutôt qu'en commodité tardive V1.5.
+
+## Concurrents adjacents — Registres MCP (distincts de Speakeasy/Stainless)
+
+Catégorie différente des générateurs de code : les **registres / catalogues de MCPs déjà écrits**.
+
+| Acteur | Type | Force | Risque pour SLICE |
+|---|---|---|---|
+| Smithery.ai | Registre + install one-click | ~5000 MCPs, devient "npm des MCPs" | Effet de réseau communauté |
+| mcp.so | Annuaire communautaire | Gros volume | Qualité inégale |
+| Anthropic MCP Registry | Officiel (en construction) | Légitimité + distribution Claude | **Existentiel** si Anthropic pousse fort |
+| Pulse MCP, Glama | Agrégateurs | Niches | Faible |
+| Composio, Zapier MCP | MCP pour SaaS intégrations | Catalogue d'intégrations existant | Chevauchent scope SLICE |
+
+**Ne PAS se positionner comme "registre".** Suicide frontal — pas la communauté Smithery, pas la légitimité Anthropic.
+
+**Positionnement à tenir : "usine à MCPs custom" vs "catalogue de MCPs finis"**
+- Smithery = *le* MCP Shopify officiel, 400 endpoints, générique
+- SLICE = *ton* MCP Shopify, 12 endpoints, ton auth, tes besoins
+- Coexistence : SLICE peut publier ses MCPs générés sur Smithery / Anthropic Registry (distribution). Bouton "régénère-le sur-mesure avec SLICE" depuis un registre = upsell naturel.
+
+**Vrai risque existentiel = Anthropic.** Si Anthropic sort un outil officiel "OpenAPI → MCP" (techniquement trivial pour eux), la pure conversion meurt. Défense :
+- Curation UX (vocabulaire humain, sélection 3 clics) — déjà fait
+- Hosting + observabilité + auto-update sur changement de spec — SLICE Hosted
+- Spécialisation workflows agents (n8n, Airia) — niche que les gros ignorent
+
+## Risque "l'agent génère le MCP lui-même" (sans SLICE)
+
+Question légitime : un LLM peut écrire un MCP depuis une doc OpenAPI. Pourquoi SLICE ?
+
+Réponses qui tiennent **aujourd'hui** :
+1. **Déterminisme** — templates testés, même input → même output. Code généré par LLM = qualité variable, bugs aléatoires (pagination, retry, rate limit mal gérés)
+2. **Coût/temps** — 500ms gratuit vs 30s + tokens à chaque génération. Critique pour usage n8n/Airia (dizaines de MCPs)
+3. **Curation** — SLICE applique des règles de sélection cohérentes (12 endpoints qui comptent sur 400). LLM expose tout ou invente
+4. **Compteur d'économie de contexte mesuré** — argument chiffré que le LLM ne fournit pas
+
+**Mais la frontière bouge.** Dans 12-18 mois, Claude 5 / GPT-6 généreront des MCPs de qualité prod. Survie SLICE = **pivoter de "générateur" vers "plateforme MCP managée"** (hosting + monitoring + auth + mise à jour auto + observabilité). C'est ce que SLICE Hosted prépare déjà — accélérer.
+
 ## À ré-examiner
 
 - [ ] Quand un trafic réel arrive, mesurer le profil des utilisateurs (devs vs non-devs) pour valider l'hypothèse de segment
 - [ ] Surveiller Speakeasy tous les 3 mois : sortie d'une UI web grand public = signal d'alerte
-- [ ] Si Anthropic ressort Stainless en consumer, ré-évaluer (concurrent avec leur distribution = jeu changé)
+- [ ] Si Anthropic ressort Stainless en consumer ou sort un MCP Registry officiel poussé, ré-évaluer (concurrent avec leur distribution = jeu changé)
+- [ ] Arbitrer la promotion API publique + MCP SLICE en V1.1/V1.2 (vs V1.5 actuel)
+- [ ] Surveiller Smithery.ai tous les 3 mois (volume catalogue, fonctionnalités custom)
+- [ ] Mesurer en continu la qualité du code MCP généré par les LLMs frontière (signal de bascule plateforme vs générateur)
