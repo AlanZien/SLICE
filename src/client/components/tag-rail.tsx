@@ -51,8 +51,8 @@ export function TagRail({
       <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2">
         <RailItem
           name="All"
-          picked={selectedCount}
-          total={totalCount}
+          // Count intentionally omitted: it would just mirror the
+          // "selected / total" line in the footer below.
           active={activeTag === null}
           onClick={() => onSelectTag(null)}
         />
@@ -97,13 +97,15 @@ export function TagRail({
 
 interface RailItemProps {
   name: string;
-  picked: number;
-  total: number;
+  /** Omitted on the "All" item — its counts duplicate the rail footer. */
+  picked?: number;
+  total?: number;
   active: boolean;
   onClick: () => void;
 }
 
 function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
+  const showCount = typeof picked === 'number' && typeof total === 'number';
   return (
     <button
       type="button"
@@ -121,17 +123,19 @@ function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
       )}
     >
       <span>{name}</span>
-      <span className="font-mono text-[10px]">
-        {picked > 0 && (
-          <>
-            <span className={cn(picked === total ? 'text-emerald-500' : 'text-foreground')}>
-              {picked}
-            </span>
-            <span className="text-muted-foreground"> / </span>
-          </>
-        )}
-        <span className={picked > 0 ? 'text-muted-foreground' : ''}>{total}</span>
-      </span>
+      {showCount && (
+        <span className="font-mono text-[10px]">
+          {picked > 0 && (
+            <>
+              <span className={cn(picked === total ? 'text-emerald-500' : 'text-foreground')}>
+                {picked}
+              </span>
+              <span className="text-muted-foreground"> / </span>
+            </>
+          )}
+          <span className={picked > 0 ? 'text-muted-foreground' : ''}>{total}</span>
+        </span>
+      )}
     </button>
   );
 }
