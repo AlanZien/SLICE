@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import type { ParsedSpec } from '@shared/types';
+import type { ParsedSpec, SliceConfig } from '@shared/types';
 import { Topbar } from './components/topbar';
 import { UploadScreen } from './screens/upload';
 import { SelectionScreen } from './screens/selection';
+import { ConfigScreen } from './screens/config';
 import { useTheme } from './hooks/use-theme';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
@@ -45,6 +46,14 @@ function App() {
     setScreen(3);
   };
 
+  const handleGenerate = (config: SliceConfig) => {
+    // Phase 07 will POST this to /api/generate. For now we just log it so
+    // the boundary is real and the UX can be UAT-tested end-to-end.
+    // eslint-disable-next-line no-console
+    console.info('[SLICE] generate payload', { config, selectedIds });
+    setScreen(4);
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Topbar
@@ -67,23 +76,12 @@ function App() {
         )}
 
         {screen === 3 && parsedSpec && (
-          <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 px-6 py-16 text-center">
-            <p className="eyebrow">Step 3 — Configure</p>
-            <h2 className="h2">{parsedSpec.apiName}</h2>
-            <p className="font-mono text-sm text-muted-foreground">
-              {selectedIds.length} endpoints selected — configuration screen coming in phase 06.
-            </p>
-            {import.meta.env.DEV && (
-              <details className="w-full text-left">
-                <summary className="font-mono cursor-pointer text-xs text-muted-foreground">
-                  Debug: selected ids (dev only)
-                </summary>
-                <pre className="font-mono mt-2 max-h-96 overflow-auto rounded bg-card/40 p-3 text-[10px]">
-                  {JSON.stringify(selectedIds, null, 2)}
-                </pre>
-              </details>
-            )}
-          </section>
+          <ConfigScreen
+            spec={parsedSpec}
+            selectedIds={selectedIds}
+            onBack={() => setScreen(2)}
+            onGenerate={handleGenerate}
+          />
         )}
 
         {/* Dev-only shortcuts to preview stepper states. Stripped from prod. */}
