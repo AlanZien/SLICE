@@ -6,7 +6,6 @@
  * compressed.
  */
 import { ZipArchive } from 'archiver';
-import type { Readable } from 'node:stream';
 import type { GeneratedFile } from '@shared/types';
 
 /**
@@ -16,7 +15,7 @@ import type { GeneratedFile } from '@shared/types';
  * MCP bundles are dominated by small TypeScript / JSON files, so going
  * higher buys very little and adds noticeable CPU latency.
  */
-export function buildZipStream(files: ReadonlyArray<GeneratedFile>): Readable {
+export function buildZipStream(files: ReadonlyArray<GeneratedFile>): NodeJS.ReadableStream {
   const archive = new ZipArchive({ zlib: { level: 6 } });
 
   // `archiver` is a Readable — but we surface it as `Readable` (not the

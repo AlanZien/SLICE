@@ -150,3 +150,36 @@ export class ParseError extends Error {
     this.name = 'ParseError';
   }
 }
+
+/**
+ * Phase 08 — error contract returned by `POST /api/generate`. The wire
+ * payload is `{ code, message }`; HTTP status is implied by the code:
+ *
+ * - 400 `INVALID_SPEC` — Zod / parser refused the body
+ * - 400 `NO_ENDPOINT_SELECTED` — none of `selectedIds` survived re-parsing
+ * - 413 `PAYLOAD_TOO_LARGE` — Express body limit (15 Mo) exceeded
+ * - 500 `GENERATION_FAILED` — unexpected template / archiver failure
+ * - 504 `TIMEOUT` — generation took > 30s
+ */
+export type ApiErrorCode =
+  | 'INVALID_SPEC'
+  | 'NO_ENDPOINT_SELECTED'
+  | 'PAYLOAD_TOO_LARGE'
+  | 'GENERATION_FAILED'
+  | 'TIMEOUT';
+
+export interface ApiErrorPayload {
+  code: ApiErrorCode;
+  message: string;
+}
+
+export class ApiError extends Error {
+  constructor(
+    public readonly code: ApiErrorCode,
+    message: string,
+    public readonly status: number
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
