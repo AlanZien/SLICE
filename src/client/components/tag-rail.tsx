@@ -81,13 +81,16 @@ export function TagRail({
             aria-hidden
           />
         </div>
-        <div className="font-mono mt-0.5 flex justify-between text-[10px] text-muted-foreground">
-          <span>selected</span>
-          <span>{`${selectedCount} / ${totalCount}`}</span>
+        {/* Bump from 10px muted to 12px foreground so the counts stop
+            blending into the background dots. Labels stay muted so the
+            numbers carry the visual weight. */}
+        <div className="font-mono mt-1 flex justify-between text-xs">
+          <span className="text-muted-foreground">selected</span>
+          <span className="text-foreground">{`${selectedCount} / ${totalCount}`}</span>
         </div>
-        <div className="font-mono flex justify-between text-[10px] text-muted-foreground">
-          <span>tokens</span>
-          <span>{`${sliceTokens} / ${fullTokens}`}</span>
+        <div className="font-mono flex justify-between text-xs">
+          <span className="text-muted-foreground">tokens</span>
+          <span className="text-foreground">{`${sliceTokens} / ${fullTokens}`}</span>
         </div>
       </footer>
     </aside>
