@@ -47,8 +47,8 @@ export function TagRail({
         className
       )}
     >
-      <p className="eyebrow shrink-0 px-3 pb-1.5 pt-3">Tags</p>
-      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2">
+      {/* No 'Tags' eyebrow — the list of tag names is self-evident. */}
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2 pt-3">
         <RailItem
           name="All"
           // Count intentionally omitted: it would just mirror the
