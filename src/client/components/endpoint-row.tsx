@@ -6,7 +6,6 @@ export interface EndpointRowProps {
   endpoint: Endpoint;
   selected: boolean;
   focused: boolean;
-  estimatedTokens: number;
   /** Clicking the row body (anywhere but the checkbox) requests focus. */
   onFocus: (id: string) => void;
   /** Clicking the checkbox toggles inclusion in the MCP. */
@@ -28,7 +27,6 @@ export function EndpointRow({
   endpoint,
   selected,
   focused,
-  estimatedTokens,
   onFocus,
   onToggle,
   className,
@@ -57,10 +55,9 @@ export function EndpointRow({
       <span className="font-mono w-[220px] shrink-0 truncate text-[11px] text-muted-foreground" title={endpoint.path}>
         {endpoint.path}
       </span>
-      {/* Per-row token cost intentionally not rendered: the preview pane on
-          the right already surfaces it for the focused endpoint. Showing it
-          on every row was visual duplication. We still accept the prop so
-          parents can keep computing it (used by the preview pane). */}
+      {/* Per-row token cost is intentionally not rendered: the preview
+          pane on the right surfaces it for the focused endpoint. Showing
+          it on every row was visual duplication. */}
       <span className="flex-1 truncate text-sm text-foreground">{endpoint.label}</span>
     </div>
   );

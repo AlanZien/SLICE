@@ -217,7 +217,6 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
                   endpoint={ep}
                   selected={selection.isSelected(ep.id)}
                   focused={selection.focused === ep.id}
-                  estimatedTokens={tokensById.get(ep.id) ?? 0}
                   onFocus={selection.setFocused}
                   onToggle={selection.toggle}
                 />
