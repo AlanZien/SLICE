@@ -66,9 +66,12 @@
   --slice-bg-card-2: #1a1f27;
   --slice-bg-elev: #1f242d;
   --slice-ink: #e9e7df;
-  --slice-ink-soft: #aeada4;
-  --slice-ink-mute: #6f706a;
-  --slice-ink-faint: #4a4b48;
+  /* Soft / mute / faint bumped up across the board for dark mode — the
+     previous values had too little contrast against the very dark
+     background (#0a0c10). Order preserved: ink > soft > mute > faint. */
+  --slice-ink-soft: #c5c4ba;
+  --slice-ink-mute: #969689;
+  --slice-ink-faint: #5e5e57;
   --slice-line: rgba(233, 231, 223, 0.10);
   --slice-line-soft: rgba(233, 231, 223, 0.05);
   --slice-line-strong: rgba(233, 231, 223, 0.22);
