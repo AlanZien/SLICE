@@ -24,10 +24,13 @@ export function buildZipStream(files: ReadonlyArray<GeneratedFile>): NodeJS.Read
     archive.append(file.content, { name: file.path });
   }
 
-  // `finalize()` flushes the central directory. It returns a Promise but we
-  // don't await it: the stream emits its bytes as soon as the consumer
-  // starts pulling, and any error surfaces via the standard `error` event.
-  void archive.finalize();
+  // `finalize()` flushes the central directory. We don't await it (the
+  // stream emits as soon as the consumer pulls), but any rejection must
+  // re-emit through the stream so the caller's `.on('error')` catches it.
+  // Without this, a finalize failure becomes an unhandledRejection.
+  archive.finalize().catch((err: unknown) => {
+    archive.emit('error', err instanceof Error ? err : new Error(String(err)));
+  });
 
   return archive;
 }

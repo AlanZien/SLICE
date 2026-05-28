@@ -179,6 +179,12 @@ export interface ApiErrorPayload {
   message: string;
 }
 
+/**
+ * Internal helper used by the `/api/generate` route to abort the pipeline
+ * with a typed HTTP status. Not exported to the client — the browser sees
+ * the JSON payload (`ApiErrorPayload`) and the existing client-side
+ * `ApiError` class in `client/lib/api.ts` (different ergonomics).
+ */
 export class ApiError extends Error {
   constructor(
     public readonly code: ApiErrorCode,

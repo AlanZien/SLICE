@@ -89,7 +89,11 @@ async function runGeneration(body: ValidatedBody, res: import('express').Respons
   let reparsed;
   try {
     reparsed = await parseSpec(body.rawSpec, { sizeBytes: Buffer.byteLength(body.rawSpec) });
-  } catch {
+  } catch (err) {
+    // Log the underlying cause server-side; the client sees a stable generic
+    // message so we don't leak parser internals.
+    // eslint-disable-next-line no-console
+    console.warn('[generate] re-parse failed:', err instanceof Error ? err.message : err);
     throw new ApiError('INVALID_SPEC', 'Failed to re-parse the spec.', 400);
   }
 
@@ -115,20 +119,35 @@ async function runGeneration(body: ValidatedBody, res: import('express').Respons
       selectedIds: validIds,
       config: body.config,
     });
-  } catch {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('[generate] generation failed:', err instanceof Error ? err.stack : err);
     throw new ApiError('GENERATION_FAILED', 'Bundle generation failed.', 500);
   }
 
   // ─── 5. Stream the ZIP ─────────────────────────────────────────────────
-  const filename = `${body.config.mcpName}.zip`;
+  // Defense-in-depth: `mcpName` is validated by Zod against `^[a-z0-9-]+$`,
+  // but the Content-Disposition header is high-stakes (CRLF injection ⇒
+  // response splitting). Strip anything not in the safe alphabet at the
+  // point of use so future schema changes can't open the door.
+  const safeName = body.config.mcpName.replace(/[^a-z0-9-]/gi, '');
+  const filename = `${safeName}.zip`;
   res.status(200);
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   const stream = buildZipStream(files);
   await new Promise<void>((resolve, reject) => {
+    // Tear the archiver down if the client hangs up mid-stream so we don't
+    // keep compressing into a dead socket.
+    const onClose = () => {
+      const maybeDestroy = (stream as unknown as { destroy?: () => void }).destroy;
+      if (typeof maybeDestroy === 'function') maybeDestroy.call(stream);
+      resolve();
+    };
     stream.on('error', reject);
     res.on('error', reject);
     res.on('finish', resolve);
+    res.on('close', onClose);
     stream.pipe(res);
   });
 }
