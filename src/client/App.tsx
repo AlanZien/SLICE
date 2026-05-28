@@ -1,32 +1,47 @@
 import { useState } from 'react';
 import type { ParsedSpec, SliceConfig } from '@shared/types';
+import { computeEconomy } from '@shared/token-estimator';
 import { Topbar } from './components/topbar';
+import { ToastProvider, useToast } from './components/toast';
 import { UploadScreen } from './screens/upload';
 import { SelectionScreen } from './screens/selection';
 import { ConfigScreen } from './screens/config';
+import { SuccessScreen } from './screens/success';
 import { useTheme } from './hooks/use-theme';
+import { ApiError, apiGenerate } from './lib/api';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
 
-function App() {
+interface SuccessState {
+  config: SliceConfig;
+  zipBlob: Blob;
+  endpointCount: number;
+  economySnapshot: number;
+}
+
+function AppInner() {
   const { theme, toggle } = useTheme();
   const [screen, setScreen] = useState<ScreenIndex>(1);
   const [apiSlug, setApiSlug] = useState<string | null>(null);
   const [parsedSpec, setParsedSpec] = useState<ParsedSpec | null>(null);
+  const [rawSpec, setRawSpec] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [success, setSuccess] = useState<SuccessState | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const { push } = useToast();
 
   const handleReset = () => {
     setScreen(1);
     setApiSlug(null);
     setParsedSpec(null);
+    setRawSpec('');
     setSelectedIds([]);
+    setSuccess(null);
   };
 
-  const handleParsed = (spec: ParsedSpec) => {
+  const handleParsed = (spec: ParsedSpec, raw: string) => {
     setParsedSpec(spec);
-    // Reuse the slug produced by the server-side `slug.ts` (injected into
-    // `defaultConfig` by the normaliser). Keeps the topbar breadcrumb
-    // identical to the MCP name suggested on the config screen.
+    setRawSpec(raw);
     setApiSlug(spec.defaultConfig?.mcpName ?? null);
     setScreen(2);
   };
@@ -36,15 +51,37 @@ function App() {
     setScreen(3);
   };
 
-  const handleGenerate = (config: SliceConfig) => {
-    // Phase 07 will POST this to /api/generate. For now we just gate a
-    // dev-only log behind DEV so the Bearer-style mcpServerToken never
-    // leaks to the production console.
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      console.info('[SLICE] generate payload', { config, selectedIds });
+  const handleGenerate = async (config: SliceConfig) => {
+    if (!parsedSpec) return;
+    if (generating) return;
+    setGenerating(true);
+    // R1.5.6 — snapshot the economy BEFORE network round-trips so the success
+    // screen shows the value at the click moment, not whatever the user
+    // tweaked while waiting.
+    const economy = computeEconomy(parsedSpec, selectedIds);
+    try {
+      const { blob } = await apiGenerate({
+        parsedSpec,
+        rawSpec,
+        selectedIds,
+        config,
+      });
+      setSuccess({
+        config,
+        zipBlob: blob,
+        endpointCount: selectedIds.length,
+        economySnapshot: economy.percent,
+      });
+      setScreen(4);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : 'Could not reach the server. Try again in a moment.';
+      push({ variant: 'error', message });
+    } finally {
+      setGenerating(false);
     }
-    setScreen(4);
   };
 
   return (
@@ -77,6 +114,17 @@ function App() {
           />
         )}
 
+        {screen === 4 && success && (
+          <SuccessScreen
+            config={success.config}
+            endpointCount={success.endpointCount}
+            economySnapshot={success.economySnapshot}
+            zipBlob={success.zipBlob}
+            onRestart={handleReset}
+            onBackToSelection={() => setScreen(2)}
+          />
+        )}
+
         {/* Dev-only shortcuts to preview stepper states. Stripped from prod. */}
         {import.meta.env.DEV && (
           <div className="font-mono fixed bottom-2 left-2 flex gap-1 text-[10px] text-muted-foreground opacity-50">
@@ -94,6 +142,14 @@ function App() {
         )}
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
   );
 }
 

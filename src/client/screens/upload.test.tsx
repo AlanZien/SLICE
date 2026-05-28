@@ -65,7 +65,7 @@ describe('<UploadScreen>', () => {
     await userEvent.upload(input, makeFile('demo.yaml'));
 
     await waitFor(() => {
-      expect(onParsed).toHaveBeenCalledWith(VALID_PARSED);
+      expect(onParsed).toHaveBeenCalledWith(VALID_PARSED, expect.any(String));
     });
     expect(globalThis.fetch).toHaveBeenCalledWith(
       '/api/upload',

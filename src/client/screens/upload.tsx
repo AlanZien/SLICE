@@ -4,7 +4,13 @@ import { Dropzone, type DropzoneState } from '@/components/dropzone';
 import { ApiError, uploadSpec } from '@/lib/api';
 
 export interface UploadScreenProps {
-  onParsed: (spec: ParsedSpec) => void;
+  /**
+   * Called when the server has accepted and parsed the spec. The raw text is
+   * passed alongside the parsed object so the generate step (phase 08) can
+   * re-send it for server-side re-parsing without round-tripping the file
+   * input.
+   */
+  onParsed: (spec: ParsedSpec, rawSpec: string) => void;
 }
 
 /**
@@ -28,9 +34,12 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
       // but flipping to "parsing" once the request hits the server keeps the
       // affordance honest for big files.
       setState('parsing');
-      const parsed = await uploadSpec(file);
+      // Read the file in parallel with the network call — the server
+      // re-parses on its own anyway, so this is purely for forwarding to
+      // the generate endpoint later.
+      const [parsed, rawSpec] = await Promise.all([uploadSpec(file), file.text()]);
       setState('idle');
-      onParsed(parsed);
+      onParsed(parsed, rawSpec);
     } catch (err) {
       setState('error');
       if (err instanceof ApiError) {

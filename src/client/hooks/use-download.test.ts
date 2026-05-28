@@ -5,8 +5,8 @@ import { useDownload } from './use-download';
 describe('useDownload', () => {
   let createObjectURL: ReturnType<typeof vi.fn>;
   let revokeObjectURL: ReturnType<typeof vi.fn>;
-  let appendChild: ReturnType<typeof vi.fn>;
-  let removeChild: ReturnType<typeof vi.fn>;
+  let appendChild: (node: Node) => void;
+  let removeChild: (node: Node) => void;
   let anchorClick: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -16,8 +16,8 @@ describe('useDownload', () => {
     URL.revokeObjectURL = revokeObjectURL as unknown as typeof URL.revokeObjectURL;
 
     anchorClick = vi.fn();
-    appendChild = vi.fn();
-    removeChild = vi.fn();
+    appendChild = vi.fn() as unknown as (node: Node) => void;
+    removeChild = vi.fn() as unknown as (node: Node) => void;
     // Wrap real DOM methods: only intercept anchor creation (which is what
     // the hook produces); everything else (React's div tree, etc.) must pass
     // through untouched so `renderHook` can mount.
