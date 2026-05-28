@@ -132,6 +132,12 @@ export type ParseErrorCode =
 export interface GenerateRequest {
   /** Result of phase 02 / 03 parsing — drives endpoint/tool emission. */
   parsedSpec: ParsedSpec;
+  /**
+   * Original spec source (OpenAPI YAML/JSON) the client uploaded. The server
+   * re-parses it on every request to enforce its own validation (R1.4.1bis),
+   * never trusting the client-side `parsedSpec` blindly.
+   */
+  rawSpec: string;
   /** Subset of endpoint ids the user picked on screen 2. */
   selectedIds: string[];
   /** Final user-confirmed configuration. */
@@ -148,5 +154,44 @@ export class ParseError extends Error {
   constructor(public readonly code: ParseErrorCode, message: string) {
     super(message);
     this.name = 'ParseError';
+  }
+}
+
+/**
+ * Phase 08 — error contract returned by `POST /api/generate`. The wire
+ * payload is `{ code, message }`; HTTP status is implied by the code:
+ *
+ * - 400 `INVALID_SPEC` — Zod / parser refused the body
+ * - 400 `NO_ENDPOINT_SELECTED` — none of `selectedIds` survived re-parsing
+ * - 413 `PAYLOAD_TOO_LARGE` — Express body limit (15 Mo) exceeded
+ * - 500 `GENERATION_FAILED` — unexpected template / archiver failure
+ * - 504 `TIMEOUT` — generation took > 30s
+ */
+export type ApiErrorCode =
+  | 'INVALID_SPEC'
+  | 'NO_ENDPOINT_SELECTED'
+  | 'PAYLOAD_TOO_LARGE'
+  | 'GENERATION_FAILED'
+  | 'TIMEOUT';
+
+export interface ApiErrorPayload {
+  code: ApiErrorCode;
+  message: string;
+}
+
+/**
+ * Internal helper used by the `/api/generate` route to abort the pipeline
+ * with a typed HTTP status. Not exported to the client — the browser sees
+ * the JSON payload (`ApiErrorPayload`) and the existing client-side
+ * `ApiError` class in `client/lib/api.ts` (different ergonomics).
+ */
+export class ApiError extends Error {
+  constructor(
+    public readonly code: ApiErrorCode,
+    message: string,
+    public readonly status: number
+  ) {
+    super(message);
+    this.name = 'ApiError';
   }
 }
