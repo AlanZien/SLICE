@@ -41,7 +41,9 @@ describe('<EndpointPreview>', () => {
 
   it('shows the estimated token cost', () => {
     render(<EndpointPreview endpoint={EP} selected={false} estimatedTokens={123} onToggle={() => {}} />);
-    expect(screen.getByText(/123/)).toBeInTheDocument();
+    // Scope to the "context cost" string so the sample snippet's id:"123"
+    // (sampleValue for id-like params) doesn't collide.
+    expect(screen.getByText(/~\s*123 tokens/i)).toBeInTheDocument();
   });
 
   it('renders an "Add to MCP" button when not selected, "Included" otherwise', () => {
@@ -58,6 +60,21 @@ describe('<EndpointPreview>', () => {
     render(<EndpointPreview endpoint={EP} selected={false} estimatedTokens={120} onToggle={onToggle} />);
     await userEvent.click(screen.getByRole('button', { name: /add to mcp/i }));
     expect(onToggle).toHaveBeenCalledWith('GET /products/{id}');
+  });
+
+  it('shows an "Agent call" sample snippet using the tool name + required params', () => {
+    render(<EndpointPreview endpoint={EP} selected={false} estimatedTokens={120} onToggle={() => {}} />);
+    expect(screen.getByText(/agent call/i)).toBeInTheDocument();
+    const snippet = document.querySelector('pre')?.textContent ?? '';
+    expect(snippet).toMatch(/await mcp\.tools\["get_products\.id"\]/);
+    expect(snippet).toContain('id: "123"');
+  });
+
+  it('shows {} for an endpoint with no required params in the agent call', () => {
+    const bare: Endpoint = { ...EP, params: [] };
+    render(<EndpointPreview endpoint={bare} selected={false} estimatedTokens={50} onToggle={() => {}} />);
+    const snippet = document.querySelector('pre')?.textContent ?? '';
+    expect(snippet).toMatch(/\(\{\}\)/);
   });
 
   it('renders an empty state when no endpoint is focused', () => {

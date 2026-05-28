@@ -2,6 +2,42 @@ import type { Endpoint } from '@shared/types';
 import { MethodBadge } from './method-badge';
 import { cn } from '@/lib/utils';
 
+/**
+ * Render the MCP tool name + sample agent call for an endpoint. Used in the
+ * preview pane so the user can see what the LLM will actually invoke at
+ * runtime — turns the right pane from "metadata dump" into a "preview of
+ * what you're shipping".
+ */
+function toolNameFor(endpoint: Endpoint): string {
+  // Mirror the convention the code generator will use in phase 07: the
+  // method (lowercased) + a sanitised path. Stable, not user-input, so a
+  // light sanitisation is enough here.
+  const path = endpoint.path
+    .replace(/^\/+/, '')
+    .replace(/\{(\w+)\}/g, ':$1')
+    .replace(/[^a-zA-Z0-9_/:.-]/g, '_')
+    .replace(/\/+/g, '.')
+    .replace(/:/g, '');
+  return `${endpoint.method.toLowerCase()}_${path || 'root'}`;
+}
+
+function sampleValue(p: Endpoint['params'][number]): string {
+  if (p.name.toLowerCase().includes('id')) return JSON.stringify('123');
+  if (p.type === 'integer' || p.type === 'number') return '10';
+  if (p.type === 'boolean') return 'true';
+  return JSON.stringify('…');
+}
+
+function renderAgentCall(endpoint: Endpoint): string {
+  const required = endpoint.params.filter((p) => p.required).slice(0, 4);
+  const argLines = required.length === 0
+    ? '{}'
+    : `{
+${required.map((p) => `  ${p.name}: ${sampleValue(p)},`).join('\n')}
+}`;
+  return `await mcp.tools["${toolNameFor(endpoint)}"](${argLines})`;
+}
+
 export interface EndpointPreviewProps {
   /** Currently focused endpoint, or null when nothing is focused yet. */
   endpoint: Endpoint | null;
@@ -80,6 +116,15 @@ export function EndpointPreview({
       <section className="flex flex-col gap-1">
         <p className="eyebrow">Context cost</p>
         <p className="font-mono text-lg text-foreground">~ {estimatedTokens} tokens</p>
+      </section>
+
+      <div className="my-1 h-px bg-border/60" aria-hidden />
+
+      <section className="flex flex-col gap-1.5">
+        <p className="eyebrow">Agent call</p>
+        <pre className="font-mono overflow-x-auto rounded bg-background/60 p-2.5 text-[10.5px] leading-snug text-foreground">
+{renderAgentCall(endpoint)}
+        </pre>
       </section>
 
       <div className="grow" />
