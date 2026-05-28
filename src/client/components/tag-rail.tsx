@@ -56,7 +56,6 @@ export function TagRail({
           active={activeTag === null}
           onClick={() => onSelectTag(null)}
         />
-        <div className="my-1.5 h-px bg-border/60" aria-hidden />
         {tags.map((tag) => (
           <RailItem
             key={tag.name}
