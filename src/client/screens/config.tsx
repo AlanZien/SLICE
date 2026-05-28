@@ -200,8 +200,8 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
         </section>
 
         {/* RIGHT — preview placeholder (wave 2: McpPackageCard + ZipStructure + PostGenSteps) */}
-        <aside className="hidden w-[380px] flex-col border-l border-border bg-card/30 p-6 lg:flex">
-          <p className="eyebrow">live preview</p>
+        <aside className="flex w-[380px] shrink-0 flex-col border-l border-border bg-card/30 p-6">
+          <p className="eyebrow">Live preview</p>
           <p className="font-mono mt-4 text-xs text-muted-foreground">
             {selectedIds.length} endpoints will ship. Detailed preview lands in
             the next iteration of this screen.
