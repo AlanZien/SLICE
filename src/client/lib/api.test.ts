@@ -38,9 +38,8 @@ describe('apiGenerate', () => {
   });
 
   it('returns { blob, filename } on 200 with Content-Disposition', async () => {
-    const fakeBlob = new Blob(['ZIP CONTENT'], { type: 'application/zip' });
     globalThis.fetch = vi.fn(async () =>
-      new Response(fakeBlob, {
+      new Response('ZIP CONTENT', {
         status: 200,
         headers: {
           'Content-Type': 'application/zip',
@@ -71,7 +70,7 @@ describe('apiGenerate', () => {
 
   it('falls back to a sane filename when Content-Disposition is missing', async () => {
     globalThis.fetch = vi.fn(async () =>
-      new Response(new Blob(['x']), {
+      new Response('x', {
         status: 200,
         headers: { 'Content-Type': 'application/zip' },
       })
