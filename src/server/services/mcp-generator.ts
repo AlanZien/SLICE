@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Handlebars from 'handlebars';
-import type { GenerateRequest, GeneratedFile } from '@shared/types';
+import type {
+  Endpoint,
+  EndpointParam,
+  GenerateRequest,
+  GeneratedFile,
+} from '@shared/types';
+import { buildZodExpression } from './zod-schema-builder';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = resolve(HERE, '../templates');
@@ -24,7 +30,81 @@ const STATIC_TEMPLATES: ReadonlyArray<TemplateBinding> = [
   { source: 'tsconfig.json.hbs', dest: 'tsconfig.json' },
   { source: 'env.example.hbs', dest: '.env.example' },
   { source: 'gitignore.hbs', dest: '.gitignore' },
+  { source: 'http-client.ts.hbs', dest: 'src/http-client.ts' },
+  { source: 'tools.ts.hbs', dest: 'src/tools.ts' },
 ];
+
+interface ToolBinding {
+  name: string;
+  description: string;
+  method: string;
+  path: string;
+  inputSchema: string;
+  hasPathParams: boolean;
+  pathParamsExpr: string;
+  hasQuery: boolean;
+  queryExpr: string;
+  hasBody: boolean;
+}
+
+/**
+ * Sanitise an endpoint into a JS-safe identifier the agent can call.
+ * Same convention as the preview pane (phase 04bis) so what users see is
+ * what they get.
+ */
+function toolNameFor(endpoint: Endpoint): string {
+  return (
+    endpoint.label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'tool'
+  );
+}
+
+function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBinding {
+  const path = endpoint.params.filter((p: EndpointParam) => p.in === 'path');
+  const query = endpoint.params.filter((p: EndpointParam) => p.in === 'query');
+
+  // Tool input schema: object whose properties are the endpoint params.
+  const properties: Record<string, ReturnType<typeof shapeOfParam>> = {};
+  for (const p of endpoint.params) {
+    properties[p.name] = shapeOfParam(p);
+  }
+  const inputSchema = buildZodExpression(
+    {
+      type: 'object',
+      required: true,
+      properties,
+      requiredFields: endpoint.params.filter((p) => p.required).map((p) => p.name),
+    },
+    includeDescriptions
+  );
+
+  return {
+    name: toolNameFor(endpoint),
+    description: (endpoint.description ?? endpoint.label).replace(/'/g, "\\'").split('\n')[0],
+    method: endpoint.method,
+    path: endpoint.path,
+    inputSchema,
+    hasPathParams: path.length > 0,
+    pathParamsExpr: path.map((p) => `${p.name}: String(args.${p.name})`).join(', '),
+    hasQuery: query.length > 0,
+    queryExpr: query.map((p) => `${p.name}: args.${p.name}`).join(', '),
+    hasBody: false, // Phase 07 ignores requestBody — phase 04 doesn't flatten it yet.
+  };
+}
+
+function shapeOfParam(p: EndpointParam): {
+  type?: string;
+  required: boolean;
+  description?: string;
+} {
+  return {
+    type: p.type,
+    required: p.required,
+    description: p.description,
+  };
+}
 
 // Register helpers exactly once at module load — Handlebars treats helpers
 // as global state, so re-registering on every render is wasteful.
@@ -65,10 +145,16 @@ interface TemplateContext {
   mode: string;
   modeLocalOnly: boolean;
   mcpServerToken?: string;
+  tools: ToolBinding[];
 }
 
 function buildContext(req: GenerateRequest): TemplateContext {
-  const { parsedSpec, config } = req;
+  const { parsedSpec, config, selectedIds } = req;
+  const selectedSet = new Set(selectedIds);
+  const tools = parsedSpec.groups
+    .flatMap((g) => g.endpoints)
+    .filter((e) => selectedSet.has(e.id))
+    .map((e) => buildTool(e, config.includeParamDescriptions));
   return {
     mcpName: config.mcpName,
     apiName: parsedSpec.apiName,
@@ -78,6 +164,7 @@ function buildContext(req: GenerateRequest): TemplateContext {
     mode: config.mode,
     modeLocalOnly: config.mode === 'local',
     mcpServerToken: config.mode === 'local' ? undefined : config.mcpServerToken,
+    tools,
   };
 }
 
