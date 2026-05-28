@@ -108,6 +108,42 @@ describe('generateMcp — logic files (07-4)', () => {
   });
 });
 
+describe('generateMcp — entrypoint and readme (07-5)', () => {
+  it('emits src/index.ts with both transports when mode=both', () => {
+    const idx = asMap(generateMcp(buildRequest({ mode: 'both' }))).get('src/index.ts')!;
+    expect(idx).toContain('StdioServerTransport');
+    expect(idx).toContain('StreamableHTTPServerTransport');
+    expect(idx).toContain('MCP_TRANSPORT');
+  });
+
+  it('emits src/index.ts with only stdio transport when mode=local', () => {
+    const idx = asMap(
+      generateMcp(buildRequest({ mode: 'local', mcpServerToken: undefined }))
+    ).get('src/index.ts')!;
+    expect(idx).toContain('StdioServerTransport');
+    expect(idx).not.toContain('StreamableHTTPServerTransport');
+  });
+
+  it('emits src/index.ts with only http transport when mode=http', () => {
+    const idx = asMap(generateMcp(buildRequest({ mode: 'http' }))).get('src/index.ts')!;
+    expect(idx).toContain('StreamableHTTPServerTransport');
+    expect(idx).not.toContain('StdioServerTransport');
+  });
+
+  it('emits README.md mentioning the MCP name and Claude Desktop stdio snippet when mode allows stdio', () => {
+    const readme = asMap(generateMcp(buildRequest({ mode: 'both' }))).get('README.md')!;
+    expect(readme).toContain('shopify-admin');
+    expect(readme).toContain('Claude Desktop');
+    expect(readme).toContain('"command"');
+  });
+
+  it('omits the Claude Desktop stdio snippet when mode=http', () => {
+    const readme = asMap(generateMcp(buildRequest({ mode: 'http' }))).get('README.md')!;
+    expect(readme).not.toContain('"command"');
+    expect(readme).toContain('Bearer');
+  });
+});
+
 describe('generateMcp — static files (07-3)', () => {
   it('emits package.json with the MCP name interpolated', () => {
     const files = asMap(generateMcp(buildRequest()));
