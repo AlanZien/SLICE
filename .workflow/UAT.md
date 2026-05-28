@@ -342,3 +342,41 @@ Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquett
 
 - Le smoke `tsc --noEmit` du bundle a forcé deux corrections clés : passage à `McpServer` (le `Server` bas-niveau n'a pas `.tool()`), et schémas d'inputs en `ZodRawShape` plutôt qu'en `z.object({...})` (exigence du SDK).
 - Mode `'http'` n'existe pas dans `DeploymentMode` — la valeur correcte est `'remote'`. À refléter dans la doc utilisateur de l'écran config.
+
+
+## Phase 08 : Endpoint /api/generate + ZIP streaming (2026-05-28)
+
+### Tests techniques (générés depuis PLAN 08)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 325 verts (48 fichiers) | ✓ | inclut perf + no-persistence |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict |
+| 3 | `buildZipStream(files)` produit un ZIP décompressable via yauzl | ✓ | `zip-builder.test.ts` |
+| 4 | `buildZipStream` ne laisse aucun fichier dans `os.tmpdir()` | ✓ | inspect before/after |
+| 5 | `POST /api/generate` 200 + Content-Disposition `<mcpName>.zip` | ✓ | supertest |
+| 6 | 400 `INVALID_SPEC` si Zod échoue | ✓ | |
+| 7 | 400 `INVALID_SPEC` si re-parse échoue | ✓ | rawSpec corrompu |
+| 8 | 400 `NO_ENDPOINT_SELECTED` si 0 id valide | ✓ | whitelist (R1.4.1ter) |
+| 9 | Whitelist : ids inconnus ignorés, valides gardés | ✓ | |
+| 10 | 413 `PAYLOAD_TOO_LARGE` sur body > 15 Mo | ✓ | router-level json(15mb) |
+| 11 | p95 < 5 s sur shopify-50 | ✓ | 5 mesures après 3 warm-ups |
+| 12 | p95 < 10 s sur aws-500 (500 endpoints) | ✓ | palier volume |
+| 13 | `apiGenerate(req)` retourne {blob, filename} sur 200 | ✓ | client/lib/api.test.ts |
+| 14 | `apiGenerate` throw `ApiError` typé sur 4xx | ✓ | |
+
+### Tests métier / UX (validés par l'utilisateur ou à valider)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `curl -X POST /api/generate -d @payload.json -o out.zip` → ZIP décompressable | ⏳ | manuel — quand le client branchera apiGenerate (phase 09) |
+| 2 | ZIP décompressé + `pnpm install && pnpm build` → exit 0 | ⏳ | manuel |
+| 3 | Body 20 Mo → 413 avec code `PAYLOAD_TOO_LARGE` | ✓ | test automatisé couvre |
+| 4 | 0 ids → 400 avec code `NO_ENDPOINT_SELECTED` | ✓ | test automatisé couvre |
+
+### Findings reportés (RETRO)
+
+- **withTimeout n'annule pas la promesse sous-jacente** : si `generateMcp` boucle, le timer 30s rejette mais la promesse continue jusqu'à résolution naturelle. Acceptable car `generateMcp` est synchrone court ; à revoir si une étape async lourde s'ajoute.
+- **parsedSpec dans le body est redondant avec rawSpec** : seul `rawSpec` est réellement utilisé côté serveur (re-parse). À considérer en V1.1 de retirer pour alléger le payload.
+- **Bypass conditionnel global json sur `/api/generate`** : fonctionne mais fragile pour de futurs sous-chemins. Pattern à documenter ou refactor en route-spécifique.
+- **archiver v8 + @types/archiver v7** : shim local `src/server/types/archiver-v8.d.ts`. À supprimer dès que `@types/archiver` rattrape la v8.
