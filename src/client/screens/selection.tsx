@@ -253,7 +253,6 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
 
       <StickyFooter
         selectedCount={selection.count}
-        savedPercent={economy.percent}
         onBack={onBack}
         onContinue={() => onContinue(selection.selectedIds())}
       />
