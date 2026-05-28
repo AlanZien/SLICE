@@ -41,9 +41,10 @@ export function TagRail({
         // `h-full min-h-0` is the key: it lets the tags-list flex-child
         // shrink so the savings footer stays visible at the bottom of the
         // viewport instead of being pushed off-screen by a long tag list.
-        // Width matches the preview pane on the right (290px) so the central
-        // list sits symmetrically between two equal-weight rails.
-        'flex h-full min-h-0 w-[290px] flex-col border-r border-border bg-card/40',
+        // 240px gives the centre list more breathing room while still
+        // fitting the longest tag names ("fulfillments") + the picked/total
+        // counter at 14px.
+        'flex h-full min-h-0 w-[240px] flex-col border-r border-border bg-card/40',
         className
       )}
     >
@@ -118,7 +119,7 @@ function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
         // Active state uses both a left accent border (2px primary) AND a
         // higher-contrast background so the cursor's location is obvious
         // even at a glance in dark mode. Inactive: muted, no border.
-        'relative flex items-center justify-between rounded-md py-1.5 pr-2.5 text-left text-xs transition-colors',
+        'relative flex items-center justify-between rounded-md py-1.5 pr-2.5 text-left text-sm transition-colors',
         active
           ? 'bg-[var(--slice-highlight)] pl-3 font-medium text-foreground shadow-[inset_2px_0_0_var(--primary)]'
           : 'pl-3 text-muted-foreground hover:bg-[var(--slice-highlight)]/60 hover:text-foreground'
@@ -126,7 +127,7 @@ function RailItem({ name, picked, total, active, onClick }: RailItemProps) {
     >
       <span>{name}</span>
       {showCount && (
-        <span className="font-mono text-[10px]">
+        <span className="font-mono text-[11px]">
           {picked > 0 && (
             <>
               <span className={cn(picked === total ? 'text-emerald-500' : 'text-foreground')}>
