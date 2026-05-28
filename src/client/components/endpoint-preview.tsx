@@ -41,20 +41,14 @@ ${required.map((p) => `  ${p.name}: ${sampleValue(p)},`).join('\n')}
 export interface EndpointPreviewProps {
   /** Currently focused endpoint, or null when nothing is focused yet. */
   endpoint: Endpoint | null;
-  /** Whether the focused endpoint is in the selection. */
-  selected: boolean;
   /** Tokens this endpoint contributes (computed by the parent via token-estimator). */
   estimatedTokens: number;
-  /** Toggle the endpoint's selection — receives the endpoint id. */
-  onToggle: (id: string) => void;
   className?: string;
 }
 
 export function EndpointPreview({
   endpoint,
-  selected,
   estimatedTokens,
-  onToggle,
   className,
 }: EndpointPreviewProps) {
   if (!endpoint) {
@@ -127,20 +121,6 @@ export function EndpointPreview({
         </pre>
       </section>
 
-      <div className="grow" />
-
-      <button
-        type="button"
-        onClick={() => onToggle(endpoint.id)}
-        className={cn(
-          'font-mono inline-flex h-9 items-center justify-center rounded-md text-xs font-medium transition-colors',
-          selected
-            ? 'border border-border bg-card text-muted-foreground hover:text-foreground'
-            : 'bg-primary text-primary-foreground hover:opacity-90'
-        )}
-      >
-        {selected ? '✓ Included in MCP' : '+ Add to MCP'}
-      </button>
     </aside>
   );
 }

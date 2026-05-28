@@ -245,9 +245,7 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
 
         <EndpointPreview
           endpoint={focusedEndpoint}
-          selected={focusedEndpoint ? selection.isSelected(focusedEndpoint.id) : false}
           estimatedTokens={focusedEndpoint ? tokensById.get(focusedEndpoint.id) ?? 0 : 0}
-          onToggle={selection.toggle}
         />
       </div>
 
