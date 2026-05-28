@@ -38,8 +38,8 @@ function setup(over: { economySnapshot?: number; endpointCount?: number; blob?: 
 describe('<SuccessScreen />', () => {
   it('renders the headline + recap with the configured mcpName', () => {
     setup();
-    expect(screen.getByText(/shopify-admin/)).not.toBeNull();
-    expect(screen.getByText(/23/)).not.toBeNull();
+    expect(screen.getAllByText(/shopify-admin/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/23 endpoints/i)).not.toBeNull();
   });
 
   it('shows the economy snapshot value passed in (not recomputed)', () => {
