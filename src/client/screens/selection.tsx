@@ -149,9 +149,6 @@ export function SelectionScreen({ spec, onContinue, onBack }: SelectionScreenPro
               {spec.excludedCount} excluded · missing description
             </span>
           ) : null}
-          <span className="font-mono rounded-full border border-border bg-card/40 px-3 py-1 text-[10px] text-muted-foreground">
-            {allEndpoints.length} endpoints detected
-          </span>
         </div>
       </div>
 

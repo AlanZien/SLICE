@@ -38,12 +38,15 @@ export function TagRail({
   return (
     <aside
       className={cn(
-        'flex w-[200px] flex-col border-r border-border bg-card/40',
+        // `h-full min-h-0` is the key: it lets the tags-list flex-child
+        // shrink so the savings footer stays visible at the bottom of the
+        // viewport instead of being pushed off-screen by a long tag list.
+        'flex h-full min-h-0 w-[200px] flex-col border-r border-border bg-card/40',
         className
       )}
     >
-      <p className="eyebrow px-3 pb-1.5 pt-3">Tags</p>
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2">
+      <p className="eyebrow shrink-0 px-3 pb-1.5 pt-3">Tags</p>
+      <nav className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-1.5 pb-2">
         <RailItem
           name="All"
           picked={selectedCount}
@@ -64,11 +67,11 @@ export function TagRail({
         ))}
       </nav>
 
-      <footer className="flex flex-col gap-2 border-t border-border/60 bg-background/40 p-3">
+      <footer className="flex shrink-0 flex-col gap-1.5 border-t border-border/60 bg-background/40 px-3 py-2.5">
         <p className="eyebrow">Context saved</p>
         <p className="h2 leading-none text-foreground">
           −{safePercent}
-          <span className="font-mono ml-1 text-base text-muted-foreground">%</span>
+          <span className="font-mono ml-1 text-sm text-muted-foreground">%</span>
         </p>
         <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
           <div
@@ -77,7 +80,7 @@ export function TagRail({
             aria-hidden
           />
         </div>
-        <div className="font-mono mt-1 flex justify-between text-[10px] text-muted-foreground">
+        <div className="font-mono mt-0.5 flex justify-between text-[10px] text-muted-foreground">
           <span>selected</span>
           <span>{`${selectedCount} / ${totalCount}`}</span>
         </div>
