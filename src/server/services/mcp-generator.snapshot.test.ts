@@ -99,6 +99,7 @@ describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
       mkdirSync(join(dir, 'node_modules'), { recursive: true });
       execSync(`ln -s "${sdkRoot}/@modelcontextprotocol" "${dir}/node_modules/@modelcontextprotocol"`);
       execSync(`ln -s "${sdkRoot}/zod" "${dir}/node_modules/zod"`);
+      execSync(`ln -s "${sdkRoot}/dotenv" "${dir}/node_modules/dotenv"`);
       mkdirSync(join(dir, 'node_modules/@types'), { recursive: true });
       execSync(`ln -s "${sdkRoot}/@types/node" "${dir}/node_modules/@types/node"`);
 
