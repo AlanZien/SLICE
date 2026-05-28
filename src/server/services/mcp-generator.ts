@@ -67,20 +67,13 @@ function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBindin
   const path = endpoint.params.filter((p: EndpointParam) => p.in === 'path');
   const query = endpoint.params.filter((p: EndpointParam) => p.in === 'query');
 
-  // Tool input schema: object whose properties are the endpoint params.
-  const properties: Record<string, ReturnType<typeof shapeOfParam>> = {};
-  for (const p of endpoint.params) {
-    properties[p.name] = shapeOfParam(p);
-  }
-  const inputSchema = buildZodExpression(
-    {
-      type: 'object',
-      required: true,
-      properties,
-      requiredFields: endpoint.params.filter((p) => p.required).map((p) => p.name),
-    },
-    includeDescriptions
+  // MCP SDK's `server.tool(name, desc, paramsSchema, cb)` expects a
+  // ZodRawShape ({ [k: string]: ZodType }), not a wrapping `z.object({...})`.
+  // We emit the raw shape directly so the generated code typechecks.
+  const entries = endpoint.params.map(
+    (p) => `${p.name}: ${buildZodExpression(shapeOfParam(p), includeDescriptions)}`
   );
+  const inputSchema = entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`;
 
   return {
     name: toolNameFor(endpoint),
@@ -103,7 +96,8 @@ function shapeOfParam(p: EndpointParam): {
 } {
   return {
     type: p.type,
-    required: p.required,
+    // Default to required: true so non-flagged params don't get `.optional()`.
+    required: p.required !== false,
     description: p.description,
   };
 }
@@ -166,7 +160,7 @@ function buildContext(req: GenerateRequest): TemplateContext {
     upstreamAuth: config.upstreamAuth,
     mode: config.mode,
     modeLocalOnly: config.mode === 'local',
-    modeHttpOnly: config.mode === 'http',
+    modeHttpOnly: config.mode === 'remote',
     mcpServerToken: config.mode === 'local' ? undefined : config.mcpServerToken,
     tools,
   };

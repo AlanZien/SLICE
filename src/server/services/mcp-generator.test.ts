@@ -125,7 +125,7 @@ describe('generateMcp — entrypoint and readme (07-5)', () => {
   });
 
   it('emits src/index.ts with only http transport when mode=http', () => {
-    const idx = asMap(generateMcp(buildRequest({ mode: 'http' }))).get('src/index.ts')!;
+    const idx = asMap(generateMcp(buildRequest({ mode: 'remote' }))).get('src/index.ts')!;
     expect(idx).toContain('StreamableHTTPServerTransport');
     expect(idx).not.toContain('StdioServerTransport');
   });
@@ -138,7 +138,7 @@ describe('generateMcp — entrypoint and readme (07-5)', () => {
   });
 
   it('omits the Claude Desktop stdio snippet when mode=http', () => {
-    const readme = asMap(generateMcp(buildRequest({ mode: 'http' }))).get('README.md')!;
+    const readme = asMap(generateMcp(buildRequest({ mode: 'remote' }))).get('README.md')!;
     expect(readme).not.toContain('"command"');
     expect(readme).toContain('Bearer');
   });
