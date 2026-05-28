@@ -4,12 +4,16 @@
  * method exclusions and parameter flattening (SPEC §1.2 + cas limites).
  */
 import type {
+  DefaultConfig,
   Endpoint,
   EndpointGroup,
   EndpointParam,
   HttpMethod,
   ParsedSpec,
 } from '@shared/types';
+import { detectAuth } from './auth-detector';
+import { slugify } from './slug';
+import { generateMcpServerToken } from './token-generator';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -23,13 +27,29 @@ const SUPPORTED_METHODS: ReadonlyArray<string> = [
 
 export function normalizeSpec(doc: any): ParsedSpec {
   const { groups, excludedCount } = collectGroups(doc);
+  const baseUrl = doc?.servers?.[0]?.url ?? '';
+  const apiName = doc?.info?.title ?? 'Untitled API';
+
+  // Phase 06 — pre-fill the config screen with everything we can deduce.
+  // The detector falls back to `{ type: 'none' }` safely if the spec has
+  // no `securitySchemes` block.
+  const upstreamAuth = detectAuth(doc?.components?.securitySchemes ?? null);
+  const defaultConfig: DefaultConfig = {
+    mcpName: slugify(doc?.info?.title ?? ''),
+    baseUrl,
+    upstreamAuth,
+    mcpServerToken: generateMcpServerToken(),
+  };
+
   return {
-    apiName: doc?.info?.title ?? 'Untitled API',
+    apiName,
     apiVersion: doc?.info?.version ?? '0.0.0',
-    baseUrl: doc?.servers?.[0]?.url ?? '',
-    authType: 'none',
+    baseUrl,
+    authType: upstreamAuth.type,
+    authHeader: upstreamAuth.headerName,
     groups,
     excludedCount,
+    defaultConfig,
   };
 }
 
