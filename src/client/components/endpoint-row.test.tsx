@@ -22,12 +22,16 @@ describe('<EndpointRow>', () => {
     onFocus: () => {},
   };
 
-  it('renders label, method, path and estimated tokens', () => {
+  it('renders label, method and path', () => {
     render(<EndpointRow {...baseProps} />);
     expect(screen.getByText('List things')).toBeInTheDocument();
     expect(screen.getByText('GET')).toBeInTheDocument();
     expect(screen.getByText('/things')).toBeInTheDocument();
-    expect(screen.getByText(/42/)).toBeInTheDocument();
+  });
+
+  it('does not render the per-row token cost (lives in the preview pane)', () => {
+    render(<EndpointRow {...baseProps} estimatedTokens={42} />);
+    expect(screen.queryByText(/42/)).not.toBeInTheDocument();
   });
 
   it('reflects the selected state on the checkbox', () => {

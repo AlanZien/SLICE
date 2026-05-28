@@ -57,10 +57,11 @@ export function EndpointRow({
       <span className="font-mono w-[220px] shrink-0 truncate text-[11px] text-muted-foreground" title={endpoint.path}>
         {endpoint.path}
       </span>
+      {/* Per-row token cost intentionally not rendered: the preview pane on
+          the right already surfaces it for the focused endpoint. Showing it
+          on every row was visual duplication. We still accept the prop so
+          parents can keep computing it (used by the preview pane). */}
       <span className="flex-1 truncate text-sm text-foreground">{endpoint.label}</span>
-      <span className="font-mono shrink-0 text-[10px] text-muted-foreground" aria-label={`~${estimatedTokens} tokens`}>
-        ~{estimatedTokens} tk
-      </span>
     </div>
   );
 }
