@@ -41,7 +41,9 @@ export function TagRail({
         // `h-full min-h-0` is the key: it lets the tags-list flex-child
         // shrink so the savings footer stays visible at the bottom of the
         // viewport instead of being pushed off-screen by a long tag list.
-        'flex h-full min-h-0 w-[200px] flex-col border-r border-border bg-card/40',
+        // Width matches the preview pane on the right (290px) so the central
+        // list sits symmetrically between two equal-weight rails.
+        'flex h-full min-h-0 w-[290px] flex-col border-r border-border bg-card/40',
         className
       )}
     >
