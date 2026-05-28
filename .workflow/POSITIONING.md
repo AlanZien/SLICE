@@ -86,9 +86,13 @@ Conditions techniques :
 
 À arbitrer : promouvoir l'API + MCP SLICE en feature phare de V1.1 plutôt qu'en commodité tardive V1.5.
 
-## Concurrents adjacents — Registres MCP (distincts de Speakeasy/Stainless)
+## Registres / annuaires MCP (canaux de distribution, pas concurrents directs)
 
-Catégorie différente des générateurs de code : les **registres / catalogues de MCPs déjà écrits**.
+Catégorie différente des générateurs de code : les **annuaires de MCPs déjà écrits**. Ils référencent et distribuent, ils ne génèrent pas. Donc plutôt **partenaires de distribution potentiels** que concurrents.
+
+Analogie : Smithery = npm/App Store des MCPs (catalogue de produits finis). SLICE = usine qui fabrique le produit. Pipeline naturel : SLICE génère → publie sur Smithery → users découvrent via catalogue → install one-click.
+
+Risque concurrentiel **uniquement** si l'un d'eux ajoute un générateur custom — pas leur ADN aujourd'hui.
 
 | Acteur | Type | Force | Risque pour SLICE |
 |---|---|---|---|
@@ -122,11 +126,56 @@ Réponses qui tiennent **aujourd'hui** :
 
 **Mais la frontière bouge.** Dans 12-18 mois, Claude 5 / GPT-6 généreront des MCPs de qualité prod. Survie SLICE = **pivoter de "générateur" vers "plateforme MCP managée"** (hosting + monitoring + auth + mise à jour auto + observabilité). C'est ce que SLICE Hosted prépare déjà — accélérer.
 
+## Modèle économique — Comment monétiser API / MCP SLICE (2026-05-28)
+
+Principe directeur : **ne jamais facturer la simple génération à l'acte**. C'est commoditisable (LLM frontière dans 12-18 mois). Facturer ce qui dure et que personne ne peut faire à la place : **hosting, observabilité, fraîcheur, auth managée**.
+
+### Modèles évalués
+
+| Modèle | Verdict | Pourquoi |
+|---|---|---|
+| Pay-per-use API (0,50 €/gen) | ❌ Non | Coût marginal trop bas, paraît racketteur, risque commoditisation |
+| Abonnement par clé API (tier mensuel) | ⚠️ OK mais pas suffisant | Modèle Speakeasy/Mintlify, classique mais pas différenciant |
+| **Freemium API + SLICE Hosted payant** | ✅ **Reco** | Aligne valeur sur ce qui dure (hosting récurrent), cohérent avec PRD |
+| BYO key + % sur appels routés | ⏳ V2+ | Trop tôt, complexité proxying, méfiance |
+| Enterprise self-hosted | ⏳ V2+ | Marges énormes mais cycle vente long, après 50 clients SaaS |
+
+### Structure tarifaire pressentie
+
+| Plan | Web | API (génération) | MCPs hébergés | Prix |
+|---|---|---|---|---|
+| Free | illimité | 50 gen/mois | 1 MCP hébergé | 0 € |
+| Pro | illimité | 500 gen/mois | 10 MCPs hébergés | 19 €/mois |
+| Team | illimité | illimité | 50 MCPs hébergés + observabilité | 79 €/mois |
+| Enterprise | self-hosted | sur devis | illimité | 5k€+/an |
+
+### Logique de la structure
+
+- **Gratuit (web + API limitée)** = acquisition non-tech via le web, découverte sans friction
+- **Hosting payant** = valeur récurrente vendue. Justification claire : "ton MCP doit tourner 24/7, rester à jour quand l'OpenAPI source change, être monitoré, gérer l'auth"
+- **API en pay-per-use évitée** = on ne facture pas l'acte ponctuel (génération), on facture l'usage long terme (hébergement)
+
+### Pourquoi ce modèle protège SLICE contre la commoditisation LLM
+
+Quand Claude 5 / GPT-6 généreront des MCPs de qualité prod (12-18 mois) :
+- La génération brute perd sa valeur → mais SLICE ne facture pas la génération
+- L'hosting + observabilité + auto-update restent → SLICE garde sa valeur récurrente
+- C'est exactement le pivot "générateur → plateforme MCP managée" évoqué plus haut
+
+### Conditions techniques requises
+
+- Hosting MCP en HTTP Streamable scalable (Coolify/VPS ou Vercel/Fly selon décision SPEC)
+- Mécanisme de détection de changement OpenAPI source (webhook ou polling) + régénération auto
+- Observabilité par MCP : nombre d'appels, latence, erreurs, tokens économisés cumulés
+- Auth managée : stockage chiffré des credentials amont (Shopify token, Stripe key), rotation
+
 ## À ré-examiner
 
 - [ ] Quand un trafic réel arrive, mesurer le profil des utilisateurs (devs vs non-devs) pour valider l'hypothèse de segment
 - [ ] Surveiller Speakeasy tous les 3 mois : sortie d'une UI web grand public = signal d'alerte
 - [ ] Si Anthropic ressort Stainless en consumer ou sort un MCP Registry officiel poussé, ré-évaluer (concurrent avec leur distribution = jeu changé)
 - [ ] Arbitrer la promotion API publique + MCP SLICE en V1.1/V1.2 (vs V1.5 actuel)
-- [ ] Surveiller Smithery.ai tous les 3 mois (volume catalogue, fonctionnalités custom)
+- [ ] Surveiller Smithery.ai tous les 3 mois (volume catalogue, fonctionnalités custom — risque uniquement s'ils ajoutent un générateur, ce qui n'est pas leur ADN actuel)
 - [ ] Mesurer en continu la qualité du code MCP généré par les LLMs frontière (signal de bascule plateforme vs générateur)
+- [ ] Valider la grille tarifaire (Free/Pro/Team/Enterprise) avec 10 prospects avant phase SLICE Hosted
+- [ ] Tester le pricing du hosting : 9 €/MCP/mois unitaire vs forfaits 10/50 MCPs — quel modèle convertit mieux ?
