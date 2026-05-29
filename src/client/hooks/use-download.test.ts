@@ -63,6 +63,14 @@ describe('useDownload', () => {
     expect(anchorClick).not.toHaveBeenCalled();
   });
 
+  it('only triggers ONE download even when mounted twice (React.StrictMode)', () => {
+    const blob = new Blob(['x']);
+    const { unmount } = renderHook(() => useDownload(blob, 'demo.zip'));
+    unmount();
+    renderHook(() => useDownload(blob, 'demo.zip'));
+    expect(anchorClick).toHaveBeenCalledTimes(1);
+  });
+
   it('exposes redownload() that reuses the same blob without re-fetching', () => {
     const blob = new Blob(['x']);
     const { result } = renderHook(() => useDownload(blob, 'demo.zip'));
