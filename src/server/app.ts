@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createUploadRouter } from './routes/upload';
 import { createGenerateRouter } from './routes/generate';
+import { createGenerateBinaryRouter } from './routes/generate-binary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +24,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // route ships its own 15 MB parser; we skip the global one on that path
   // so the larger limit is the only one applied (R1.6.8).
   app.use((req, res, next) => {
-    if (req.path.startsWith('/api/generate')) return next();
+    if (req.path.startsWith('/api/generate') || req.path.startsWith('/api/generate-binary')) return next();
     return express.json({ limit: '10mb' })(req, res, next);
   });
 
@@ -46,6 +47,13 @@ export function createApp(options: CreateAppOptions = {}): Express {
 
   // POST /api/upload — phase 02 (multer applies its own 10 MB limit before json parser)
   app.use('/api/upload', createUploadRouter());
+
+  // POST /api/generate-binary — phase 11. MUST be registered before the
+  // /api/generate mount: `app.use('/api/generate', ...)` would otherwise
+  // match `/api/generate-binary` first (prefix routing), strip the prefix,
+  // and forward `/-binary` to the ZIP router — which 404s. Mounting the
+  // longer path first lets Express dispatch correctly.
+  app.use('/api/generate-binary', createGenerateBinaryRouter());
 
   // POST /api/generate — phase 08. Mounts its own 15 MB JSON parser; the
   // 10 MB app-level one is bypassed by the path-specific router order.

@@ -172,7 +172,10 @@ export type ApiErrorCode =
   | 'NO_ENDPOINT_SELECTED'
   | 'PAYLOAD_TOO_LARGE'
   | 'GENERATION_FAILED'
-  | 'TIMEOUT';
+  | 'TIMEOUT'
+  // Phase 11 — binary build pipeline
+  | 'INVALID_TARGET'
+  | 'COMPILE_FAILED';
 
 export interface ApiErrorPayload {
   code: ApiErrorCode;
