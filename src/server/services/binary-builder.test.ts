@@ -6,16 +6,20 @@ import { buildBinary, BINARY_TARGETS, type BinaryTarget } from './binary-builder
 import type { GeneratedFile } from '@shared/types';
 
 /**
- * The builder shells out to `bun`. If Bun isn't installed on the host these
- * tests would be misleading — skip them with a clear message instead.
+ * The builder shells out to `bun`. Bun must be on the PATH of whoever runs
+ * the test suite — we fail loudly rather than skip silently, so a broken
+ * setup can't masquerade as green.
  */
-let bunAvailable = false;
 beforeAll(() => {
   try {
-    execSync('bun --version', { stdio: 'pipe' });
-    bunAvailable = true;
-  } catch {
-    bunAvailable = false;
+    const v = execSync('bun --version', { stdio: 'pipe' }).toString().trim();
+    // eslint-disable-next-line no-console
+    console.log(`[binary-builder.test] Bun ${v} detected`);
+  } catch (err) {
+    throw new Error(
+      `Bun must be installed and on PATH to run binary-builder tests. ` +
+        `Original error: ${err instanceof Error ? err.message : String(err)}`
+    );
   }
 });
 
@@ -40,8 +44,7 @@ describe('buildBinary', () => {
   });
 
   it('produces a runnable Mach-O binary for macos-arm64', async () => {
-    if (!bunAvailable) return;
-    const buf = await buildBinary(TINY_BUNDLE, 'macos-arm64');
+const buf = await buildBinary(TINY_BUNDLE, 'macos-arm64');
     expect(buf.length).toBeGreaterThan(10 * 1024 * 1024); // > 10 MB
     // Mach-O 64-bit magic for arm64: cf fa ed fe (little-endian feedfacf)
     expect(buf[0]).toBe(0xcf);
@@ -51,8 +54,7 @@ describe('buildBinary', () => {
   }, 60_000);
 
   it('produces a PE32+ Windows binary for windows-x64', async () => {
-    if (!bunAvailable) return;
-    const buf = await buildBinary(TINY_BUNDLE, 'windows-x64');
+const buf = await buildBinary(TINY_BUNDLE, 'windows-x64');
     expect(buf.length).toBeGreaterThan(10 * 1024 * 1024);
     // PE magic: MZ at the start
     expect(buf[0]).toBe(0x4d); // M
@@ -60,15 +62,13 @@ describe('buildBinary', () => {
   }, 120_000);
 
   it('rejects with a clear error for an invalid target', async () => {
-    if (!bunAvailable) return;
-    await expect(
+await expect(
       buildBinary(TINY_BUNDLE, 'plan9' as unknown as BinaryTarget)
     ).rejects.toThrow(/invalid target/i);
   });
 
   it('leaves no temp directories behind (R1.4.6)', async () => {
-    if (!bunAvailable) return;
-    const before = new Set(readdirSync(tmpdir()));
+const before = new Set(readdirSync(tmpdir()));
     await buildBinary(TINY_BUNDLE, 'macos-arm64');
     const after = new Set(readdirSync(tmpdir()));
     const leaked = [...after].filter(
