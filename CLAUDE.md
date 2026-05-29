@@ -4,30 +4,45 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**Phase 06 — Écran de configuration (MERGÉE, 2026-05-28)** — PR #8 mergée. 2-pane : form (nom MCP + URL + auth + 3 dest cards + advanced) + live preview (MCP card + ZIP tree + post-gen steps). Auth amont read-only quand détectée de la spec, éditable sinon.
+**Pivot stratégique en cours (2026-05-29)** — Le modèle "binaire double-clic" (phases 11/12 explorées sur `feature/11-standalone-binary`) est **abandonné** après validation de l'impossibilité Gatekeeper (signature Apple obligatoire, notarisation per-request inviable pour MVP). Nouveau modèle : **SLICE Cloud + self-host PaaS/Docker**, livrable = URL + snippet à coller dans l'agent.
 
-**Phases mergées** : 01 (PR #1), 02 (PR #2), 03 (PR #3), 04 (PR #4), 05 token-counter (PR #5), 04bis 3-col refactor (PR #6), 04ter polish (PR #7), **06 config screen (PR #8)**
-**Prochaine phase** : **07 — Templates MCP + endpoint `/api/generate` + ZIP streaming** (grosse phase serveur : Handlebars templates, génération code TS, archiver pour streaming ZIP)
-**Branche courante** : `main` (synchro avec origin/main)
+**Phases mergées sur main** : 01 → 10 (PR #1-13), hotfix #14 (useDownload idempotent).
+
+**En cours** :
+- **PR #15** ouverte : `fix: quote hyphenated param names in generated tools.ts` (hotfix universellement utile, extrait de la branche binaire abandonnée)
+- **Branche `feature/11-standalone-binary` parkée sur origin** comme exploration archivée (binaire Bun + détection OS + hotfix hyphenated). À ne pas merger. Contient les PLAN.md 11-standalone-binary et 12-claude-desktop-connector qui ne s'appliquent plus.
+
+**Prochaine étape** : **Phase SPEC pour "SLICE Cloud (MVP)"** (workflow FORGE) — cadrer l'architecture hébergée :
+- Où héberger (Cloudflare Workers, Fly.io, Railway, VPS managé) ?
+- Auth model : MVP anonyme (URL = secret) puis comptes pour facturation/dashboard
+- Secrets utilisateur : **JAMAIS stockés côté SLICE** — transmis par le client (Claude/n8n/etc.) à chaque requête dans un header, le MCP-hébergé relaie
+- Snippet généré contient `url:` + `headers: { Authorization: Bearer <token-user> }`
+- Self-host track : bouton "Deploy to Railway/Render/Fly.io" + bundle Docker (pas de ZIP source nu)
+
+**Flow utilisateur cible (validé)** :
+1. Upload spec → 2. Sélection endpoints → 3. Config (sans token) → 4. Choix d'hébergement (SLICE Cloud / PaaS one-click / Docker bundle) → 5. URL + snippet renvoyés → 6. Utilisateur colle dans Claude/n8n + remplace `COLLE_TON_TOKEN_ICI`
 
 **État technique** :
-- 269 tests verts, typecheck strict clean
-- Validation Zod partagée front/back (`@shared/config-schema.ts`)
-- Token MCP_SERVER_TOKEN généré via `crypto.randomBytes(16).toString('hex')`
-- `SliceConfig` prêt à être POST'é sur `/api/generate` en phase 07
+- 371 tests verts sur main, typecheck strict clean (avant PR #15)
+- Phase 10 livre actuellement un ZIP source — **à remplacer** par le double bouton "Deploy to SLICE Cloud" / "Self-host (Docker)" dans la prochaine phase
+- ConnectionTabs existant à refondre : snippets passent tous en mode URL + header (le mode stdio local disparaît du parcours nominal)
+- `/api/generate` (route ZIP) à déprécier après bascule
+- Le mode HTTP transport déjà implémenté dans le générateur MCP est exactement ce qu'il faut pour l'hébergement
 
 **Reprise** :
 1. `git pull --ff-only` pour resynchroniser main
-2. Lire le PLAN : `.workflow/phases/07-mcp-templates/PLAN.md`
-3. Décider stratégie templates : Handlebars (D001 SPEC) — confirmer que la décision tient
-4. Créer `feature/07-mcp-templates` depuis main
-5. TDD strict avec fixtures de référence pour les templates (ce qu'on attend du code généré)
+2. Vérifier que PR #15 est mergée (hotfix hyphenated-params)
+3. Lancer **phase SPEC** (`.claude/rules/phases/03-spec.md`) pour cadrer SLICE Cloud :
+   - SPEC fonctionnelle (le flow validé ci-dessus + cas d'erreur)
+   - Décisions techniques : hébergement, auth MVP, secrets, déploiement PaaS, packaging Docker
+   - Mise à jour `.workflow/PRD.md` / `.workflow/DECISIONS.md` avec le pivot
+4. Puis REFINE pour découper en phases exécutables
 
-**Optimisations en attente** : aucune en attente, toutes les remarques utilisateur ont été traitées en phases 04ter et 06.
+**Anciens jalons (toujours pertinents post-launch, à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/` — gardés tels quels sur main car non liés au pivot.
 
 Détails sessions précédentes : `.workflow/sessions/`.
 
-Roadmap globale : `.workflow/phases/COVERAGE.md` (phases 06 → 13 restantes).
+Roadmap globale : `.workflow/phases/COVERAGE.md` (à mettre à jour pendant la phase SPEC).
 Positionnement marché : `.workflow/POSITIONING.md` (Speakeasy = concurrent #1, différenciateur = UX non-tech).
 Détails sessions précédentes : `.workflow/sessions/`.
 
