@@ -1,6 +1,19 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 /**
+ * Module-level memo of blobs whose automatic download has already fired.
+ * A `WeakSet` lets the browser GC the blob entry as soon as the React tree
+ * stops referencing it — we don't leak memory across regenerations.
+ *
+ * Why module-level (not per-hook)? React.StrictMode mounts effects twice in
+ * dev (mount → unmount → mount) to surface side-effect bugs. A per-hook
+ * `useRef` would reset on the second mount and we'd see two "Save as…"
+ * dialogs. The WeakSet survives the unmount, so the second mount sees the
+ * blob has already been downloaded and skips.
+ */
+const downloadedBlobs = new WeakSet<Blob>();
+
+/**
  * Drive browser-side downloads of an in-memory blob.
  *
  * Pattern: once the success screen mounts with a fresh blob it kicks off the
@@ -33,6 +46,8 @@ export function useDownload(blob: Blob | null, filename: string): UseDownloadRes
 
   useEffect(() => {
     if (!blob) return;
+    if (downloadedBlobs.has(blob)) return;
+    downloadedBlobs.add(blob);
     trigger(blob, filename);
     // Intentionally only re-run when the blob reference changes — we don't
     // want a filename rename to re-trigger a download.
