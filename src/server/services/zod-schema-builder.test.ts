@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildZodExpression } from './zod-schema-builder';
+import { buildZodExpression, formatPropertyKey } from './zod-schema-builder';
 
 describe('buildZodExpression', () => {
   describe('primitive types', () => {
@@ -123,6 +123,43 @@ describe('buildZodExpression', () => {
         true
       );
       expect(out).toBe('z.string().optional().describe("opt with desc")');
+    });
+  });
+
+  // R-hotfix-11.4 — header-style property names with hyphens break naked
+  // object-literal keys in JS. We must quote them in the generated source.
+  describe('formatPropertyKey', () => {
+    it('returns identifiers untouched', () => {
+      expect(formatPropertyKey('id')).toBe('id');
+      expect(formatPropertyKey('userId')).toBe('userId');
+      expect(formatPropertyKey('_private')).toBe('_private');
+      expect(formatPropertyKey('$dollar')).toBe('$dollar');
+    });
+
+    it('quotes hyphenated names like Notion-Version', () => {
+      expect(formatPropertyKey('Notion-Version')).toBe('"Notion-Version"');
+      expect(formatPropertyKey('X-Api-Key')).toBe('"X-Api-Key"');
+    });
+
+    it('quotes names starting with a digit', () => {
+      expect(formatPropertyKey('1st')).toBe('"1st"');
+    });
+
+    it('quotes names with dots, colons, or spaces', () => {
+      expect(formatPropertyKey('a.b')).toBe('"a.b"');
+      expect(formatPropertyKey('two words')).toBe('"two words"');
+    });
+  });
+
+  describe('object schemas with hyphenated property names', () => {
+    it('emits quoted keys so the generated source parses', () => {
+      const out = buildZodExpression({
+        type: 'object',
+        required: true,
+        properties: { 'Notion-Version': { type: 'string' } },
+        requiredFields: ['Notion-Version'],
+      });
+      expect(out).toBe('z.object({ "Notion-Version": z.string() })');
     });
   });
 });

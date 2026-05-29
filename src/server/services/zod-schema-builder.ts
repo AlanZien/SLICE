@@ -36,6 +36,17 @@ export function buildZodExpression(
   return withOptional;
 }
 
+/**
+ * Emit a JS object property key. Identifiers (`foo`, `_x`, `$z`) render
+ * bare; anything else (hyphens, dots, leading digit, etc.) is JSON-quoted
+ * so the generated source compiles. Header-style names like
+ * `Notion-Version` and `Content-Type` are the most common offenders.
+ */
+export function formatPropertyKey(name: string): string {
+  if (/^[A-Za-z_$][\w$]*$/.test(name)) return name;
+  return JSON.stringify(name);
+}
+
 function baseExpression(shape: ZodSchemaShape, includeDescriptions: boolean): string {
   const type = (shape.type ?? '').toLowerCase();
   switch (type) {
@@ -61,7 +72,7 @@ function baseExpression(shape: ZodSchemaShape, includeDescriptions: boolean): st
           { ...child, required: requiredSet.has(name) },
           includeDescriptions
         );
-        return `${name}: ${childExpr}`;
+        return `${formatPropertyKey(name)}: ${childExpr}`;
       });
       return entries.length === 0 ? 'z.object({})' : `z.object({ ${entries.join(', ')} })`;
     }

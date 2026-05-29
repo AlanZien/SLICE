@@ -8,7 +8,18 @@ import type {
   GenerateRequest,
   GeneratedFile,
 } from '@shared/types';
-import { buildZodExpression } from './zod-schema-builder';
+import { buildZodExpression, formatPropertyKey } from './zod-schema-builder';
+
+/**
+ * Emit a JS property access on `args`. Identifiers use dot access
+ * (`args.id`); anything else uses bracket access with a JSON-escaped key
+ * (`args["Notion-Version"]`). Mirrors the rule used by `formatPropertyKey`
+ * so the two stay in sync.
+ */
+function formatArgsAccess(name: string): string {
+  if (/^[A-Za-z_$][\w$]*$/.test(name)) return `args.${name}`;
+  return `args[${JSON.stringify(name)}]`;
+}
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = resolve(HERE, '../templates');
@@ -70,8 +81,11 @@ function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBindin
   // MCP SDK's `server.tool(name, desc, paramsSchema, cb)` expects a
   // ZodRawShape ({ [k: string]: ZodType }), not a wrapping `z.object({...})`.
   // We emit the raw shape directly so the generated code typechecks.
+  // Header-style param names (`Notion-Version`, `X-Api-Key`) MUST be quoted
+  // — bare hyphens parse as subtraction in object-literal keys.
   const entries = endpoint.params.map(
-    (p) => `${p.name}: ${buildZodExpression(shapeOfParam(p), includeDescriptions)}`
+    (p) =>
+      `${formatPropertyKey(p.name)}: ${buildZodExpression(shapeOfParam(p), includeDescriptions)}`
   );
   const inputSchema = entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`;
 
@@ -82,9 +96,13 @@ function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBindin
     path: endpoint.path,
     inputSchema,
     hasPathParams: path.length > 0,
-    pathParamsExpr: path.map((p) => `${p.name}: String(args.${p.name})`).join(', '),
+    pathParamsExpr: path
+      .map((p) => `${formatPropertyKey(p.name)}: String(${formatArgsAccess(p.name)})`)
+      .join(', '),
     hasQuery: query.length > 0,
-    queryExpr: query.map((p) => `${p.name}: args.${p.name}`).join(', '),
+    queryExpr: query
+      .map((p) => `${formatPropertyKey(p.name)}: ${formatArgsAccess(p.name)}`)
+      .join(', '),
     hasBody: false, // Phase 07 ignores requestBody — phase 04 doesn't flatten it yet.
   };
 }
