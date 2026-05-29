@@ -108,6 +108,55 @@ describe('generateMcp — logic files (07-4)', () => {
     const tools = asMap(generateMcp(buildRequest())).get('src/tools.ts')!;
     expect(tools).toContain('limit: z.number().int().optional()');
   });
+
+  // hotfix-11.4 — Notion uses `Notion-Version`, Stripe uses `Stripe-Account`,
+  // GitHub uses `X-GitHub-Api-Version`. Header names with hyphens MUST be
+  // quoted as object-literal keys and accessed via bracket notation.
+  it('quotes hyphenated param names in inputSchema, pathParams, and query', () => {
+    const req: GenerateRequest = {
+      parsedSpec: {
+        ...SPEC,
+        groups: [
+          {
+            tag: 'Pages',
+            endpoints: [
+              {
+                id: 'GET /pages/{page-id}',
+                method: 'GET',
+                path: '/pages/{page-id}',
+                label: 'Get page',
+                params: [
+                  { name: 'page-id', in: 'path', type: 'string', required: true },
+                  { name: 'Notion-Version', in: 'header', type: 'string', required: true },
+                  { name: 'X-Trace-Id', in: 'query', type: 'string', required: false },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      rawSpec: '',
+      selectedIds: ['GET /pages/{page-id}'],
+      config: {
+        mcpName: 'notion',
+        baseUrl: 'https://api.notion.com/v1',
+        upstreamAuth: { type: 'bearer' },
+        mode: 'local',
+        includeParamDescriptions: false,
+        retryOnServerError: false,
+      },
+    };
+    const tools = asMap(generateMcp(req)).get('src/tools.ts')!;
+    // Quoted in the Zod shape
+    expect(tools).toContain('"page-id": z.string()');
+    expect(tools).toContain('"Notion-Version": z.string()');
+    expect(tools).toContain('"X-Trace-Id": z.string().optional()');
+    // Bracket access in pathParams and query
+    expect(tools).toContain('"page-id": String(args["page-id"])');
+    expect(tools).toContain('"X-Trace-Id": args["X-Trace-Id"]');
+    // Defensive — no bare hyphen in source (the parse-breaking pattern)
+    expect(tools).not.toMatch(/\{ [A-Za-z]+-[A-Za-z]/);
+  });
 });
 
 describe('generateMcp — entrypoint and readme (07-5)', () => {
