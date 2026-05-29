@@ -167,6 +167,14 @@ export class ParseError extends Error {
  * - 500 `GENERATION_FAILED` — unexpected template / archiver failure
  * - 504 `TIMEOUT` — generation took > 30s
  */
+/**
+ * Compile targets supported by the binary-builder service (phase 11).
+ * Kept in `@shared` so the client can type the API call without crossing
+ * the client/server boundary.
+ */
+export const BINARY_TARGETS = ['macos-arm64', 'macos-x64', 'windows-x64'] as const;
+export type BinaryTarget = (typeof BINARY_TARGETS)[number];
+
 export type ApiErrorCode =
   | 'INVALID_SPEC'
   | 'NO_ENDPOINT_SELECTED'

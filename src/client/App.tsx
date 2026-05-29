@@ -1,22 +1,33 @@
 import { useState } from 'react';
-import type { ParsedSpec, SliceConfig } from '@shared/types';
+import type { BinaryTarget, GenerateRequest, ParsedSpec, SliceConfig } from '@shared/types';
 import { computeEconomy } from '@shared/token-estimator';
 import { Topbar } from './components/topbar';
 import { ToastProvider, useToast } from './components/toast';
 import { UploadScreen } from './screens/upload';
 import { SelectionScreen } from './screens/selection';
 import { ConfigScreen } from './screens/config';
-import { SuccessScreen } from './screens/success';
+import { SuccessScreen, type PrimaryBinary } from './screens/success';
 import { useTheme } from './hooks/use-theme';
-import { ApiError, apiGenerate } from './lib/api';
+import { ApiError, apiGenerateBinary } from './lib/api';
+import { detectOs } from './lib/os-detection';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
 
 interface SuccessState {
   config: SliceConfig;
-  zipBlob: Blob;
+  primaryBinary: PrimaryBinary;
   endpointCount: number;
   economySnapshot: number;
+  /** Stashed so the "other OS" button can re-call apiGenerateBinary. */
+  request: GenerateRequest;
+}
+
+/** Default primary target by detected OS. Mac defaults to Apple Silicon. */
+function primaryTargetForOs(): BinaryTarget {
+  const os = detectOs();
+  if (os === 'windows') return 'windows-x64';
+  // 'mac' or 'unknown' → most common modern target
+  return 'macos-arm64';
 }
 
 function AppInner() {
@@ -59,18 +70,16 @@ function AppInner() {
     // screen shows the value at the click moment, not whatever the user
     // tweaked while waiting.
     const economy = computeEconomy(parsedSpec, selectedIds);
+    const target = primaryTargetForOs();
+    const request: GenerateRequest = { parsedSpec, rawSpec, selectedIds, config };
     try {
-      const { blob } = await apiGenerate({
-        parsedSpec,
-        rawSpec,
-        selectedIds,
-        config,
-      });
+      const { blob, filename } = await apiGenerateBinary(request, target);
       setSuccess({
         config,
-        zipBlob: blob,
+        primaryBinary: { blob, filename, target },
         endpointCount: selectedIds.length,
         economySnapshot: economy.percent,
+        request,
       });
       setScreen(4);
     } catch (err) {
@@ -82,6 +91,11 @@ function AppInner() {
     } finally {
       setGenerating(false);
     }
+  };
+
+  const handleFetchOtherBinary = async (target: BinaryTarget) => {
+    if (!success) throw new Error('No active success state');
+    return apiGenerateBinary(success.request, target);
   };
 
   return (
@@ -119,7 +133,8 @@ function AppInner() {
             config={success.config}
             endpointCount={success.endpointCount}
             economySnapshot={success.economySnapshot}
-            zipBlob={success.zipBlob}
+            primaryBinary={success.primaryBinary}
+            fetchOtherBinary={handleFetchOtherBinary}
             onRestart={handleReset}
             onBackToSelection={() => setScreen(2)}
           />

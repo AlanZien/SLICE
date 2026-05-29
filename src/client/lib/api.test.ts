@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { apiGenerate, ApiError } from './api';
+import { apiGenerate, apiGenerateBinary, ApiError } from './api';
 import type { GenerateRequest, ParsedSpec, SliceConfig } from '@shared/types';
 
 const FAKE_PARSED: ParsedSpec = {
@@ -89,5 +89,65 @@ describe('apiGenerate', () => {
     ) as typeof fetch;
 
     await expect(apiGenerate(FAKE_REQ)).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('apiGenerateBinary', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('POSTs to /api/generate-binary with the target query string', async () => {
+    const spy: ReturnType<typeof vi.fn> = vi.fn(async () =>
+      new Response('BIN', {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Disposition': 'attachment; filename="demo-macos-arm64"',
+        },
+      })
+    );
+    globalThis.fetch = spy as unknown as typeof fetch;
+
+    const out = await apiGenerateBinary(FAKE_REQ, 'macos-arm64');
+    expect(out.filename).toBe('demo-macos-arm64');
+    expect(out.blob.size).toBeGreaterThan(0);
+
+    const firstCall = spy.mock.calls[0] as [string | URL, RequestInit];
+    expect(String(firstCall[0])).toBe('/api/generate-binary?target=macos-arm64');
+    expect(firstCall[1].method).toBe('POST');
+  });
+
+  it('falls back to <mcpName>-<target> when Content-Disposition is missing', async () => {
+    globalThis.fetch = vi.fn(async () =>
+      new Response('BIN', {
+        status: 200,
+        headers: { 'Content-Type': 'application/octet-stream' },
+      })
+    ) as typeof fetch;
+
+    const out = await apiGenerateBinary(FAKE_REQ, 'windows-x64');
+    expect(out.filename).toBe('demo-windows-x64.exe');
+  });
+
+  it('throws ApiError with typed code on 4xx', async () => {
+    globalThis.fetch = vi.fn(async () =>
+      new Response(JSON.stringify({ code: 'INVALID_TARGET', message: 'nope' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    ) as typeof fetch;
+
+    await expect(apiGenerateBinary(FAKE_REQ, 'macos-arm64')).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 400,
+      code: 'INVALID_TARGET',
+    });
   });
 });

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SuccessScreen } from './success';
 import { ToastProvider } from '../components/toast';
-import type { SliceConfig } from '@shared/types';
+import type { BinaryTarget, SliceConfig } from '@shared/types';
 
 const CONFIG: SliceConfig = {
   mcpName: 'shopify-admin',
@@ -14,25 +14,44 @@ const CONFIG: SliceConfig = {
   retryOnServerError: false,
 };
 
-function setup(over: { economySnapshot?: number; endpointCount?: number; blob?: Blob } = {}) {
-  // jsdom doesn't ship URL.createObjectURL — stub before the hook fires.
+interface SetupOptions {
+  economySnapshot?: number;
+  endpointCount?: number;
+  primaryBlob?: Blob;
+  primaryTarget?: BinaryTarget;
+  fetchOther?: (target: BinaryTarget) => Promise<{ blob: Blob; filename: string }>;
+}
+
+function setup(over: SetupOptions = {}) {
+  // jsdom doesn't ship URL.createObjectURL — stub before any download fires.
   URL.createObjectURL = vi.fn(() => 'blob:fake');
   URL.revokeObjectURL = vi.fn();
   const onRestart = vi.fn();
   const onBackToSelection = vi.fn();
+  const fetchOther =
+    over.fetchOther ??
+    vi.fn(async (t: BinaryTarget) => ({
+      blob: new Blob(['other']),
+      filename: `shopify-admin-${t}${t === 'windows-x64' ? '.exe' : ''}`,
+    }));
   render(
     <ToastProvider>
       <SuccessScreen
         config={CONFIG}
         endpointCount={over.endpointCount ?? 23}
         economySnapshot={over.economySnapshot ?? 74}
-        zipBlob={over.blob ?? new Blob(['x'])}
+        primaryBinary={{
+          blob: over.primaryBlob ?? new Blob(['mac-bin']),
+          filename: 'shopify-admin-macos-arm64',
+          target: over.primaryTarget ?? 'macos-arm64',
+        }}
+        fetchOtherBinary={fetchOther}
         onRestart={onRestart}
         onBackToSelection={onBackToSelection}
       />
     </ToastProvider>
   );
-  return { onRestart, onBackToSelection };
+  return { onRestart, onBackToSelection, fetchOther };
 }
 
 describe('<SuccessScreen />', () => {
@@ -50,6 +69,28 @@ describe('<SuccessScreen />', () => {
   it('renders the connection tabs so the user can copy a snippet', () => {
     setup();
     expect(screen.getByRole('tab', { name: /claude desktop/i })).not.toBeNull();
+  });
+
+  it('exposes a primary download button labelled for the detected OS', () => {
+    setup({ primaryTarget: 'macos-arm64' });
+    expect(screen.getByRole('button', { name: /download for mac/i })).not.toBeNull();
+  });
+
+  it('exposes a secondary download button for the other OS', () => {
+    setup({ primaryTarget: 'macos-arm64' });
+    expect(screen.getByRole('button', { name: /download for windows/i })).not.toBeNull();
+  });
+
+  it('calls fetchOtherBinary with the right target when secondary button is clicked', async () => {
+    const { fetchOther } = setup({ primaryTarget: 'macos-arm64' });
+    fireEvent.click(screen.getByRole('button', { name: /download for windows/i }));
+    await waitFor(() => expect(fetchOther).toHaveBeenCalledWith('windows-x64'));
+  });
+
+  it('no longer mentions pnpm or unzip steps (binary is self-contained)', () => {
+    setup();
+    expect(screen.queryByText(/pnpm install/i)).toBeNull();
+    expect(screen.queryByText(/unzip/i)).toBeNull();
   });
 
   it('fires onRestart when "Generate another MCP" is clicked', () => {

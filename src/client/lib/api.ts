@@ -1,4 +1,10 @@
-import type { ApiErrorCode, GenerateRequest, ParsedSpec, ParseErrorCode } from '@shared/types';
+import type {
+  ApiErrorCode,
+  BinaryTarget,
+  GenerateRequest,
+  ParsedSpec,
+  ParseErrorCode,
+} from '@shared/types';
 
 export interface ApiErrorBody {
   code: ParseErrorCode | ApiErrorCode | 'NO_FILE' | 'UNSUPPORTED_FORMAT' | string;
@@ -97,4 +103,50 @@ function parseFilename(header: string | null): string | undefined {
   if (!header) return undefined;
   const match = /filename="([^"]+)"/.exec(header);
   return match?.[1];
+}
+
+export interface GenerateBinaryResult {
+  blob: Blob;
+  filename: string;
+}
+
+/**
+ * Phase 11 — POST /api/generate-binary?target=<target>. Returns the compiled
+ * executable as a Blob plus a server-supplied filename. The fallback filename
+ * matches the server's naming convention (`<mcpName>-<target>(.exe?)`) so the
+ * download is well-named even if the header is missing.
+ *
+ * Compile is heavier than zipping (5-10 s warm, > 30 s cold), so callers
+ * should show a "compiling…" UI affordance and not block other interactions.
+ */
+export async function apiGenerateBinary(
+  req: GenerateRequest,
+  target: BinaryTarget
+): Promise<GenerateBinaryResult> {
+  const res = await fetch(`/api/generate-binary?target=${target}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    let body: ApiErrorBody = {
+      code: 'COMPILE_FAILED',
+      message: res.statusText || `Erreur ${res.status} du serveur.`,
+    };
+    try {
+      const parsed = (await res.json()) as ApiErrorBody;
+      if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
+        body = parsed;
+      }
+    } catch {
+      // Non-JSON body — keep fallback.
+    }
+    throw new ApiError(res.status, body.code, body.message);
+  }
+
+  const ext = target === 'windows-x64' ? '.exe' : '';
+  const fallback = `${req.config.mcpName}-${target}${ext}`;
+  const filename = parseFilename(res.headers.get('Content-Disposition')) ?? fallback;
+  return { blob: await res.blob(), filename };
 }

@@ -19,13 +19,11 @@ import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import type { GeneratedFile } from '@shared/types';
+import { BINARY_TARGETS, type BinaryTarget, type GeneratedFile } from '@shared/types';
+
+export { BINARY_TARGETS, type BinaryTarget };
 
 const execFileP = promisify(execFile);
-
-/** Supported compile targets. Linux is intentionally out of scope for v1. */
-export const BINARY_TARGETS = ['macos-arm64', 'macos-x64', 'windows-x64'] as const;
-export type BinaryTarget = (typeof BINARY_TARGETS)[number];
 
 const BUN_TARGET_FLAG: Record<BinaryTarget, string> = {
   'macos-arm64': 'bun-darwin-arm64',
