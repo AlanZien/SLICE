@@ -8,8 +8,8 @@
  */
 import { Router, type RequestHandler, json } from 'express';
 import { generateRequestSchema } from '@shared/config-schema';
-import { ApiError, type ApiErrorPayload, type Endpoint, type SliceConfig } from '@shared/types';
-import { parseSpec } from '../services/parser';
+import { ApiError, type ApiErrorPayload, type SliceConfig } from '@shared/types';
+import { reparseAndSelect } from '../services/reparse-and-select';
 import { specToHostedConfig } from '../services/spec-to-hosted-config';
 import { hostedStore } from '../services/hosted-store';
 import { assertPublicUrl, SsrfError } from '../services/ssrf-guard';
@@ -44,22 +44,9 @@ const makeHandleHost = (allowPrivateHosts: boolean): RequestHandler => async (re
   const body = parsed.data;
 
   try {
-    // Re-parse server-side (never trust the client parse).
-    let reparsed;
-    try {
-      reparsed = await parseSpec(body.rawSpec, { sizeBytes: Buffer.byteLength(body.rawSpec) });
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('[host] re-parse failed:', err instanceof Error ? err.message : err);
-      throw new ApiError('INVALID_SPEC', 'Failed to re-parse the spec.', 400);
-    }
-
-    // Whitelist the selection against the freshly-parsed endpoints.
-    const knownIds = new Set(reparsed.groups.flatMap((g) => g.endpoints.map((e: Endpoint) => e.id)));
-    const validIds = body.selectedIds.filter((id) => knownIds.has(id));
-    if (validIds.length === 0) {
-      throw new ApiError('NO_ENDPOINT_SELECTED', 'No selected endpoint survived re-parsing.', 400);
-    }
+    // Re-parse server-side + whitelist the selection (never trust the client
+    // parse) — shared with /api/generate.
+    const { reparsed, validIds } = await reparseAndSelect(body.rawSpec, body.selectedIds, 'host');
 
     const config = specToHostedConfig(reparsed, validIds, body.config as SliceConfig);
 

@@ -17,6 +17,28 @@ export class ApiError extends Error {
 }
 
 /**
+ * Translate a non-OK `Response` into a thrown `ApiError`. Prefers the server's
+ * JSON `{ code, message }`; falls back to a generic message when the body is
+ * absent or not JSON (e.g. an HTML 500 page, or empty statusText under HTTP/2)
+ * so the UI never shows a blank error. Always throws — never returns.
+ */
+async function throwApiError(res: Response, fallbackCode: ApiErrorBody['code']): Promise<never> {
+  let body: ApiErrorBody = {
+    code: fallbackCode,
+    message: res.statusText || `Erreur ${res.status} du serveur.`,
+  };
+  try {
+    const parsed = (await res.json()) as ApiErrorBody;
+    if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
+      body = parsed;
+    }
+  } catch {
+    // Server returned non-JSON — keep the fallback message.
+  }
+  throw new ApiError(res.status, body.code, body.message);
+}
+
+/**
  * Uploads a spec file to POST /api/upload and returns the parsed spec.
  * Throws ApiError with the typed code if the server rejects the file.
  */
@@ -29,23 +51,7 @@ export async function uploadSpec(file: File): Promise<ParsedSpec> {
     body: form,
   });
 
-  if (!res.ok) {
-    // statusText is empty under HTTP/2 — fall back to a generic message so
-    // the UI never shows a blank red box.
-    let body: ApiErrorBody = {
-      code: 'INVALID_SPEC',
-      message: res.statusText || `Erreur ${res.status} du serveur.`,
-    };
-    try {
-      const parsed = (await res.json()) as ApiErrorBody;
-      if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
-        body = parsed;
-      }
-    } catch {
-      // Server didn't return JSON — keep the fallback message.
-    }
-    throw new ApiError(res.status, body.code, body.message);
-  }
+  if (!res.ok) await throwApiError(res, 'INVALID_SPEC');
 
   return (await res.json()) as ParsedSpec;
 }
@@ -71,21 +77,7 @@ export async function apiGenerate(req: GenerateRequest): Promise<GenerateResult>
     body: JSON.stringify(req),
   });
 
-  if (!res.ok) {
-    let body: ApiErrorBody = {
-      code: 'GENERATION_FAILED',
-      message: res.statusText || `Erreur ${res.status} du serveur.`,
-    };
-    try {
-      const parsed = (await res.json()) as ApiErrorBody;
-      if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
-        body = parsed;
-      }
-    } catch {
-      // Server returned non-JSON (e.g. HTML 500 page) — keep the fallback.
-    }
-    throw new ApiError(res.status, body.code, body.message);
-  }
+  if (!res.ok) await throwApiError(res, 'GENERATION_FAILED');
 
   const filename =
     parseFilename(res.headers.get('Content-Disposition')) ?? `${req.config.mcpName}.zip`;
@@ -112,21 +104,7 @@ export async function apiHost(req: GenerateRequest): Promise<HostResult> {
     body: JSON.stringify(req),
   });
 
-  if (!res.ok) {
-    let body: ApiErrorBody = {
-      code: 'GENERATION_FAILED',
-      message: res.statusText || `Erreur ${res.status} du serveur.`,
-    };
-    try {
-      const parsed = (await res.json()) as ApiErrorBody;
-      if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
-        body = parsed;
-      }
-    } catch {
-      // Server returned non-JSON (e.g. HTML 500 page) — keep the fallback.
-    }
-    throw new ApiError(res.status, body.code, body.message);
-  }
+  if (!res.ok) await throwApiError(res, 'GENERATION_FAILED');
 
   return (await res.json()) as HostResult;
 }
