@@ -8,13 +8,16 @@ import { SelectionScreen } from './screens/selection';
 import { ConfigScreen } from './screens/config';
 import { SuccessScreen } from './screens/success';
 import { useTheme } from './hooks/use-theme';
-import { ApiError, apiGenerate } from './lib/api';
+import { ApiError, apiGenerate, apiHost } from './lib/api';
 
 type ScreenIndex = 1 | 2 | 3 | 4;
 
 interface SuccessState {
   config: SliceConfig;
-  zipBlob: Blob;
+  /** Self-host flow — the generated bundle. Absent in the hosted flow. */
+  zipBlob?: Blob;
+  /** Hosted (SLICE Cloud) flow — the live MCP URL. Absent in the bundle flow. */
+  hostedUrl?: string;
   endpointCount: number;
   economySnapshot: number;
 }
@@ -59,19 +62,28 @@ function AppInner() {
     // screen shows the value at the click moment, not whatever the user
     // tweaked while waiting.
     const economy = computeEconomy(parsedSpec, selectedIds);
+    const request = { parsedSpec, rawSpec, selectedIds, config };
     try {
-      const { blob } = await apiGenerate({
-        parsedSpec,
-        rawSpec,
-        selectedIds,
-        config,
-      });
-      setSuccess({
-        config,
-        zipBlob: blob,
-        endpointCount: selectedIds.length,
-        economySnapshot: economy.percent,
-      });
+      if (config.hosting === 'cloud') {
+        // SLICE Cloud — the server stores the config and returns a live URL.
+        // No bundle is downloaded; the success screen shows the URL + snippet.
+        const { url } = await apiHost(request);
+        setSuccess({
+          config,
+          hostedUrl: url,
+          endpointCount: selectedIds.length,
+          economySnapshot: economy.percent,
+        });
+      } else {
+        // Self-host — download the ready-to-run bundle.
+        const { blob } = await apiGenerate(request);
+        setSuccess({
+          config,
+          zipBlob: blob,
+          endpointCount: selectedIds.length,
+          economySnapshot: economy.percent,
+        });
+      }
       setScreen(4);
     } catch (err) {
       const message =
@@ -120,6 +132,7 @@ function AppInner() {
             endpointCount={success.endpointCount}
             economySnapshot={success.economySnapshot}
             zipBlob={success.zipBlob}
+            hostedUrl={success.hostedUrl}
             onRestart={handleReset}
             onBackToSelection={() => setScreen(2)}
           />
