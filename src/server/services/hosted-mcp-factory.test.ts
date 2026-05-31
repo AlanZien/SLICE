@@ -51,7 +51,9 @@ beforeAll(async () => {
     ],
   };
 
-  const server = buildHostedMcpServer(config);
+  // The test upstream is a 127.0.0.1 mock — allow private hosts so the SSRF
+  // guard doesn't block the loopback call under test.
+  const server = buildHostedMcpServer(config, { allowPrivateHosts: true });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => randomUUID() });
   await server.connect(transport);
   mcpPort = await freePort();

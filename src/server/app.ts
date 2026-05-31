@@ -14,10 +14,17 @@ const __dirname = path.dirname(__filename);
 export interface CreateAppOptions {
   nodeEnv?: string;
   clientDist?: string;
+  /**
+   * Allow the hosted runtime to target loopback/private hosts. Disabled in
+   * production (SSRF guard active); defaults to on for dev/test so a local
+   * upstream can be reached. Never enable this on a deployed instance.
+   */
+  allowPrivateHosts?: boolean;
 }
 
 export function createApp(options: CreateAppOptions = {}): Express {
   const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV ?? 'development';
+  const allowPrivateHosts = options.allowPrivateHosts ?? nodeEnv !== 'production';
   const app = express();
 
   app.use(cors());
@@ -58,8 +65,8 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // Pivot-4 — SLICE Cloud. POST /api/host stores a config and returns a URL;
   // /m/:id is the hosted MCP runtime (not under /api/, so not rate-limited
   // like the upload/generate endpoints — agents call it freely).
-  app.use('/api/host', createHostRouter());
-  app.use('/m', createHostedMcpRouter());
+  app.use('/api/host', createHostRouter({ allowPrivateHosts }));
+  app.use('/m', createHostedMcpRouter({ allowPrivateHosts }));
 
   if (nodeEnv === 'production') {
     const clientDist = options.clientDist ?? path.resolve(__dirname, '../client');

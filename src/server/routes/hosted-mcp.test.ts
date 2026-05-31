@@ -99,4 +99,36 @@ describe('hosted runtime routes', () => {
     });
     expect(res.status).toBe(404);
   });
+
+  it('rejects a private/loopback baseUrl with 400 BLOCKED_HOST when the SSRF guard is on', async () => {
+    // A production-like instance: allowPrivateHosts off → guard active.
+    const guarded = createApp({ nodeEnv: 'test', allowPrivateHosts: false }).listen(0);
+    await new Promise<void>((r) => guarded.once('listening', r));
+    const guardedUrl = `http://127.0.0.1:${(guarded.address() as AddressInfo).port}`;
+    try {
+      const res = await fetch(`${guardedUrl}/api/host`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          parsedSpec: {},
+          rawSpec: SPEC,
+          selectedIds: ['GET /things'],
+          config: {
+            mcpName: 'demo',
+            baseUrl: 'http://169.254.169.254/latest/meta-data/',
+            upstreamAuth: { type: 'none' },
+            hosting: 'cloud',
+            mode: 'remote',
+            includeParamDescriptions: false,
+            retryOnServerError: false,
+          },
+        }),
+      });
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { code: string };
+      expect(body.code).toBe('BLOCKED_HOST');
+    } finally {
+      await new Promise<void>((r) => guarded.close(() => r()));
+    }
+  });
 });

@@ -188,6 +188,7 @@ export type ApiErrorCode =
   | 'NO_ENDPOINT_SELECTED'
   | 'PAYLOAD_TOO_LARGE'
   | 'GENERATION_FAILED'
+  | 'BLOCKED_HOST'
   | 'TIMEOUT';
 
 export interface ApiErrorPayload {

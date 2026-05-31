@@ -11,6 +11,13 @@ import { z, type ZodTypeAny } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { EndpointParam, HttpMethod, UpstreamAuth } from '@shared/types';
 import { type ZodSchemaShape } from './zod-schema-builder';
+import { assertPublicUrl } from './ssrf-guard';
+
+/** Knobs for the hosted engine. `allowPrivateHosts` is for tests/dev only. */
+export interface HostedMcpOptions {
+  /** When false (the production default), the upstream host is SSRF-guarded. */
+  allowPrivateHosts?: boolean;
+}
 
 /** One endpoint the hosted MCP exposes as a tool. */
 export interface HostedEndpoint {
@@ -87,8 +94,15 @@ function shapeOfParam(p: EndpointParam): ZodSchemaShape {
 async function callUpstream(
   config: HostedMcpConfig,
   endpoint: HostedEndpoint,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
+  allowPrivateHosts: boolean
 ): Promise<unknown> {
+  // Defense in depth: re-check the host at request time, not just at config
+  // creation. The caller controls neither host nor protocol here (both are
+  // fixed in the stored config), but DNS for a hostname could have changed.
+  if (!allowPrivateHosts) {
+    await assertPublicUrl(config.baseUrl);
+  }
   let path = endpoint.path;
   for (const p of endpoint.params.filter((x) => x.in === 'path')) {
     path = path.replace(`{${p.name}}`, encodeURIComponent(String(args[p.name])));
@@ -127,7 +141,11 @@ async function callUpstream(
  * call it per session (and cache by id). The config drives everything; the
  * code below is identical for every MCP.
  */
-export function buildHostedMcpServer(config: HostedMcpConfig): McpServer {
+export function buildHostedMcpServer(
+  config: HostedMcpConfig,
+  options: HostedMcpOptions = {}
+): McpServer {
+  const allowPrivateHosts = options.allowPrivateHosts ?? false;
   const server = new McpServer({ name: config.name, version: '0.1.0' });
   for (const endpoint of config.endpoints) {
     const shape: Record<string, ZodTypeAny> = {};
@@ -135,7 +153,7 @@ export function buildHostedMcpServer(config: HostedMcpConfig): McpServer {
       shape[p.name] = buildZodSchema(shapeOfParam(p));
     }
     server.tool(endpoint.name, endpoint.description, shape, async (args: Record<string, unknown>) => {
-      const result = await callUpstream(config, endpoint, args);
+      const result = await callUpstream(config, endpoint, args, allowPrivateHosts);
       return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
     });
   }

@@ -12,10 +12,16 @@ import { ApiError, type ApiErrorPayload, type Endpoint, type SliceConfig } from 
 import { parseSpec } from '../services/parser';
 import { specToHostedConfig } from '../services/spec-to-hosted-config';
 import { hostedStore } from '../services/hosted-store';
+import { assertPublicUrl, SsrfError } from '../services/ssrf-guard';
 
 const BODY_LIMIT = '15mb';
 
-export function createHostRouter(): Router {
+export interface HostRouterOptions {
+  /** When false (production default), SSRF-guard the user-supplied baseUrl. */
+  allowPrivateHosts?: boolean;
+}
+
+export function createHostRouter(options: HostRouterOptions = {}): Router {
   const router = Router();
   router.use(json({ limit: BODY_LIMIT }));
   router.use(((err, _req, res, next) => {
@@ -25,11 +31,11 @@ export function createHostRouter(): Router {
     }
     next(err);
   }) as import('express').ErrorRequestHandler);
-  router.post('/', handleHost);
+  router.post('/', makeHandleHost(options.allowPrivateHosts ?? false));
   return router;
 }
 
-const handleHost: RequestHandler = async (req, res, next) => {
+const makeHandleHost = (allowPrivateHosts: boolean): RequestHandler => async (req, res, next) => {
   const parsed = generateRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json(payload('INVALID_SPEC', firstZodMessage(parsed.error)));
@@ -56,6 +62,21 @@ const handleHost: RequestHandler = async (req, res, next) => {
     }
 
     const config = specToHostedConfig(reparsed, validIds, body.config as SliceConfig);
+
+    // SSRF guard: the hosted runtime will fetch `config.baseUrl` from SLICE's
+    // own network. Reject loopback/private/link-local/metadata hosts up front
+    // so we never store a config that could be used as an open proxy.
+    if (!allowPrivateHosts) {
+      try {
+        await assertPublicUrl(config.baseUrl);
+      } catch (err) {
+        if (err instanceof SsrfError) {
+          throw new ApiError('BLOCKED_HOST', 'The API base URL points to a non-public host.', 400);
+        }
+        throw err;
+      }
+    }
+
     const id = hostedStore.put(config);
     const url = `${req.protocol}://${req.get('host')}/m/${id}`;
     res.status(200).json({ id, url });

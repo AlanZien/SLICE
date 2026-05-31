@@ -12,7 +12,12 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { buildHostedMcpServer, relayStore } from '../services/hosted-mcp-factory';
 import { hostedStore } from '../services/hosted-store';
 
-export function createHostedMcpRouter(): Router {
+export interface HostedMcpRouterOptions {
+  /** Forwarded to the engine — disables the SSRF guard (tests/dev only). */
+  allowPrivateHosts?: boolean;
+}
+
+export function createHostedMcpRouter(options: HostedMcpRouterOptions = {}): Router {
   const router = Router();
 
   router.all('/:id', async (req, res) => {
@@ -22,7 +27,9 @@ export function createHostedMcpRouter(): Router {
       return;
     }
 
-    const server = buildHostedMcpServer(config);
+    const server = buildHostedMcpServer(config, {
+      allowPrivateHosts: options.allowPrivateHosts,
+    });
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     res.on('close', () => {
       void transport.close();
