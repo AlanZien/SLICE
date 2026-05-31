@@ -5,6 +5,7 @@ const valid = {
   mcpName: 'shopify-admin',
   baseUrl: 'https://api.shopify.com/v1',
   upstreamAuth: { type: 'apiKey', headerName: 'X-API-Key' },
+  hosting: 'self',
   mode: 'both',
   mcpServerToken: 'a'.repeat(32),
   includeParamDescriptions: true,
@@ -50,6 +51,25 @@ describe('baseUrlSchema', () => {
 describe('sliceConfigSchema', () => {
   it('accepts a fully valid config', () => {
     expect(sliceConfigSchema.safeParse(valid).success).toBe(true);
+  });
+
+  // Pivot RC1.2/RC1.3 — the hosting target is the screen-3 mandatory choice.
+  it('requires a hosting target (cloud or self)', () => {
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: undefined }).success).toBe(false);
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: 'cloud' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: 'self' }).success).toBe(true);
+  });
+
+  it('rejects an unknown hosting target', () => {
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: 'ftp' }).success).toBe(false);
+  });
+
+  // Pivot RC1.4 — the user no longer types a token; it is auto-managed, so a
+  // config without mcpServerToken stays valid whatever the hosting target.
+  it('keeps mcpServerToken optional whatever the hosting (RC1.4)', () => {
+    const noToken = { ...valid, mcpServerToken: undefined };
+    expect(sliceConfigSchema.safeParse({ ...noToken, hosting: 'cloud' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, hosting: 'self' }).success).toBe(true);
   });
 
   it('rejects when mcpServerToken is missing for HTTP-exposing modes', () => {
