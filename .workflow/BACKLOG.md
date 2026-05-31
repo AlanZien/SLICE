@@ -62,6 +62,16 @@ Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qua
 - [ ] **Batch tests de performance** : les tests perf p95 (R1.1.9 parse < 2s sur shopify-50, R1.2.5 filtre < 100ms sur 500 endpoints, conversions Swagger/Postman < 1s) ont été reportés de phase en phase. À écrire en un batch dédié avant tout claim de perf produit. (issu de LEARN, règle promue dans 03-testing.md)
 - [ ] **Décision langue UI (i18n)** : l'UI est en anglais, la SPEC en français ; `'Autres'` hardcodé (phase 02), pas d'accent-folding dans la recherche (phase 04). Trancher EN seul vs bilingue/i18n, puis appliquer. (issu de Pivot-1 + phases 02/04)
 
+## Runtime hébergé — suites Pivot-4 (issu de LEARN Pivot-4, 2026-06-01)
+
+- [ ] **Forwarding du body de requête** (`in:'body'`) : le parser ne flatten pas `requestBody`, donc les tools POST/PATCH et la **recherche Notion** (`POST /v1/search`) partent sans corps. Débloque les écritures + la recherche. **Plus haute valeur produit.** (issu de Pivot-4, vu en UAT Claude/Notion)
+- [ ] **Cache du McpServer hébergé** (perf hot path) : `/m/:id` reconstruit tout par requête. Mémoïser par id (LRU), configs immutables. Garder le transport par requête. (issu de Pivot-4, D003 le prévoyait)
+- [ ] **Durcissement SSRF anti-DNS-rebinding** : pinner l'IP résolue dans le dispatcher `fetch` (undici) au lieu du `dns.lookup` par appel non-pinné. (issu de Pivot-4 security-review)
+- [ ] **Snippet Claude Desktop** : générer un format `supergateway`/`mcp-remote` (fichier de config) pour l'onglet Claude — le bloc `url + headers` brut ne se colle pas dans l'écran connecteur. (issu de Pivot-4, UAT)
+- [ ] **Persistance du store hébergé** : `hostedStore` in-memory → URL perdue au restart. KV/DB pour la prod. (issu de Pivot-4)
+- [ ] **Parité runtime ↔ kit généré** : aligner le comportement (le runtime forwarde les headers, le template `http-client.ts.hbs` non) + source unique pour la regex/charset du token relayé (dupliquée runtime ↔ `auth-context.ts.hbs`). (issu de Pivot-4 EVALUATE)
+- [ ] **`in:'cookie'` géré ou rejeté** explicitement dans `callUpstream` (aujourd'hui dropé silencieusement) + `allowPrivateHosts` en politique d'env unique au lieu de 5 signatures. (issu de Pivot-4 EVALUATE altitude)
+
 ## Idees a clarifier
 
 - [ ] {{Idee floue qui demande un brainstorm avant de devenir une feature concrete}}
