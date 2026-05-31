@@ -16,28 +16,30 @@ Remplacer, sur l'écran 3, la question « Où ton agent va l'utiliser ? » (3 ca
 
 ## Fichiers impactés
 
-- [ ] `src/shared/types.ts` — ajouter `export type DeploymentTarget = 'cloud' | 'self'` + champ `hosting?: DeploymentTarget` sur `SliceConfig` (optionnel au niveau type pour permettre l'état « non choisi »).
-- [ ] `src/shared/config-schema.ts` — ajouter `hosting: z.enum(['cloud', 'self'])` (**requis** dans le schema → `isValid` faux tant que non choisi). `mode` reste, contraint par défaut à `'remote'`. Retirer/assouplir le `superRefine` qui exige la saisie de `mcpServerToken`.
-- [ ] `src/client/screens/config.tsx` — remplacer le bloc « Where will your agent use it? » (3 `DestCard`) par « Where should we host it? » (2 `DestCard` pilotant `hosting`) ; libellé du bouton adapté au track ; retirer le `Field` « MCP server token » du bloc Advanced ; conserver le toggle « Detailed parameter descriptions ».
-- [ ] `src/client/hooks/use-config.ts` — defaults : `hosting` non défini au départ, `mode: 'remote'` figé.
-- [ ] Fixtures de test construisant un `SliceConfig` (config.test.tsx, success.test.tsx, tests générateur server) — ajouter `hosting` pour rester compilables.
+- [x] `src/shared/types.ts` — `DeploymentTarget = 'cloud' | 'self'` + `hosting?: DeploymentTarget` sur `SliceConfig`.
+- [x] `src/shared/config-schema.ts` — `hosting` requis ; `superRefine` token retiré (token optionnel quel que soit le mode).
+- [x] `src/client/screens/config.tsx` — 2 `DestCard` hébergement, libellé bouton dynamique, retrait du `Field` token, toggle descriptions conservé.
+- [x] `src/client/hooks/use-config.ts` — defaults : `hosting` undefined, `mode: 'remote'`.
+- [x] Fixtures `SliceConfig` (use-config.test, config-schema.test, generate.test, generate.perf.test) — `hosting` ajouté / contrat mis à jour.
 
 ## Tâches
 
-- [ ] 1. Types : `DeploymentTarget` + `hosting` sur `SliceConfig`.
-- [ ] 2. Schema : `hosting` requis ; assouplir l'exigence de saisie `mcpServerToken` ; `mode` défaut `'remote'`.
-- [ ] 3. UI config.tsx : 2 cards hébergement + libellé bouton dynamique + retrait du champ token.
-- [ ] 4. useConfig : defaults (`hosting` vide, `mode='remote'`).
-- [ ] 5. Réparer les fixtures `SliceConfig` cassées par le nouveau champ requis.
+- [x] 1. Types : `DeploymentTarget` + `hosting` sur `SliceConfig`.
+- [x] 2. Schema : `hosting` requis ; token non requis ; `mode` défaut `'remote'`.
+- [x] 3. UI config.tsx : 2 cards hébergement + libellé bouton dynamique + retrait du champ token.
+- [x] 4. useConfig : defaults (`hosting` vide, `mode='remote'`).
+- [x] 5. Réparer les fixtures `SliceConfig` cassées par le nouveau champ requis.
 
-## Tests TDD (à écrire EN PREMIER, RED → GREEN → REFACTOR)
+## Tests TDD (écrits EN PREMIER, RED → GREEN)
 
-- [ ] RC1.2 — l'écran 3 affiche **2 cards d'hébergement** « SLICE Cloud » et « Sur mon serveur », et **plus** les cards transport (« On my machine » absente) — `src/client/screens/config.test.tsx`
-- [ ] RC1.3 — le bouton d'action est **désactivé** tant qu'aucune card d'hébergement n'est sélectionnée ; **activé** après sélection (champs valides) — `config.test.tsx`
-- [ ] RC1.3 — le **libellé du bouton** vaut « Déployer sur SLICE Cloud » quand `hosting='cloud'`, « Générer le kit » quand `hosting='self'` — `config.test.tsx`
-- [ ] RC1.4 — le champ « MCP server token » **n'apparaît plus** dans les options avancées — `config.test.tsx`
-- [ ] RC1.5 — le toggle « Detailed parameter descriptions » **est toujours présent** — `config.test.tsx`
-- [ ] Schema — `sliceConfigSchema` accepte `hosting: 'cloud'|'self'` et **rejette** un config sans `hosting` ; un config `hosting='cloud'` sans saisie de `mcpServerToken` reste **valide** — `src/shared/config-schema.test.ts`
+- [x] RC1.2 — l'écran 3 affiche 2 cards d'hébergement et plus les cards transport — `config.test.tsx`
+- [x] RC1.3 — bouton désactivé tant qu'aucune card choisie ; activé après — `config.test.tsx`
+- [x] RC1.3 — libellé bouton « Deploy to SLICE Cloud » (cloud) / « Download the kit » (self) — `config.test.tsx`
+- [x] RC1.4 — le champ « MCP server token » n'apparaît plus — `config.test.tsx`
+- [x] RC1.5 — le toggle « Detailed parameter descriptions » est toujours présent — `config.test.tsx`
+- [x] Schema — `hosting` requis, token optionnel quel que soit le mode — `config-schema.test.ts`
+
+> Note libellés : l'UI existante est en anglais ; les cards/boutons sont donc en anglais (« SLICE Cloud » / « On my server »), pas en français comme les wireframes de la SPEC. Divergence FR/EN pré-existante à arbitrer hors P1.
 
 ## Tests E2E
 
