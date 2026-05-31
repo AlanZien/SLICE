@@ -24,21 +24,22 @@ Le bouton « Download the kit » produit un bundle qui démarre en une commande 
 
 ## Tâches
 
-- [ ] 1. Template `Dockerfile.hbs` (multi-stage).
-- [ ] 2. Template `docker-compose.yml.hbs`.
-- [ ] 3. Template `dockerignore.hbs`.
-- [ ] 4. Enregistrer les 3 bindings dans `STATIC_TEMPLATES` (`mcp-generator.ts`).
-- [ ] 5. Enrichir `readme.md.hbs` (Docker + PaaS).
-- [ ] 6. Régénérer le snapshot du générateur (`mcp-generator.snapshot.test.ts`).
+- [x] 1. Template `Dockerfile.hbs` (multi-stage).
+- [x] 2. Template `docker-compose.yml.hbs`.
+- [x] 3. Template `dockerignore.hbs`.
+- [x] 4. Enregistrer les 3 bindings dans `STATIC_TEMPLATES` (`mcp-generator.ts`).
+- [x] 5. Enrichir `readme.md.hbs` (Docker + PaaS).
+- [x] 6. Régénérer le snapshot du générateur (`mcp-generator.snapshot.test.ts`).
 
-## Tests TDD (écrits EN PREMIER, RED → GREEN → REFACTOR)
+## Tests TDD (écrits EN PREMIER, RED → GREEN)
 
-- [ ] RC3.2 — `generateMcp(...)` émet un fichier `Dockerfile` à la racine du bundle — `src/server/services/mcp-generator.test.ts`
-- [ ] RC3.2 — le `Dockerfile` est multi-stage Node, `EXPOSE 8787`, lance `node dist/index.js` — `mcp-generator.test.ts`
-- [ ] RC3.2 — `generateMcp(...)` émet `docker-compose.yml` avec le service nommé d'après `mcpName`, un mapping de port et `env_file: .env` — `mcp-generator.test.ts`
-- [ ] RC3.2 — `generateMcp(...)` émet `.dockerignore` excluant `.env` et `node_modules` — `mcp-generator.test.ts`
-- [ ] RC3.2 — le `README.md` généré contient une section « Run with Docker » et une section « Deploy to … (Coolify/Railway/Render) » — `mcp-generator.test.ts`
-- [ ] RC1.4 (rappel) — le `.env.example` du bundle contient `MCP_SERVER_TOKEN` (déjà couvert par le template `env.example.hbs`, à vérifier non régressé) — `mcp-generator.test.ts`
+- [x] RC3.2 — `generateMcp(...)` émet un `Dockerfile` multi-stage (`EXPOSE 8787`, lance `dist/index.js`) — `mcp-generator.test.ts`
+- [x] RC3.2 — `generateMcp(...)` émet `docker-compose.yml` (service = `mcpName`, mapping port, `env_file`) — `mcp-generator.test.ts`
+- [x] RC3.2 — `generateMcp(...)` émet `.dockerignore` excluant `.env` et `node_modules` — `mcp-generator.test.ts`
+- [x] RC3.2 — le `README.md` contient « docker compose up » + déploiement PaaS (Coolify/Railway/Render) — `mcp-generator.test.ts`
+- [x] RC1.4 (rappel) — `.env.example` contient toujours `MCP_SERVER_TOKEN` (non régressé) — couvert par les tests static existants
+
+> Note GREEN : CMD du Dockerfile en exec-form `["node","dist/index.js"]` (best practice signaux) ; assertion ajustée de `node dist/index.js` → `dist/index.js`. Snapshot file-list étendu de 8 → 11 fichiers.
 
 ## Tests E2E
 
