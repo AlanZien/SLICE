@@ -1,78 +1,67 @@
 # SPEC — Forwarding du body de requête
 
-Date : 2026-06-01 (révisée après critique /advisor)
+Date : 2026-06-01 (révisée : /advisor + décision Option B « champs étalés »)
 Niveau : Complexe (modèle de données partagé + parser + runtime hébergé + kit généré + tests)
 Origine : limite révélée en UAT Pivot-4 (écritures et recherche Notion KO faute de body).
 
 ## Objectif
 
-Les tools issus d'opérations OpenAPI avec un `requestBody` (POST/PUT/PATCH, ex. `POST /v1/search` de Notion) doivent **exposer le corps de requête à l'agent** et **le transmettre à l'API amont**, à la fois dans le **runtime hébergé** (`/m/:id`) et dans le **kit auto-hébergé** généré. Aujourd'hui le `requestBody` est ignoré de bout en bout.
+Les tools issus d'opérations OpenAPI avec un `requestBody` (POST/PUT/PATCH, ex. `POST /v1/search` de Notion) doivent **exposer le corps de requête à l'agent, champ par champ**, et **le transmettre à l'API amont**, dans le **runtime hébergé** (`/m/:id`) et dans le **kit auto-hébergé** généré.
+
+## Décision de conception : Option B — champs étalés
+
+Chaque propriété de premier niveau du `requestBody` devient un **paramètre du tool à part entière** (avec son nom + sa description), **au même niveau** que les params path/query/header. C'est la forme idiomatique MCP (cf. MCP Notion officiel : `query`, `filter`, `sort` séparés) et c'est **cohérent** avec la façon dont SLICE expose déjà les autres params.
+
+**Modèle unifié retenu** : on étend `EndpointParam` avec la localisation **`in: 'body'`**. Les champs du body deviennent des `EndpointParam` comme les autres → ils traversent **la même machinerie** (schéma d'entrée du tool, routage à l'appel par `p.in`). Un champ de body imbriqué (objet/array) porte un schéma riche via un nouveau `EndpointParam.schema?: ZodSchemaShape`.
 
 ## État actuel (constaté dans le code)
 
-- **Parser** (`spec-normalizer.ts`) : ne lit pas `op.requestBody`. `Endpoint` n'a aucun champ body.
-- **Kit généré** : `http-client.ts.hbs` **sait déjà** envoyer un body (`body?: unknown` → `JSON.stringify`), mais `mcp-generator.ts` force `hasBody: false` et le template des tools ne passe jamais de body.
-- **Runtime hébergé** : `callUpstream` fait `fetch(url, { method, headers })` — **aucun body** (le `Content-Type: application/json` est, lui, déjà toujours posé).
-- **Builders Zod** : `zod-schema-builder.ts` (kit, string) et `buildZodSchema` (runtime) gèrent `object`/`array`/`properties`/`requiredFields`, **mais ces branches n'ont jamais tourné en prod** et sont **incomplètes pour du JSON réel** (cf. décision ci-dessous).
-
-## Décision de conception (à valider — PAUSE)
-
-**Comment exposer le body comme entrée du tool ? → Option A : un seul argument `body`.**
-
-Le tool gagne un param `body`, typé en Zod depuis le schéma du `requestBody`. Zéro collision avec path/query/header, schéma imbriqué visible par l'agent, forwarding query inchangé. (Option B « aplatir les propriétés » = reportée V2 : collisions de noms + objets imbriqués lourds.)
-
-**⚠ Coût réel d'Option A (corrigé après /advisor)** : la réutilisation des builders Zod n'est **pas gratuite**. Deux prérequis durs :
-
-1. **Une fonction de conversion `toZodShape(openApiSchema)`** (récursive) qui mappe un schéma OpenAPI (`{ type, properties, required: [...], items, additionalProperties, nullable, enum }`) vers `ZodSchemaShape`. Elle n'existe nulle part. C'est elle qui traduit le tableau OpenAPI `required: string[]` en `requiredFields`, et qui gère récursivement objets/arrays imbriqués.
-2. **Les objets doivent être `.passthrough()` (ou `z.record`)**, sinon `z.object({...})` **strippe les clés non déclarées** → le cas nominal Notion (`POST /v1/search` avec `{ query }`, création de page avec `properties` à clés dynamiques) **renvoie un body vidé**. C'est le piège central : sans passthrough, Option A est **inutilisable sur son propre cas de référence**.
+- **Parser** (`spec-normalizer.ts:93-103`) : `params = mergeParams(...)`, ne lit pas `op.requestBody`.
+- **`EndpointParam.in`** = `'path'|'query'|'header'|'cookie'` (pas `'body'`) ; pas de champ `schema`.
+- **Kit** : `http-client.ts.hbs` sait déjà envoyer un body (`body?: unknown` → `JSON.stringify`) ; `mcp-generator.ts` force `hasBody:false`, le template tools ne passe pas de body.
+- **Runtime hébergé** : `callUpstream` ne route que `path`/`query`/`header`, n'envoie pas de body.
+- **Builders Zod** : `zod-schema-builder.ts` (string) et `buildZodSchema` (runtime) gèrent object/array/properties, **mais incomplets pour du JSON réel** (pas de passthrough, pas de conversion OpenAPI→shape).
 
 ## Règles métier (testables)
 
-### Parsing
-- **R-B1** — Si une opération a un `requestBody.content['application/json'].schema`, le parser attache à l'`Endpoint` un `requestBody: { required: boolean; schema: ZodSchemaShape }`. Le schéma est déjà déréférencé par swagger-parser (les `$ref` **internes** sont inlinés au parse ; les externes restent bloqués par `assertNoExternalRefs`).
-- **R-B1.b** — La conversion OpenAPI→`ZodSchemaShape` est faite par une **fonction pure `toZodShape(schema)`** : mappe `type`/`properties`/`items`, traduit `required: string[]` (OpenAPI) en `requiredFields`, récursivement. Couvre object, array, array d'objets, scalaires. Cas non mappés (cf. R-B3) → fallback documenté.
-- **R-B2** — `required` reflète `op.requestBody.required === true` (défaut `false`).
-- **R-B3 (limites de typage assumées)** — `additionalProperties` / objet sans `properties` → l'objet est rendu **permissif** (`passthrough`/`record`) et non strippant. `enum`, `nullable` non modélisés en MVP → fallback (champ accepté en `string`/permissif), tracé en BACKLOG. Content-type non-JSON (multipart, octet-stream, form-urlencoded) → **pas** de body exposé (le tool reste utilisable sans body). Si `application/json` coexiste, on le prend.
-- **R-B4** — `requestBody` sans `content`, sans schéma, ou schéma vide → ignoré (pas de champ `requestBody`, comme R-B3 non-JSON).
+### Parsing / aplatissement
+- **R-B1** — Si une opération a `requestBody.content['application/json'].schema` dont le **top-level est un objet** avec `properties`, le parser **aplatit** : chaque propriété de premier niveau devient un `EndpointParam` avec `in:'body'`, son `name`, `required` (selon le tableau OpenAPI `required: [...]` du body), et — si la propriété est elle-même un objet/array — un `schema: ZodSchemaShape` décrivant sa structure.
+- **R-B1.b** — Conversion par une **fonction pure `toZodShape(openApiSchema)`** (récursive) : mappe `type`/`properties`/`items`, traduit `required: string[]`→`requiredFields`, gère `additionalProperties`. C'est elle qui alimente `EndpointParam.schema`.
+- **R-B2 (fallback non-objet)** — Si le top-level du body **n'est pas un objet** (array, scalaire) **ou** est un objet **sans `properties` déclarées** (free-form), on n'aplatit pas : un **unique** `EndpointParam` `in:'body'` nommé `body` porte tout le schéma. (`required` = `requestBody.required`.)
+- **R-B3 (objets permissifs)** — Tout schéma d'objet (champ de body imbriqué ou fallback `body`) est rendu **permissif** (`.passthrough()` / `record`) : les clés non déclarées **ne sont pas supprimées**. Sans ça, `properties` d'une page Notion (clés dynamiques) et `{}` de recherche seraient vidés. **Critère bloquant du cas nominal.**
+- **R-B4 (limites assumées)** — Content-type non-JSON (multipart, octet-stream, form-urlencoded) → pas de body exposé (tool utilisable sans). `enum`/`nullable`/`oneOf`/`anyOf` non modélisés → fallback permissif, tracé BACKLOG. `requestBody` sans schéma exploitable → ignoré.
+- **R-B5 ($ref)** — `$ref` internes déjà inlinés par swagger-parser (aucun traitement) ; `$ref` externes déjà bloqués (`assertNoExternalRefs`).
 
 ### Exposition dans le tool (kit + hébergé)
-- **R-B5** — Quand l'`Endpoint` a un `requestBody`, le schéma d'entrée du tool gagne une clé `body`, typée via `toZodShape` + builder. `body` est **requis** ssi `requestBody.required === true`, sinon `.optional()`. Les objets sont permissifs (R-B3).
-- **R-B6 (parité runtime ↔ kit, testée)** — Pour un même schéma de body, l'**expression string** générée pour le kit (`buildZodExpression`) et le **schéma runtime** (`buildZodSchema`) doivent **accepter/rejeter le même payload** : objet `{}`, objet avec clés extra (doit passer, R-B3), champ requis manquant (doit échouer). Un test de parité dédié garde l'invariant « même MCP des deux côtés » (dette Pivot-4 non rouverte).
-- **R-B7 (désambiguïsation de clé)** — Si l'endpoint a déjà un param (query/header/path/cookie) **nommé `body`**, la clé du corps devient `requestBody` (pas d'écrasement silencieux). Sinon, `body`.
+- **R-B6** — Le schéma d'entrée du tool liste **tous** les params (path/query/header/body) au **même niveau**. Un param `in:'body'` scalaire est typé depuis `type` ; imbriqué, depuis `schema` (objets permissifs).
+- **R-B7 (collision de nom)** — Si un champ de body porte le **même nom** qu'un param path/query/header existant, le param de body est exposé sous la clé `<name>_body` dans le tool, mais **écrit dans le corps sous son vrai nom `<name>`** (mapping conservé). Collision tracée. Aucun écrasement silencieux.
+- **R-B8 (parité kit ↔ hébergé, testée)** — Pour un même schéma, l'expression Zod du kit (`buildZodExpression`) et le schéma runtime (`buildZodSchema`) acceptent/rejettent **le même payload** : champ requis manquant → rejet ; clés extra dans un objet permissif → acceptées ; `{}` → accepté.
 
 ### Forwarding (runtime hébergé + kit)
-- **R-B8** — À l'appel d'un tool avec un body fourni : la requête sortante porte **`body = JSON.stringify(args[bodyKey])`**. (Le `Content-Type: application/json` est déjà toujours posé — ce n'est donc pas le critère discriminant ; le critère testé est la présence/valeur du `body` sortant.)
-- **R-B9** — body absent/`undefined` (cas optionnel non rempli) → **aucun** `body` envoyé (pas de `"undefined"`).
-- **R-B10** — body objet **vide `{}`** explicitement fourni → transmis tel quel (`"{}"`), pour couvrir `POST /v1/search` Notion sans filtre.
-- **R-B11** — Le forwarding du body **n'écrase ni** l'`Authorization` relayé **ni** les params `in:'header'`.
-- **R-B12** — Forwarding piloté par la **présence d'un `requestBody` dans la spec**, pas par la méthode. Un GET/DELETE qui déclare un `requestBody` (légal, rare) expose et envoie le body (l'amont peut le rejeter — hors responsabilité SLICE, tracé). Une opération sans `requestBody` → aucun body, comportement inchangé.
-- **R-B13 (cas d'erreur)** — body marqué **requis** et **absent** de l'appel → l'invocation **échoue en validation Zod** : le handler n'est pas exécuté, **aucune requête amont émise**.
+- **R-B9** — À l'appel, le corps sortant est **réassemblé** depuis tous les params `in:'body'` fournis (par leur vrai nom amont), puis `body = JSON.stringify(assemblé)`. (Le `Content-Type: application/json` est déjà toujours posé.)
+- **R-B10** — Endpoint à body-objet, l'agent ne remplit **aucun** champ de body → corps `{}` envoyé (couvre `POST /v1/search` Notion « tout »). Fallback `body` unique (R-B2) non fourni → **aucun** body envoyé.
+- **R-B11** — Le forwarding du body **n'écrase ni** l'`Authorization` relayé **ni** les params `in:'header'`. Les params `in:'body'` ne partent **pas** en query/path.
+- **R-B12** — Piloté par la **présence d'un `requestBody`**, pas par la méthode (un GET+body légal est envoyé ; l'amont peut le rejeter — hors responsabilité SLICE). Sans `requestBody` → aucun body, inchangé.
+- **R-B13 (erreur)** — Un champ de body **requis** absent de l'appel → **échec validation Zod** : handler non exécuté, **aucune requête amont**.
 
 ### Économie de contexte
-- **R-B14 (non bloquante, best-effort)** — Non-régression : le compteur d'économie ne change pas pour les endpoints sans body. Pour ceux avec body, la valeur peut augmenter (le schéma de body ajoute des tokens). Pas de cible chiffrée en MVP.
+- **R-B14 (non bloquante)** — Non-régression du compteur pour les endpoints sans body ; pour ceux avec body, la valeur peut augmenter. Pas de cible chiffrée MVP.
 
 ## Cas nominal de référence (UAT)
-`POST /v1/search` Notion via le MCP hébergé : l'agent passe `body: { query: "…" }` (+ `Notion-Version` en header) → l'amont reçoit le corps JSON, renvoie les résultats. Création de page : `body` = `{ parent, properties }`, où `properties` est un **objet à clés dynamiques** (vérifie le passthrough R-B3).
+- `POST /v1/search` Notion : tool `search({ query, filter?, sort?, Notion-Version })`. L'agent remplit `query` → corps `{ "query": "…" }` envoyé → résultats. Sans filtre → `{}` → tout.
+- Création de page : `create_page({ parent, properties, Notion-Version })`, `properties` = objet permissif à clés dynamiques (vérifie R-B3).
 
 ## Cas limites / erreurs
-- `additionalProperties` / objet libre → permissif (R-B3). **Sans ce point, le cas nominal échoue.**
-- `type: array` au top-level du body → `body` est un array, forwardé tel quel (testé).
-- `$ref` interne dans le schéma → déjà inliné par swagger-parser, aucun traitement spécial.
-- `$ref` externe → déjà bloqué (`assertNoExternalRefs`).
-- body requis non fourni → R-B13 (échec validation, pas d'appel amont).
-- Schéma profond/cyclique → borné par les limites de parsing existantes.
-- Multipart / binaire / form-urlencoded, `enum`, `nullable` → non supportés MVP, tracés BACKLOG.
+Couverts par les règles : objet libre (R-B3), array top-level (R-B2 fallback), `$ref` interne (R-B5), collision de noms (R-B7), GET+body (R-B12), champ requis manquant (R-B13). Hors MVP : multipart/binaire, `enum`/`nullable`.
 
-## Hors scope
-- Aplatissement des propriétés du body (Option B) — V2.
-- Content-types non-JSON — V2.
-- Modélisation fine `enum`/`nullable`/`oneOf`/`anyOf` — V2.
+## Hors scope (V2)
+Content-types non-JSON ; modélisation fine `enum`/`nullable`/`oneOf`/`anyOf` ; aplatissement récursif au-delà du premier niveau (les objets imbriqués restent des args objet permissifs, pas re-étalés).
 
 ## Fichiers pressentis (pour REFINE)
-- `src/shared/types.ts` — `Endpoint.requestBody?: { required: boolean; schema: ZodSchemaShape }`.
-- `src/server/services/zod-schema-builder.ts` — **extension `ZodSchemaShape`** (`additionalProperties`) + objets `.passthrough()`/`record` ; nouvelle fonction **`toZodShape(openApiSchema)`** (R-B1.b).
-- `src/server/services/spec-normalizer.ts` — capture `op.requestBody` → `toZodShape` → `requestBody`.
-- `src/server/services/hosted-mcp-factory.ts` — `buildZodSchema` aligné sur le passthrough ; ajoute la clé body au shape ; `callUpstream` envoie le body.
-- `src/server/services/mcp-generator.ts` — `hasBody` réel + clé body dans l'inputSchema + `bodyExpr` ; template `tools.ts.hbs` passe `body` à `call`.
-- `src/server/services/spec-to-hosted-config.ts` — propage `requestBody` dans `HostedMcpConfig`.
-- Tests : `toZodShape` (mapping + récursif), parser (R-B1..4), **parité builder kit↔runtime** (R-B6), mcp-generator (kit envoie le body), hosted-mcp-factory (R-B8..13 via upstream mock qui enregistre le body reçu), cas nominal Notion-like (`{}` et objet à clés dynamiques transmis intacts).
+- `src/shared/types.ts` — `EndpointParam.in` += `'body'` ; `EndpointParam.schema?: ZodSchemaShape`.
+- `src/server/services/zod-schema-builder.ts` — `toZodShape(openApiSchema)` (R-B1.b) ; extension `ZodSchemaShape` (`additionalProperties`) ; objets `.passthrough()`/`record` (R-B3).
+- `src/server/services/spec-normalizer.ts` — lit `op.requestBody`, aplatit en params `in:'body'` (R-B1/R-B2), gère collision (R-B7).
+- `src/server/services/hosted-mcp-factory.ts` — `buildZodSchema` via `param.schema` pour les body params ; `callUpstream` réassemble + envoie le body (R-B9..13).
+- `src/server/services/mcp-generator.ts` — body params dans l'inputSchema (Zod depuis `param.schema`) + `hasBody` réel + `bodyExpr` ; `tools.ts.hbs` passe `body` à `call`.
+- `src/server/services/spec-to-hosted-config.ts` — propage les params `in:'body'` + `schema`.
+- Tests : `toZodShape`, parser (aplatissement + collision + fallback), **parité kit↔hébergé** (R-B8), mcp-generator (kit assemble + envoie le body), hosted-mcp-factory (R-B9..13 via upstream mock enregistrant le corps reçu), cas Notion-like (`{}` et objet à clés dynamiques transmis intacts).
