@@ -64,6 +64,7 @@ const VALID_CONFIG: SliceConfig = {
   mcpName: 'demo-mcp',
   baseUrl: 'https://api.demo.test',
   upstreamAuth: { type: 'none' },
+  hosting: 'self',
   mode: 'local',
   includeParamDescriptions: false,
   retryOnServerError: false,

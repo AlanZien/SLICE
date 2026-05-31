@@ -10,6 +10,7 @@ const BASE_CONFIG: SliceConfig = {
   mcpName: 'perf-mcp',
   baseUrl: 'https://example.com',
   upstreamAuth: { type: 'none' },
+  hosting: 'self',
   mode: 'local',
   includeParamDescriptions: false,
   retryOnServerError: false,

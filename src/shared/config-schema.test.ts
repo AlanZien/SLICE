@@ -72,15 +72,14 @@ describe('sliceConfigSchema', () => {
     expect(sliceConfigSchema.safeParse({ ...noToken, hosting: 'self' }).success).toBe(true);
   });
 
-  it('rejects when mcpServerToken is missing for HTTP-exposing modes', () => {
+  // Pivot RC1.4 supersedes the old "token required over HTTP" rule: the token
+  // is auto-managed, so its absence never invalidates the config regardless of
+  // transport mode. (Covered more directly by the hosting-based test above.)
+  it('allows a missing mcpServerToken in any mode', () => {
     const noToken = { ...valid, mcpServerToken: undefined };
-    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'remote' }).success).toBe(false);
-    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'both' }).success).toBe(false);
-  });
-
-  it('allows missing mcpServerToken in local-only mode', () => {
-    const local = { ...valid, mode: 'local', mcpServerToken: undefined };
-    expect(sliceConfigSchema.safeParse(local).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'remote' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'both' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'local' }).success).toBe(true);
   });
 
   it('rejects an mcpServerToken that is not 32 hex chars', () => {
