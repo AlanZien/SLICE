@@ -1,0 +1,80 @@
+/**
+ * Pivot-4 — POST /api/host
+ *
+ * Re-validates and re-parses the spec (same hardening as /api/generate —
+ * never trust the client parse), distills the selection into a HostedMcpConfig,
+ * stores it under an unguessable id, and returns `{ id, url }`. The hosted
+ * runtime (`/m/:id`) then serves it on demand. No secret is stored.
+ */
+import { Router, type RequestHandler, json } from 'express';
+import { generateRequestSchema } from '@shared/config-schema';
+import { ApiError, type ApiErrorPayload, type Endpoint, type SliceConfig } from '@shared/types';
+import { parseSpec } from '../services/parser';
+import { specToHostedConfig } from '../services/spec-to-hosted-config';
+import { hostedStore } from '../services/hosted-store';
+
+const BODY_LIMIT = '15mb';
+
+export function createHostRouter(): Router {
+  const router = Router();
+  router.use(json({ limit: BODY_LIMIT }));
+  router.use(((err, _req, res, next) => {
+    if (err && typeof err === 'object' && 'type' in err && err.type === 'entity.too.large') {
+      res.status(413).json(payload('PAYLOAD_TOO_LARGE', 'Spec is too large (max 15 MB).'));
+      return;
+    }
+    next(err);
+  }) as import('express').ErrorRequestHandler);
+  router.post('/', handleHost);
+  return router;
+}
+
+const handleHost: RequestHandler = async (req, res, next) => {
+  const parsed = generateRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json(payload('INVALID_SPEC', firstZodMessage(parsed.error)));
+    return;
+  }
+  const body = parsed.data;
+
+  try {
+    // Re-parse server-side (never trust the client parse).
+    let reparsed;
+    try {
+      reparsed = await parseSpec(body.rawSpec, { sizeBytes: Buffer.byteLength(body.rawSpec) });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('[host] re-parse failed:', err instanceof Error ? err.message : err);
+      throw new ApiError('INVALID_SPEC', 'Failed to re-parse the spec.', 400);
+    }
+
+    // Whitelist the selection against the freshly-parsed endpoints.
+    const knownIds = new Set(reparsed.groups.flatMap((g) => g.endpoints.map((e: Endpoint) => e.id)));
+    const validIds = body.selectedIds.filter((id) => knownIds.has(id));
+    if (validIds.length === 0) {
+      throw new ApiError('NO_ENDPOINT_SELECTED', 'No selected endpoint survived re-parsing.', 400);
+    }
+
+    const config = specToHostedConfig(reparsed, validIds, body.config as SliceConfig);
+    const id = hostedStore.put(config);
+    const url = `${req.protocol}://${req.get('host')}/m/${id}`;
+    res.status(200).json({ id, url });
+  } catch (err) {
+    if (err instanceof ApiError) {
+      res.status(err.status).json(payload(err.code, err.message));
+      return;
+    }
+    next(err);
+  }
+};
+
+function payload(code: ApiErrorPayload['code'], message: string): ApiErrorPayload {
+  return { code, message };
+}
+
+function firstZodMessage(err: import('zod').ZodError): string {
+  const issue = err.issues[0];
+  if (!issue) return 'Invalid request body.';
+  const path = issue.path.length ? `${issue.path.join('.')}: ` : '';
+  return `${path}${issue.message}`;
+}
