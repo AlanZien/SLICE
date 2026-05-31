@@ -119,6 +119,13 @@ async function callUpstream(
     Accept: 'application/json',
     'Content-Type': 'application/json',
   };
+  // Forward `in: header` params the agent supplied (e.g. Notion-Version, which
+  // the upstream requires on every call). Applied before the auth relay so a
+  // header param can never clobber the relayed token.
+  for (const p of endpoint.params.filter((x) => x.in === 'header')) {
+    const value = args[p.name];
+    if (value !== undefined && value !== null) headers[p.name] = String(value);
+  }
   const token = relayedToken();
   if (token) {
     if (config.upstreamAuth.type === 'bearer') {
