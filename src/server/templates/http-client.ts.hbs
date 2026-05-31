@@ -4,6 +4,13 @@
  * upstream API or auth setup changes.
  */
 
+{{#ifEquals upstreamAuth.type "apiKey"}}
+import { relayedToken } from './auth-context.js';
+{{/ifEquals}}
+{{#ifEquals upstreamAuth.type "bearer"}}
+import { relayedToken } from './auth-context.js';
+{{/ifEquals}}
+
 const BASE_URL = process.env.UPSTREAM_BASE_URL ?? '';
 
 if (!BASE_URL) {
@@ -11,17 +18,21 @@ if (!BASE_URL) {
 }
 
 {{#ifEquals upstreamAuth.type "apiKey"}}
+// `env` (default): read the key from UPSTREAM_API_KEY (self-host).
+// `relay`: forward the caller's own token, never stored (SLICE Cloud).
+const AUTH_MODE = process.env.MCP_AUTH_MODE ?? 'env';
 const API_KEY_HEADER = '{{upstreamAuth.headerName}}';
 const API_KEY = process.env.UPSTREAM_API_KEY ?? '';
 
-if (!API_KEY) {
+if (AUTH_MODE === 'env' && !API_KEY) {
   throw new Error('UPSTREAM_API_KEY is required for this MCP.');
 }
 {{/ifEquals}}
 {{#ifEquals upstreamAuth.type "bearer"}}
+const AUTH_MODE = process.env.MCP_AUTH_MODE ?? 'env';
 const BEARER_TOKEN = process.env.UPSTREAM_BEARER_TOKEN ?? '';
 
-if (!BEARER_TOKEN) {
+if (AUTH_MODE === 'env' && !BEARER_TOKEN) {
   throw new Error('UPSTREAM_BEARER_TOKEN is required for this MCP.');
 }
 {{/ifEquals}}
@@ -61,10 +72,20 @@ export async function call({ method, path, pathParams, query, body }: CallOption
     'Content-Type': 'application/json',
   };
   {{#ifEquals upstreamAuth.type "apiKey"}}
-  headers[API_KEY_HEADER] = API_KEY;
+  if (AUTH_MODE === 'relay') {
+    const relayed = relayedToken();
+    if (relayed) headers[API_KEY_HEADER] = relayed;
+  } else {
+    headers[API_KEY_HEADER] = API_KEY;
+  }
   {{/ifEquals}}
   {{#ifEquals upstreamAuth.type "bearer"}}
-  headers.Authorization = `Bearer ${BEARER_TOKEN}`;
+  if (AUTH_MODE === 'relay') {
+    const relayed = relayedToken();
+    if (relayed) headers.Authorization = `Bearer ${relayed}`;
+  } else {
+    headers.Authorization = `Bearer ${BEARER_TOKEN}`;
+  }
   {{/ifEquals}}
 
   const res = await fetch(fullUrl, {

@@ -13,12 +13,14 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { authStore } from './auth-context.js';
 {{/ifEquals}}
 {{#ifEquals mode "both"}}
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
+import { authStore } from './auth-context.js';
 {{/ifEquals}}
 import { registerTools } from './tools.js';
 
@@ -38,12 +40,23 @@ async function main(): Promise<void> {
 }
 
 async function startHttp(): Promise<void> {
+  // `env` (default): agents authenticate with MCP_SERVER_TOKEN (self-host).
+  // `relay`: access is gated by the unguessable URL; the incoming Authorization
+  // header is the caller's upstream credential — forwarded, never stored.
+  const authMode = process.env.MCP_AUTH_MODE ?? 'env';
   const token = process.env.MCP_SERVER_TOKEN ?? '';
-  if (!token) throw new Error('MCP_SERVER_TOKEN is required for HTTP transport.');
+  if (authMode === 'env' && !token) {
+    throw new Error('MCP_SERVER_TOKEN is required for HTTP transport.');
+  }
   const port = Number(process.env.MCP_HTTP_PORT ?? 8787);
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => randomUUID() });
   await server.connect(transport);
   const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    if (authMode === 'relay') {
+      const authorization = req.headers.authorization ?? '';
+      await authStore.run({ authorization }, () => transport.handleRequest(req, res));
+      return;
+    }
     const auth = req.headers.authorization ?? '';
     if (auth !== `Bearer ${token}`) {
       res.writeHead(401).end('Unauthorized');
@@ -69,12 +82,23 @@ async function main(): Promise<void> {
 }
 
 async function startHttp(): Promise<void> {
+  // `env` (default): agents authenticate with MCP_SERVER_TOKEN (self-host).
+  // `relay`: access is gated by the unguessable URL; the incoming Authorization
+  // header is the caller's upstream credential — forwarded, never stored.
+  const authMode = process.env.MCP_AUTH_MODE ?? 'env';
   const token = process.env.MCP_SERVER_TOKEN ?? '';
-  if (!token) throw new Error('MCP_SERVER_TOKEN is required for HTTP transport.');
+  if (authMode === 'env' && !token) {
+    throw new Error('MCP_SERVER_TOKEN is required for HTTP transport.');
+  }
   const port = Number(process.env.MCP_HTTP_PORT ?? 8787);
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => randomUUID() });
   await server.connect(transport);
   const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    if (authMode === 'relay') {
+      const authorization = req.headers.authorization ?? '';
+      await authStore.run({ authorization }, () => transport.handleRequest(req, res));
+      return;
+    }
     const auth = req.headers.authorization ?? '';
     if (auth !== `Bearer ${token}`) {
       res.writeHead(401).end('Unauthorized');
