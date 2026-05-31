@@ -45,28 +45,20 @@ const mcpServerTokenSchema = z
   .string()
   .regex(/^[a-f0-9]{32}$/i, 'must be 32 hex characters');
 
-export const sliceConfigSchema = z
-  .object({
-    mcpName: mcpNameSchema,
-    baseUrl: baseUrlSchema,
-    upstreamAuth: upstreamAuthSchema,
-    mode: z.enum(['local', 'remote', 'both']),
-    mcpServerToken: mcpServerTokenSchema.optional(),
-    includeParamDescriptions: z.boolean(),
-    retryOnServerError: z.boolean(),
-  })
-  .superRefine((cfg, ctx) => {
-    // The MCP_SERVER_TOKEN is the Bearer that the agent forwards to the
-    // generated MCP when it's exposed over HTTP. Required for any mode that
-    // ships the HTTP transport; irrelevant when only `stdio` is built.
-    if (cfg.mode !== 'local' && !cfg.mcpServerToken) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['mcpServerToken'],
-        message: 'required when the MCP is exposed over HTTP',
-      });
-    }
-  });
+export const sliceConfigSchema = z.object({
+  mcpName: mcpNameSchema,
+  baseUrl: baseUrlSchema,
+  upstreamAuth: upstreamAuthSchema,
+  // Pivot RC1.2/RC1.3 — mandatory hosting choice on screen 3.
+  hosting: z.enum(['cloud', 'self']),
+  mode: z.enum(['local', 'remote', 'both']),
+  // Pivot RC1.4 — the token is auto-managed, never required from the user:
+  // ignored in cloud (URL-secret / relay), auto-generated into the kit's
+  // .env for self-host. Still validated as 32 hex chars when present.
+  mcpServerToken: mcpServerTokenSchema.optional(),
+  includeParamDescriptions: z.boolean(),
+  retryOnServerError: z.boolean(),
+});
 
 export type SliceConfigInput = z.input<typeof sliceConfigSchema>;
 export type SliceConfigOutput = z.output<typeof sliceConfigSchema>;

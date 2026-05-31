@@ -22,8 +22,11 @@ function initialConfig(defaults: DefaultConfig): SliceConfig {
     mcpName: defaults.mcpName,
     baseUrl: defaults.baseUrl,
     upstreamAuth: defaults.upstreamAuth,
-    // SPEC R1.3.2 — "Les deux" (stdio + HTTP) is the recommended default.
-    mode: 'both',
+    // Pivot RC1.3 — no hosting target until the user picks one on screen 3,
+    // so the Generate/Deploy button stays disabled at first.
+    hosting: undefined,
+    // Pivot — both hosting tracks are HTTP, so transport is pinned to remote.
+    mode: 'remote',
     mcpServerToken: defaults.mcpServerToken,
     includeParamDescriptions: true,
     retryOnServerError: false,

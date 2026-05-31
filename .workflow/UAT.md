@@ -418,3 +418,36 @@ Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquett
 
 - `URL.createObjectURL` non-implémenté en JSDOM : le test SuccessScreen le stub localement. Acceptable mais on pourrait factoriser via `test-setup.ts`.
 - `apiGenerate` côté client utilise `res.blob()` → matérialise tout en mémoire. OK pour <1 MB. Si les bundles grossissent, envisager `res.body` streaming.
+
+## Phase Pivot-1 : Écran « Où héberger ? » (2026-05-31)
+
+### Tests techniques (générés par Claude depuis PLAN Pivot-1)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 372 verts (55 fichiers) | ✓ | +16 depuis la base 356 |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict |
+| 3 | `sliceConfigSchema` : `hosting` requis (`cloud`/`self`), rejette absence/valeur inconnue (RC1.2/1.3) | ✓ | config-schema.test.ts |
+| 4 | `sliceConfigSchema` : `mcpServerToken` optionnel quel que soit le mode (RC1.4) | ✓ | superRefine retiré |
+| 5 | `useConfig` : `isValid=false` tant qu'aucun `hosting` choisi, `true` après (RC1.3) | ✓ | use-config.test.ts |
+| 6 | `<ConfigScreen>` : 2 cards d'hébergement, plus de cards transport (RC1.2) | ✓ | config.test.tsx |
+| 7 | `<ConfigScreen>` : bouton désactivé tant qu'aucun hébergement choisi (RC1.3) | ✓ | |
+| 8 | `<ConfigScreen>` : libellé « Deploy to SLICE Cloud » (cloud) / « Download the kit » (self) (RC1.3) | ✓ | |
+| 9 | `<ConfigScreen>` : champ « MCP server token » absent (RC1.4) | ✓ | |
+| 10 | `<ConfigScreen>` : toggle « Detailed parameter descriptions » présent (RC1.5) | ✓ | |
+| 11 | `<ConfigScreen>` : `onGenerate` reçoit un config avec `hosting` + `mode='remote'` | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Écran 3 affiche 2 cards « SLICE Cloud » (badge Recommended) et « On my server », bouton grisé | ⏳ | manuel |
+| 2 | Clic « SLICE Cloud » → bouton actif lit « Deploy to SLICE Cloud » | ⏳ | manuel |
+| 3 | Clic « On my server » → bouton lit « Download the kit » | ⏳ | manuel |
+| 4 | « Advanced options » → plus de champ token, toggle descriptions présent | ⏳ | manuel |
+| 5 | Nom invalide après choix d'hébergement → bouton re-désactivé | ⏳ | manuel |
+| 6 | Cohérence visuelle des cards avec le design system (`DestCard`) | ⏳ | manuel |
+
+### Findings reportés (RETRO)
+
+Voir `.workflow/RETRO.md` § « Après phase Pivot-1 » : dette `mode`/`hosting` (à dériver en Pivot-2), `transportLabelFor` vestigial, libellés FR/EN à arbitrer, maquette hi-fi pivot à produire avant Pivot-3.

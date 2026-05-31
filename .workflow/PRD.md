@@ -191,4 +191,24 @@ Backend Express qui sert à la fois le front (assets statiques) et 2 endpoints (
 - **Positionnement marché :** UX premium de sélection + dual transport (stdio + HTTP) out-of-the-box + pensé pour workflows agents cloud (n8n, Airia). Pas de bataille frontale sur le multi-langage (terrain Stainless).
 
 ---
-Généré par le workflow FORGE (phase FIND). À valider par l'utilisateur avant de passer à BOOTSTRAP.
+
+## Addendum — Pivot "SLICE Cloud + self-host" (validé 2026-05-31)
+
+Ce pivot remplace la livraison "ZIP source à télécharger" par une **livraison hébergée**. Il tranche trois open questions du PRD ci-dessus. Détail fonctionnel : `.workflow/SPEC-CLOUD.md`.
+
+**Décisions produit actées :**
+- **Déploiement de SLICE** (open question §172) → **Coolify sur VPS OVH** retenu (serveur persistant), pas Vercel/serverless.
+- **Modèle économique** (open question §179) → l'offre **"SLICE Hosted"** est concrétisée dès le MVP par le **Track A "SLICE Cloud"** : SLICE héberge les MCP des utilisateurs sur l'infra de l'opérateur. Gratuit au lancement, monétisation ultérieure.
+- **Architecture stateless/sans DB** (décision §187) → **nuancée** : toujours **pas de base de données**, mais le suivi de déploiement asynchrone introduit un **état serveur en mémoire** (éphémère, TTL court) et le Track A tourne en **single-instance** en MVP. "Pas de DB" tient ; "stateless 100%" devient "pas de persistance durable, état de build éphémère".
+
+**Trois modes de livraison (vision) :**
+1. **Track A — SLICE Cloud** (MVP) : SLICE héberge → URL prête à coller. Cible non-tech.
+2. **Track C — Sur mon serveur** (MVP) : kit prêt à lancer (Docker) à déployer sur l'infra de l'utilisateur. Cible tech.
+3. **Track B — Railway** (post-MVP, Pivot-5) : déploiement one-click sur le compte PaaS de l'utilisateur. Cible semi-tech.
+
+**Modèle de secrets (renforce la sécurité PRD) :** les tokens des API cibles ne sont **jamais reçus ni stockés** par SLICE en Track A — le MCP hébergé **relaie** le header `Authorization` entrant. L'accès au MCP hébergé est protégé par une **URL non-devinable**.
+
+**Conséquences sur les Must Have :** la question transport "Sur mon ordi / serveur / les deux" (§73) est **remplacée** par la question d'hébergement (le tout-HTTP hébergé rend le choix de transport caduc dans le parcours nominal ; le stdio reste documenté dans le kit Track C).
+
+---
+Généré par le workflow FORGE (phase FIND, addendum SPEC). À valider par l'utilisateur avant de passer à BOOTSTRAP.

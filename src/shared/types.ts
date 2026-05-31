@@ -71,6 +71,16 @@ export interface DefaultConfig {
 /** Where the generated MCP will live — drives the transports we emit. */
 export type DeploymentMode = 'local' | 'remote' | 'both';
 
+/**
+ * Hosting target picked on screen 3 (pivot RC1.2):
+ * - `cloud` — SLICE hosts it (Track A, deploys to Coolify, returns a URL).
+ * - `self`  — the user hosts it (Track C, downloads a Docker kit).
+ * Optional at the type level to model the "not chosen yet" state; the Zod
+ * schema makes it required so the screen-3 button stays disabled until a
+ * choice is made.
+ */
+export type DeploymentTarget = 'cloud' | 'self';
+
 /** Final user-confirmed config, sent to `/api/generate` in phase 07. */
 export interface SliceConfig {
   /** Validated MCP server name: lowercase ASCII + dashes, 3–40 chars. */
@@ -79,7 +89,13 @@ export interface SliceConfig {
   baseUrl: string;
   /** Auth scheme the generated MCP will forward to the upstream API. */
   upstreamAuth: UpstreamAuth;
-  /** Deployment target (stdio / HTTP / both). */
+  /** Hosting target chosen on screen 3 (undefined until the user picks one). */
+  hosting?: DeploymentTarget;
+  /**
+   * Transport mode. With the hosting pivot, both tracks are HTTP, so the UI
+   * pins this to `'remote'`; the field is kept until the generator/snippets
+   * fully migrate to `hosting` (Pivot-2+).
+   */
   mode: DeploymentMode;
   /** Bearer token for the agent → MCP hop (only required when mode != local). */
   mcpServerToken?: string;

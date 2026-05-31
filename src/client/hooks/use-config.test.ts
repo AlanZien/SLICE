@@ -15,10 +15,13 @@ describe('useConfig', () => {
     const { result } = renderHook(() => useConfig(baseDefault));
     expect(result.current.config.mcpName).toBe('shopify-admin');
     expect(result.current.config.baseUrl).toBe('https://api.shopify.com/v1');
-    expect(result.current.config.mode).toBe('both'); // SPEC R1.3.2 — both is the recommended default
+    // Pivot — transport pinned to remote, hosting not chosen yet (RC1.3).
+    expect(result.current.config.mode).toBe('remote');
+    expect(result.current.config.hosting).toBeUndefined();
     expect(result.current.config.includeParamDescriptions).toBe(true);
     expect(result.current.config.retryOnServerError).toBe(false);
-    expect(result.current.isValid).toBe(true);
+    // Invalid until a hosting target is picked.
+    expect(result.current.isValid).toBe(false);
   });
 
   it('setField updates a single value', () => {
@@ -41,14 +44,11 @@ describe('useConfig', () => {
     expect(result.current.isValid).toBe(false);
   });
 
-  it('switches mode and re-validates the mcpServerToken requirement', () => {
-    const noToken = { ...baseDefault, mcpServerToken: '' };
-    const { result } = renderHook(() => useConfig(noToken));
-    act(() => result.current.setField('mode', 'remote'));
-    // Empty token + remote mode → invalid.
+  it('becomes valid once a hosting target is chosen (RC1.3)', () => {
+    const { result } = renderHook(() => useConfig(baseDefault));
+    // No hosting picked → invalid, whatever else is filled in.
     expect(result.current.isValid).toBe(false);
-    act(() => result.current.setField('mode', 'local'));
-    // Local mode doesn't need the token.
+    act(() => result.current.setField('hosting', 'cloud'));
     expect(result.current.isValid).toBe(true);
   });
 

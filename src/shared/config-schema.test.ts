@@ -5,6 +5,7 @@ const valid = {
   mcpName: 'shopify-admin',
   baseUrl: 'https://api.shopify.com/v1',
   upstreamAuth: { type: 'apiKey', headerName: 'X-API-Key' },
+  hosting: 'self',
   mode: 'both',
   mcpServerToken: 'a'.repeat(32),
   includeParamDescriptions: true,
@@ -52,15 +53,33 @@ describe('sliceConfigSchema', () => {
     expect(sliceConfigSchema.safeParse(valid).success).toBe(true);
   });
 
-  it('rejects when mcpServerToken is missing for HTTP-exposing modes', () => {
-    const noToken = { ...valid, mcpServerToken: undefined };
-    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'remote' }).success).toBe(false);
-    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'both' }).success).toBe(false);
+  // Pivot RC1.2/RC1.3 — the hosting target is the screen-3 mandatory choice.
+  it('requires a hosting target (cloud or self)', () => {
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: undefined }).success).toBe(false);
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: 'cloud' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: 'self' }).success).toBe(true);
   });
 
-  it('allows missing mcpServerToken in local-only mode', () => {
-    const local = { ...valid, mode: 'local', mcpServerToken: undefined };
-    expect(sliceConfigSchema.safeParse(local).success).toBe(true);
+  it('rejects an unknown hosting target', () => {
+    expect(sliceConfigSchema.safeParse({ ...valid, hosting: 'ftp' }).success).toBe(false);
+  });
+
+  // Pivot RC1.4 — the user no longer types a token; it is auto-managed, so a
+  // config without mcpServerToken stays valid whatever the hosting target.
+  it('keeps mcpServerToken optional whatever the hosting (RC1.4)', () => {
+    const noToken = { ...valid, mcpServerToken: undefined };
+    expect(sliceConfigSchema.safeParse({ ...noToken, hosting: 'cloud' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, hosting: 'self' }).success).toBe(true);
+  });
+
+  // Pivot RC1.4 supersedes the old "token required over HTTP" rule: the token
+  // is auto-managed, so its absence never invalidates the config regardless of
+  // transport mode. (Covered more directly by the hosting-based test above.)
+  it('allows a missing mcpServerToken in any mode', () => {
+    const noToken = { ...valid, mcpServerToken: undefined };
+    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'remote' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'both' }).success).toBe(true);
+    expect(sliceConfigSchema.safeParse({ ...noToken, mode: 'local' }).success).toBe(true);
   });
 
   it('rejects an mcpServerToken that is not 32 hex chars', () => {
