@@ -19,12 +19,12 @@ SLICE héberge les MCP : un **runtime multi-tenant unique** sert n'importe quel 
 ## Fichiers impactés
 
 - [x] `src/server/services/hosted-mcp-factory.ts` — `buildHostedMcpServer(config)` + `relayStore`/`relayedToken` + Zod runtime + proxy. **FAIT.**
-- [ ] `src/server/services/hosted-store.ts` (nouveau) — store `id → config` in-memory + génération d'id CSPRNG.
-- [ ] `src/server/services/spec-to-hosted-config.ts` (nouveau) — distille `parsedSpec + selectedIds + config` → `HostedMcpConfig` (réutilise la sélection d'endpoints).
-- [ ] `src/server/routes/host.ts` (nouveau) — `POST /api/host` : distille, range, renvoie `{ id, url }`.
-- [ ] `src/server/routes/hosted-mcp.ts` (nouveau) — `ALL /m/:id` : lookup config, transport par session, sert le MCP en relai.
-- [ ] `src/server/index.ts` — monter les deux routes.
-- [ ] Front (écran config + résultat) — bouton « SLICE Cloud » appelle `/api/host`, affiche l'URL + snippet. *(dernier, après le back)*
+- [x] `src/server/services/hosted-store.ts` (nouveau) — store `id → config` in-memory + génération d'id CSPRNG.
+- [x] `src/server/services/spec-to-hosted-config.ts` (nouveau) — distille `parsedSpec + selectedIds + config` → `HostedMcpConfig` (réutilise la sélection d'endpoints).
+- [x] `src/server/routes/host.ts` (nouveau) — `POST /api/host` : distille, range, renvoie `{ id, url }`.
+- [x] `src/server/routes/hosted-mcp.ts` (nouveau) — `ALL /m/:id` : lookup config, transport par session, sert le MCP en relai.
+- [x] `src/server/index.ts` — monter les deux routes.
+- [x] Front (écran config + résultat) — bouton « SLICE Cloud » appelle `/api/host`, affiche l'URL + snippet. `lib/api.ts` (`apiHost`), `lib/snippets.ts` (mode URL), `connection-tabs.tsx` (`hostedUrl`), `screens/success.tsx`, `App.tsx`.
 
 ## Tâches
 
@@ -33,7 +33,7 @@ SLICE héberge les MCP : un **runtime multi-tenant unique** sert n'importe quel 
 - [x] 3. Distilleur `spec-to-hosted-config`.
 - [x] 4. Route `/m/:id` montée sur Express — **stateless** (résout le multi-session du Pivot-3).
 - [x] 5. `POST /api/host` (re-parse serveur + distille + range + URL).
-- [ ] 6. Câblage front (bouton SLICE Cloud → URL + snippet). **← reste à faire pour la démo cliquable.**
+- [x] 6. Câblage front (bouton SLICE Cloud → URL + snippet). `apiHost` client, snippets mode URL (RC5.3), ConnectionTabs `hostedUrl`, SuccessScreen branche hosted, `handleGenerate` route `cloud` → `/api/host`.
 
 ## Tests TDD (RED → GREEN)
 
