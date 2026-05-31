@@ -30,21 +30,21 @@ Le seul inconnu : `AsyncLocalStorage` survit-il à la traversée `transport.hand
 
 ## Tâches
 
-- [ ] 1. **De-risk** : test d'intégration runtime — générer un bundle, le builder, lancer en `MCP_AUTH_MODE=relay` contre un upstream mocké, vérifier que la requête sortante porte le token relayé (valide OQ-3 / ALS).
-- [ ] 2. Module `auth-context.ts.hbs` + `relayedToken()`.
-- [ ] 3. `http-client.ts.hbs` : branche relay + gate des checks boot.
-- [ ] 4. `index.ts.hbs` : branche relay (ALS) + gate `MCP_SERVER_TOKEN`.
-- [ ] 5. Enregistrer le template + snapshot.
-- [ ] 6. `env.example.hbs` : doc `MCP_AUTH_MODE`.
+- [x] 1. **De-risk** : spike ALS validé (`relay-threading.test.ts`) → OQ-3 résolu, plan B écarté. Cf. SPIKE-LOG.
+- [x] 2. Module `auth-context.ts.hbs` + `relayedToken()`.
+- [x] 3. `http-client.ts.hbs` : branche relay + gate des checks boot.
+- [x] 4. `index.ts.hbs` : branche relay (ALS) + gate `MCP_SERVER_TOKEN`.
+- [x] 5. Enregistrer le template + snapshot (11 → 12).
+- [x] 6. `env.example.hbs` : doc `MCP_AUTH_MODE`.
 
-## Tests TDD (écrits EN PREMIER, RED → GREEN → REFACTOR)
+## Tests TDD (écrits EN PREMIER, RED → GREEN)
 
-- [ ] RC2.6 (**clé**) — runtime : MCP en `relay`, requête `tools/call` avec `Authorization: Bearer TESTTOKEN` → l'upstream mocké reçoit `Authorization: Bearer TESTTOKEN` (bearer) ou le header d'API key = `TESTTOKEN` (apiKey) — test d'intégration `mcp-generator.relay.test.ts`
-- [ ] RC2.4/2.7 — runtime : requête **sans** `Authorization` (ou mal formé) en relay → l'appel amont part sans credential, l'erreur amont (401) est propagée telle quelle — `mcp-generator.relay.test.ts`
-- [ ] RC2.1/RC2.3 — le `http-client.ts` généré lit `MCP_AUTH_MODE` et **ne throw pas** au boot en relay quand `UPSTREAM_API_KEY`/`UPSTREAM_BEARER_TOKEN` est absent — `mcp-generator.test.ts` (assertion de contenu)
-- [ ] RC2.3 — en relay, `UPSTREAM_BASE_URL` reste requis — `mcp-generator.test.ts`
-- [ ] RC2.7 — `relayedToken()` : `Bearer x` (toute casse) → `x` ; `Bearer ` vide / `Token x` / absent → `undefined` — testable en isolant le helper (assertion de contenu + test runtime)
-- [ ] Structure — `generateMcp` émet `src/auth-context.ts` important `AsyncLocalStorage` — `mcp-generator.test.ts` + snapshot
+- [x] RC2.6 (**clé**) — runtime : MCP en `relay` + `Authorization: Bearer USERSECRET123` → l'upstream mocké reçoit l'API key = `USERSECRET123` — `mcp-generator.relay.test.ts` (lancé via `tsx`)
+- [x] RC2.4/2.7 — runtime : header absent / mal formé (`Token …`) → aucun credential amont — `mcp-generator.relay.test.ts`
+- [x] RC2.1/RC2.3 — `http-client.ts` lit `MCP_AUTH_MODE`, throw boot gaté sur `=== 'env'` — `mcp-generator.test.ts`
+- [x] RC2.3 — `UPSTREAM_BASE_URL` reste requis — `mcp-generator.test.ts`
+- [x] Structure — `src/auth-context.ts` émis (AsyncLocalStorage + relayedToken) — `mcp-generator.test.ts` + snapshot
+- [x] Mécanisme — ALS traverse le SDK MCP — `relay-threading.test.ts` (régression permanente)
 
 ## Tests E2E
 
