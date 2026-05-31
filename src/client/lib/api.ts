@@ -92,6 +92,45 @@ export async function apiGenerate(req: GenerateRequest): Promise<GenerateResult>
   return { blob: await res.blob(), filename };
 }
 
+export interface HostResult {
+  /** Unguessable id under which the hosted MCP config is stored. */
+  id: string;
+  /** Public URL of the hosted MCP (`<origin>/m/<id>`) to paste into the agent. */
+  url: string;
+}
+
+/**
+ * Calls POST /api/host with a fully-formed request. The server re-parses the
+ * spec, distills the selection into a hosted config, stores it under an
+ * unguessable id and returns `{ id, url }`. No secret is ever stored — the
+ * caller's token is relayed at runtime by `/m/:id`.
+ */
+export async function apiHost(req: GenerateRequest): Promise<HostResult> {
+  const res = await fetch('/api/host', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  });
+
+  if (!res.ok) {
+    let body: ApiErrorBody = {
+      code: 'GENERATION_FAILED',
+      message: res.statusText || `Erreur ${res.status} du serveur.`,
+    };
+    try {
+      const parsed = (await res.json()) as ApiErrorBody;
+      if (parsed && typeof parsed.message === 'string' && parsed.message.length > 0) {
+        body = parsed;
+      }
+    } catch {
+      // Server returned non-JSON (e.g. HTML 500 page) — keep the fallback.
+    }
+    throw new ApiError(res.status, body.code, body.message);
+  }
+
+  return (await res.json()) as HostResult;
+}
+
 /** Extract `filename="<value>"` from a Content-Disposition header. */
 function parseFilename(header: string | null): string | undefined {
   if (!header) return undefined;
