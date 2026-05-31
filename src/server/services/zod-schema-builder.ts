@@ -14,15 +14,11 @@
  * rather than a runtime crash.
  */
 
-export interface ZodSchemaShape {
-  type?: string;
-  required?: boolean;
-  description?: string;
-  items?: ZodSchemaShape;
-  properties?: Record<string, ZodSchemaShape>;
-  /** Names of fields that must be present when `type === 'object'`. */
-  requiredFields?: ReadonlyArray<string>;
-}
+// ZodSchemaShape now lives in `@shared/types` so EndpointParam can carry a
+// nested body-field schema. Re-exported here for back-compat with existing
+// `./zod-schema-builder` imports.
+export type { ZodSchemaShape } from '@shared/types';
+import type { ZodSchemaShape } from '@shared/types';
 
 export function buildZodExpression(
   shape: ZodSchemaShape,
