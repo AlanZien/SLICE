@@ -29,20 +29,19 @@ SLICE héberge les MCP : un **runtime multi-tenant unique** sert n'importe quel 
 ## Tâches
 
 - [x] 1. **Cœur** : `buildHostedMcpServer` + relai (factory). Prouvé en test runtime.
-- [ ] 2. Store in-memory `id → config` + id CSPRNG non-devinable.
-- [ ] 3. Distilleur `spec-to-hosted-config`.
-- [ ] 4. Route `/m/:id` (transport par session) montée sur Express.
-- [ ] 5. `POST /api/host` (distille + range + URL).
-- [ ] 6. Câblage front (bouton SLICE Cloud → URL + snippet).
+- [x] 2. Store in-memory `id → config` + id CSPRNG non-devinable.
+- [x] 3. Distilleur `spec-to-hosted-config`.
+- [x] 4. Route `/m/:id` montée sur Express — **stateless** (résout le multi-session du Pivot-3).
+- [x] 5. `POST /api/host` (re-parse serveur + distille + range + URL).
+- [ ] 6. Câblage front (bouton SLICE Cloud → URL + snippet). **← reste à faire pour la démo cliquable.**
 
 ## Tests TDD (RED → GREEN)
 
 - [x] Factory : MCP construit depuis une config, tools exposés, appel proxifié + token relayé (substitution path param) — `hosted-mcp-factory.test.ts`
-- [ ] Store : `put` renvoie un id ≥22 chars base62 ; `get(id)` rend la config ; id inconnu → undefined — `hosted-store.test.ts`
-- [ ] Distilleur : `parsedSpec + selectedIds` → config avec les bons endpoints (method/path/params), baseURL, auth — `spec-to-hosted-config.test.ts`
-- [ ] `POST /api/host` : renvoie `{ id, url }`, range la config (re-validation serveur comme `/api/generate`) — `host.test.ts`
-- [ ] `/m/:id` E2E : héberger une config, un agent se connecte à l'URL, liste les tools, appelle, l'upstream mocké reçoit l'appel + token relayé ; **2 agents en parallèle** (multi-session) → OK — `hosted-mcp.test.ts`
-- [ ] `/m/:id` sur id inconnu → 404 — `hosted-mcp.test.ts`
+- [x] Store : `put` renvoie un id ≥22 chars url-safe ; `get(id)` rend la config ; id inconnu → undefined — `hosted-store.test.ts`
+- [x] Distilleur : `parsedSpec + selectedIds` → config avec les bons endpoints (method/path/params), baseURL, auth — `spec-to-hosted-config.test.ts`
+- [x] `/m/:id` E2E : héberger via `POST /api/host`, **2 agents en parallèle** se connectent à l'URL, appellent, l'upstream reçoit chaque appel + le token propre de chacun relayé — `hosted-mcp.test.ts`
+- [x] `/m/:id` sur id inconnu → 404 — `hosted-mcp.test.ts`
 
 ## UAT (DELIVER)
 
