@@ -63,4 +63,38 @@ describe('<SuccessScreen />', () => {
     fireEvent.click(screen.getByRole('button', { name: /back to selection/i }));
     expect(onBackToSelection).toHaveBeenCalledTimes(1);
   });
+
+  describe('hosted (SLICE Cloud) flow', () => {
+    function setupHosted() {
+      URL.createObjectURL = vi.fn(() => 'blob:fake');
+      URL.revokeObjectURL = vi.fn();
+      render(
+        <ToastProvider>
+          <SuccessScreen
+            config={CONFIG}
+            endpointCount={23}
+            economySnapshot={74}
+            hostedUrl="https://slice.test/m/abc123"
+            onRestart={vi.fn()}
+            onBackToSelection={vi.fn()}
+          />
+        </ToastProvider>
+      );
+    }
+
+    it('shows the hosted URL so the user can copy it', () => {
+      setupHosted();
+      expect(screen.getAllByText(/slice\.test\/m\/abc123/).length).toBeGreaterThan(0);
+    });
+
+    it('does not render the "Download again" button when hosted', () => {
+      setupHosted();
+      expect(screen.queryByRole('button', { name: /download again/i })).toBeNull();
+    });
+
+    it('drives the connection tabs in hosted mode (token placeholder visible)', () => {
+      setupHosted();
+      expect(screen.getAllByText(/COLLE_TON_TOKEN_ICI/).length).toBeGreaterThan(0);
+    });
+  });
 });
