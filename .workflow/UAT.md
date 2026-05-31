@@ -451,3 +451,31 @@ Phase 04 avait livré un layout 2-col (accordéons + sidebar droite). La maquett
 ### Findings reportés (RETRO)
 
 Voir `.workflow/RETRO.md` § « Après phase Pivot-1 » : dette `mode`/`hosting` (à dériver en Pivot-2), `transportLabelFor` vestigial, libellés FR/EN à arbitrer, maquette hi-fi pivot à produire avant Pivot-3.
+
+## Phase Pivot-2 : Kit Docker self-host (2026-05-31)
+
+### Tests techniques (générés par Claude depuis PLAN Pivot-2)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 376 verts (55 fichiers) | ✓ | +4 tests Docker |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict |
+| 3 | `generateMcp` émet un `Dockerfile` multi-stage (`EXPOSE 8787`, lance `dist/index.js`) (RC3.2) | ✓ | mcp-generator.test.ts |
+| 4 | `generateMcp` émet `docker-compose.yml` (service = `mcpName`, port mappé, `env_file`) (RC3.2) | ✓ | |
+| 5 | `generateMcp` émet `.dockerignore` excluant `.env`, `node_modules`, `dist` (RC3.2) | ✓ | |
+| 6 | `README.md` contient « docker compose up » + déploiement PaaS (Coolify/Railway/Render) (RC3.2) | ✓ | |
+| 7 | Snapshot du bundle : 11 fichiers (8 + 3 Docker) | ✓ | mcp-generator.snapshot.test.ts |
+| 8 | `.env.example` contient toujours `MCP_SERVER_TOKEN` / `MCP_HTTP_PORT` (non régressé) | ✓ | tests static |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Télécharger le kit (« Download the kit »), décompresser → contient Dockerfile + docker-compose.yml + .dockerignore | ⏳ | manuel |
+| 2 | `cp .env.example .env`, renseigner, `docker compose up -d` → MCP répond sur `:8787` (RC3.6, requiert Docker) | ⏳ | manuel — E2E non automatisé |
+| 3 | README : instructions Docker + PaaS présentes et exactes | ⏳ | manuel |
+| 4 | `.env.example` liste `UPSTREAM_*`, `MCP_SERVER_TOKEN`, `MCP_HTTP_PORT` | ⏳ | manuel |
+
+### Findings reportés (RETRO)
+
+Voir `.workflow/RETRO.md` § « Après phase Pivot-2 » : Docker docs inconditionnelles (OK car `mode` figé remote), E2E `docker build` en UAT manuel, `npm` vs `pnpm` dans le Dockerfile.

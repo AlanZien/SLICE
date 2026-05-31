@@ -89,6 +89,13 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Process / i18n]** Libellés UI livrés en **anglais** (« SLICE Cloud » / « On my server » / « Deploy to SLICE Cloud ») pour rester cohérent avec les écrans existants, alors que la SPEC-CLOUD écrivait des libellés **français**. Divergence FR/EN **pré-existante** (tout le code UI est en anglais, la SPEC en français) à **arbitrer explicitement** avant de multiplier les écrans. **Décision à acter : langue de l'UI produit = EN ou FR ?**
 - **[Process / TDD]** Un changement de **contrat partagé** (champ requis `hosting`) ripple sur ~9 fixtures réparties sur 4 fichiers. Le cycle « contrat » (type+schema+hook+fixtures) a dû être traité comme une unité, et la refonte d'écran comme un cycle cohérent (4 assertions RC interdépendantes sur un même render) plutôt que 4 micro-cycles. Pattern à formaliser si récurrent : un changement de schéma partagé = un cycle de propagation atomique, pas un critère métier isolable.
 
+### Après phase Pivot-2 — Kit Docker self-host (2026-05-31)
+
+- **[Cohérence]** Les fichiers Docker (`Dockerfile`, `docker-compose.yml`) et la section README Docker sont **toujours inclus**, même pour un bundle `mode='local'` (stdio sans HTTP). Incohérent en théorie (Docker lancerait un serveur sans transport HTTP exposé), mais **inatteignable via l'UI** depuis Pivot-1 (`mode` figé à `remote`). Acceptable. Si un jour le générateur ré-expose le mode local, gater la section Docker sur `modeHttpOnly`.
+- **[Tests]** E2E `docker build` réel (RC3.6) **non automatisé** (dépendance Docker en CI) → reporté en UAT manuel. À automatiser via un job CI dédié avec Docker-in-Docker si la régression du Dockerfile devient un risque.
+- **[Process / EVALUATE]** Revue /simplify faite **manuellement** (proportionnalité : diff de 3 templates statiques + 2 edits, zéro logique). Pas de fan-out 4 agents. Pattern : réserver le fan-out aux diffs avec logique/branches, faire une revue inline pour les ajouts de templates/config.
+- **[Dépendance]** Dockerfile en `npm` (pas `pnpm` comme le README d'install) pour éviter d'installer pnpm dans l'image Node alpine. Scripts `build`/`start` runner-agnostiques, donc OK — mais divergence à garder en tête si on ajoute un lockfile au bundle.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

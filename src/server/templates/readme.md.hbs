@@ -37,6 +37,19 @@ MCP_TRANSPORT=http  pnpm start    # listens on http://localhost:${MCP_HTTP_PORT:
 ```
 {{/ifEquals}}
 
+## Deploy with Docker
+
+This bundle ships a `Dockerfile` and a `docker-compose.yml`. To run it anywhere Docker is available:
+
+```bash
+cp .env.example .env   # fill in your secrets
+docker compose up -d   # builds the image and starts on http://localhost:8787
+```
+
+### Deploy to a PaaS (Coolify / Railway / Render)
+
+Point your platform at this bundle's `Dockerfile`, then set the environment variables from `.env.example` (`UPSTREAM_BASE_URL`, your upstream secret, and `MCP_SERVER_TOKEN` to protect the HTTP endpoint). The server listens on `MCP_HTTP_PORT` (default 8787).
+
 ## Connect to agents
 
 {{#unless modeHttpOnly}}

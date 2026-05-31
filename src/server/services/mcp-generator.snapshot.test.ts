@@ -68,9 +68,12 @@ describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
     const paths = files.map((f) => f.path).sort();
     expect(paths).toEqual(
       [
+        '.dockerignore',
         '.env.example',
         '.gitignore',
+        'Dockerfile',
         'README.md',
+        'docker-compose.yml',
         'package.json',
         'src/http-client.ts',
         'src/index.ts',
