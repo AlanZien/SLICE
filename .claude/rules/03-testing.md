@@ -41,5 +41,16 @@ Un test à coût élevé ou à dépendance externe (perf p95, `docker build`, ru
 - **Préférer un runner léger** quand c'est possible plutôt que de reporter : le code MCP généré se teste en runtime via `tsx` (pas de build `tsc`) + serveur enfant + upstream mocké (cf. `mcp-generator.relay.test.ts`). Idem, valider la compilation du bundle via le `tsc` smoke (cf. `mcp-generator.snapshot.test.ts`).
 - **Dette perf accumulée** : les tests perf p95 (R1.1.9 parse, R1.2.5 filtre, conversions) ont été reportés de phase en phase. À planifier dans un batch dédié (cf. BACKLOG) avant tout claim de performance produit.
 
+### Une couche de relai/proxy se teste E2E contre un vrai upstream + un vrai client
+*Issu de LEARN après 3 occurrences détectées (Pivot-3 mono-session, Pivot-3 token CRLF, Pivot-4 header non relayé).*
+
+Toute couche qui **relaie ou proxifie** vers un service externe (le code MCP généré, le runtime hébergé `/m/:id`) se comporte différemment en conditions réelles que ce que les tests unitaires suggèrent. Les classes de trous sont **invisibles aux units** :
+- **headers requis par l'upstream** non relayés (ex. `Notion-Version` parsé, exposé à l'agent, puis jeté par `callUpstream` — Pivot-4) ;
+- **multi-session** : transport partagé → `Server already initialized` au 2ᵉ client (Pivot-3) ;
+- **caractères de contrôle** dans une valeur relayée d'un header entrant vers un header sortant (CRLF — Pivot-3) ;
+- **body de requête** non transmis (écritures/recherche).
+
+Règle : avant de déclarer une couche de relai « fonctionnelle », écrire un **E2E avec un vrai client** (SDK MCP, ou `scripts/try-hosted.ts`) **contre un vrai upstream ou un mock fidèle** (serveur enfant qui enregistre headers/body/URL reçus). Le runner léger `tsx` + serveur enfant + upstream mocké (`mcp-generator.relay.test.ts`, `hosted-mcp-factory.test.ts`) rend ça praticable sans build. Un test unitaire de la couche ne suffit jamais à valider le comportement de relai.
+
 ---
 Ce fichier est mis a jour par le workflow FORGE (phase LEARN) quand des patterns de tests recurrents sont detectes.
