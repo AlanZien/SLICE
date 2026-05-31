@@ -71,7 +71,7 @@ interface ToolBinding {
  * Same convention as the preview pane (phase 04bis) so what users see is
  * what they get.
  */
-function toolNameFor(endpoint: Endpoint): string {
+export function toolNameFor(endpoint: Endpoint): string {
   return (
     endpoint.label
       .toLowerCase()

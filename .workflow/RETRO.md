@@ -120,6 +120,24 @@ Rétro des 3 premières phases du pivot « SLICE Cloud + self-host ». Détail p
 - **[Process / Spike]** De-risk ALS (OQ-3) fait en spike TDD in-process avant de toucher les templates → validé en ~1s, plan B écarté sans coût. Spike promu en test de régression permanent (`relay-threading.test.ts`). Bon pattern pour une inconnue traversant une lib tierce.
 - **[Tests]** E2E runtime du code généré rendu praticable via **`tsx`** (pas de build `tsc` dans le test) + serveur enfant + upstream mocké. Réutilisable pour les futurs tests de comportement du code généré.
 
+### Après phase Pivot-4 — Runtime MCP hébergé / SLICE Cloud (2026-06-01)
+
+- **[Sécurité — CORRIGÉ]** EVALUATE CRITIQUE / security-review : **SSRF / open-proxy**. `POST /api/host` (anonyme) acceptait n'importe quel `baseUrl` http(s), et `/m/:id` le `fetch`ait côté serveur SLICE en renvoyant le corps au caller → un attaquant pouvait lire `169.254.169.254` (creds IAM cloud), services internes. Corrigé : `ssrf-guard.ts` (rejet loopback/privé/link-local/metadata, IPv4-mapped IPv6 inclus), imposé à la création (`400 BLOCKED_HOST`) **et** au runtime. `allowPrivateHosts` off en prod, on en dev/test. Pattern : **tout fetch serveur vers une URL fournie par l'utilisateur doit être SSRF-gardé (host, pas juste protocole)**.
+- **[Architecture — RÉSOLU]** Le mono-session du code généré (signalé Pivot-3) est résolu : runtime `/m/:id` **stateless**, transport par requête (`sessionIdGenerator: undefined`). E2E 2 agents en parallèle relayant chacun son token : vert.
+- **[Bug — CORRIGÉ, trouvé en UAT réel]** Les params `in:'header'` (ex. `Notion-Version`, requis par Notion à chaque appel) étaient **parsés et exposés à l'agent mais jetés** par `callUpstream` (qui ne forwardait que path+query). Trouvé en testant pour de vrai contre l'API Notion dans Claude Desktop, pas par les tests unitaires. Corrigé (forward des headers, auth relay prioritaire). **Leçon : l'UAT bout-en-bout contre une vraie API a révélé un trou que 414 tests verts ne voyaient pas.**
+- **[Validation]** Bout-en-bout prouvé : **Claude Desktop → supergateway → SLICE `/m/:id` → vraie API Notion** (`list_all_users` renvoie les vrais users du workspace). Le modèle « URL + token relayé » tient en conditions réelles.
+- **[Process / EVALUATE]** `/simplify` en fan-out 4 agents (reuse/simplification/efficiency/altitude) sur un diff à logique. Appliqué : dédup `reparseAndSelect` (host+generate), `throwApiError` (client), suppression d'un test demo qui écrivait dans `~/Desktop`. Skippé : simplif `buildZodSchema` (branches array/object **pas** mortes — params tableau les atteignent → risque de changement de comportement).
+
+#### Dette ouverte (→ BACKLOG)
+- **Perf hot path** : `/m/:id` reconstruit le `McpServer` + tous les tools + schémas Zod à **chaque requête HTTP** (stateless = par message JSON-RPC). D003 prévoyait un cache LRU par id, non implémenté. Configs immutables → mémoïsable.
+- **SSRF DNS-rebinding** : le re-check runtime fait un `dns.lookup` par appel mais ne pinne pas l'IP → ne protège pas réellement du rebinding (le `fetch` re-résout). Durcir via dispatcher undici qui pinne l'IP résolue, ou TTL-cache.
+- **Divergence runtime ↔ kit généré** : objectif « le MCP hébergé et le kit téléchargé exposent le même MCP » **déjà rompu** — le runtime forwarde les headers, le template `http-client.ts.hbs` non. Aligner + source unique pour la regex/charset du token (dupliquée `hosted-mcp-factory.ts` ↔ `auth-context.ts.hbs`).
+- **Forwarding du body** (`in:'body'`) : absent (le parser ne flatten pas `requestBody`) → tools POST/PATCH et **recherche Notion** sans corps. Prochain chantier produit.
+- **`in:'cookie'` dropé silencieusement** dans `callUpstream` (exposé à l'agent puis ignoré).
+- **`allowPrivateHosts`** propagé dans 5 signatures avec 3 défauts → en faire une politique d'env unique.
+- **Snippet Claude Desktop** : le bloc `url + headers` généré par SLICE ne se colle pas dans Claude Desktop (l'écran connecteur n'a pas de champ header ; il faut `supergateway`/`mcp-remote` via le fichier de config). SLICE devrait générer ce format pour l'onglet Claude.
+- **Persistance du store** : `hostedStore` in-memory → l'URL meurt au restart serveur. KV/DB pour la prod.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

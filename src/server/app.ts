@@ -5,6 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createUploadRouter } from './routes/upload';
 import { createGenerateRouter } from './routes/generate';
+import { createHostRouter } from './routes/host';
+import { createHostedMcpRouter } from './routes/hosted-mcp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,10 +14,17 @@ const __dirname = path.dirname(__filename);
 export interface CreateAppOptions {
   nodeEnv?: string;
   clientDist?: string;
+  /**
+   * Allow the hosted runtime to target loopback/private hosts. Disabled in
+   * production (SSRF guard active); defaults to on for dev/test so a local
+   * upstream can be reached. Never enable this on a deployed instance.
+   */
+  allowPrivateHosts?: boolean;
 }
 
 export function createApp(options: CreateAppOptions = {}): Express {
   const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV ?? 'development';
+  const allowPrivateHosts = options.allowPrivateHosts ?? nodeEnv !== 'production';
   const app = express();
 
   app.use(cors());
@@ -23,7 +32,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // route ships its own 15 MB parser; we skip the global one on that path
   // so the larger limit is the only one applied (R1.6.8).
   app.use((req, res, next) => {
-    if (req.path.startsWith('/api/generate')) return next();
+    // /api/generate and /api/host ship their own 15 MB parser; skip the global
+    // one on those paths so the larger limit is the only one applied.
+    if (req.path.startsWith('/api/generate') || req.path.startsWith('/api/host')) return next();
     return express.json({ limit: '10mb' })(req, res, next);
   });
 
@@ -50,6 +61,12 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // POST /api/generate — phase 08. Mounts its own 15 MB JSON parser; the
   // 10 MB app-level one is bypassed by the path-specific router order.
   app.use('/api/generate', createGenerateRouter());
+
+  // Pivot-4 — SLICE Cloud. POST /api/host stores a config and returns a URL;
+  // /m/:id is the hosted MCP runtime (not under /api/, so not rate-limited
+  // like the upload/generate endpoints — agents call it freely).
+  app.use('/api/host', createHostRouter({ allowPrivateHosts }));
+  app.use('/m', createHostedMcpRouter({ allowPrivateHosts }));
 
   if (nodeEnv === 'production') {
     const clientDist = options.clientDist ?? path.resolve(__dirname, '../client');

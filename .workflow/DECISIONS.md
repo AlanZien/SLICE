@@ -42,5 +42,32 @@
 - Secrets opérateur (`COOLIFY_API_TOKEN`) côté serveur uniquement.
 
 ---
+
+## D003 : Hébergement = runtime MCP multi-tenant dans SLICE (pas de conteneur par MCP) (2026-05-31)
+
+**Statut :** accepted. **Supersede** le mécanisme de déploiement de SPEC-CLOUD RC4 (création d'une app Coolify par MCP).
+
+**Contexte :** L'approche initiale (RC4 + recherche Coolify) déployait **un conteneur par MCP** via l'API Coolify. Analyse + longue discussion produit : c'est **lourd et fragile** — build d'image ou dépôt Git **par MCP**, registry, limite ~3-5 MCP par VPS, prolifération de repos, coûts proportionnels au **nombre** de MCP même inactifs. Ne colle pas au modèle économique (démos gratuites doivent coûter ~0).
+
+**Décision :** **SLICE est lui-même un serveur MCP multi-tenant.** Un seul moteur partagé sert tous les MCP hébergés :
+- Route `/m/:id` (transport Streamable HTTP du SDK).
+- Store `id → config` (la "fiche" = sous-ensemble OpenAPI distillé + baseURL + type d'auth). Persiste.
+- À la requête : lookup config → `buildHostedMcpServer(config)` **instancie un `McpServer` en mémoire** (tools dérivés de la config, schémas Zod runtime) → sert. Cacheable par `id` (LRU). Pas de process par tenant.
+- Chaque tool = `fetch(baseURL+path)` en **relayant le header `Authorization`** entrant (mécanisme Pivot-3, réécrit côté SLICE).
+- **Coolify ne sert plus qu'à héberger SLICE** (une seule app), pas à orchestrer N conteneurs.
+
+**Alternatives écartées :**
+- **Conteneur/build par MCP via API Coolify** (RC4 initial) — lourd, cher, repo-par-MCP, limite VPS. Écarté.
+- **Deploy one-click sur le VPS du client (SSH)** — tue-confiance (personne ne donne sa clé SSH à un outil tiers). Écarté.
+- **Image générique + recette injectée** — revient au même qu'un moteur multi-tenant, en plus indirect.
+
+**Conséquences :**
+- Introduit un **store de configs** (KV/DB léger) → le backend n'est plus "stateless" (cohérent avec l'addendum PRD / D-PIVOT-7). Les **secrets ne sont toujours pas stockés** (relai).
+- **Isolation par process partagé** (pas un conteneur par client). Acceptable car aucun secret stocké ; isolation forte = V1.5.
+- Coût = **storage (fiches inactives ≈ 0) + trafic réel**, pas "par MCP". Débloque le freemium.
+- Le track **self-host (kit Docker, Pivot-2)** reste inchangé — c'est l'autre voie, pour qui veut héberger lui-même.
+- Cœur livré : `src/server/services/hosted-mcp-factory.ts` (`buildHostedMcpServer` + relai), prouvé par `hosted-mcp-factory.test.ts`.
+
+---
 Fichier append-only. Les decisions obsoletes sont marquees "superseded", jamais supprimees.
 Alimente par le workflow FORGE (phases ORIENT et LEARN).

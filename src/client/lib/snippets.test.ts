@@ -3,6 +3,10 @@ import {
   buildClaudeDesktopSnippet,
   buildN8nSnippet,
   buildAiriaSnippet,
+  buildHostedClaudeSnippet,
+  buildHostedN8nSnippet,
+  buildHostedAiriaSnippet,
+  TOKEN_PLACEHOLDER,
 } from './snippets';
 import type { SliceConfig } from '@shared/types';
 
@@ -71,5 +75,38 @@ describe('buildAiriaSnippet', () => {
   it('includes the Bearer token when present', () => {
     const out = buildAiriaSnippet(BASE);
     expect(out).toContain(BASE.mcpServerToken!);
+  });
+});
+
+const HOSTED_URL = 'https://slice.test/m/abc123';
+
+describe('hosted (URL-mode) snippets — RC5.3', () => {
+  describe('buildHostedClaudeSnippet', () => {
+    it('emits a remote mcpServers block with the real url + Authorization header', () => {
+      const out = buildHostedClaudeSnippet(HOSTED_URL, BASE);
+      const parsed = JSON.parse(out);
+      const entry = parsed.mcpServers['shopify-admin'];
+      expect(entry.url).toBe(HOSTED_URL);
+      expect(entry.headers.Authorization).toBe(`Bearer ${TOKEN_PLACEHOLDER}`);
+      // No stdio command in URL mode (RC5.8).
+      expect(entry.command).toBeUndefined();
+    });
+  });
+
+  describe('buildHostedN8nSnippet', () => {
+    it('references the real url and the token placeholder', () => {
+      const out = buildHostedN8nSnippet(HOSTED_URL, BASE);
+      expect(out).toContain(HOSTED_URL);
+      expect(out).toContain(`Bearer ${TOKEN_PLACEHOLDER}`);
+    });
+  });
+
+  describe('buildHostedAiriaSnippet', () => {
+    it('references the mcp name, the real url and the token placeholder', () => {
+      const out = buildHostedAiriaSnippet(HOSTED_URL, BASE);
+      expect(out).toContain(BASE.mcpName);
+      expect(out).toContain(HOSTED_URL);
+      expect(out).toContain(TOKEN_PLACEHOLDER);
+    });
   });
 });

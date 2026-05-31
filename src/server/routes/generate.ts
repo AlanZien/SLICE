@@ -11,8 +11,8 @@
  */
 import { Router, type RequestHandler, json } from 'express';
 import { generateRequestSchema } from '@shared/config-schema';
-import { ApiError, type ApiErrorPayload, type Endpoint } from '@shared/types';
-import { parseSpec } from '../services/parser';
+import { ApiError, type ApiErrorPayload } from '@shared/types';
+import { reparseAndSelect } from '../services/reparse-and-select';
 import { generateMcp } from '../services/mcp-generator';
 import { buildZipStream } from '../services/zip-builder';
 
@@ -85,30 +85,8 @@ interface ValidatedBody {
 }
 
 async function runGeneration(body: ValidatedBody, res: import('express').Response): Promise<void> {
-  // ─── 2. Re-parse (R1.4.1bis) ────────────────────────────────────────────
-  let reparsed;
-  try {
-    reparsed = await parseSpec(body.rawSpec, { sizeBytes: Buffer.byteLength(body.rawSpec) });
-  } catch (err) {
-    // Log the underlying cause server-side; the client sees a stable generic
-    // message so we don't leak parser internals.
-    // eslint-disable-next-line no-console
-    console.warn('[generate] re-parse failed:', err instanceof Error ? err.message : err);
-    throw new ApiError('INVALID_SPEC', 'Failed to re-parse the spec.', 400);
-  }
-
-  // ─── 3. Whitelist selectedIds against the freshly-parsed endpoints ─────
-  const knownIds = new Set(
-    reparsed.groups.flatMap((g) => g.endpoints.map((e: Endpoint) => e.id))
-  );
-  const validIds = body.selectedIds.filter((id) => knownIds.has(id));
-  if (validIds.length === 0) {
-    throw new ApiError(
-      'NO_ENDPOINT_SELECTED',
-      'None of the selected endpoints were found in the parsed spec.',
-      400
-    );
-  }
+  // ─── 2-3. Re-parse (R1.4.1bis) + whitelist selectedIds (R1.4.1ter) ──────
+  const { reparsed, validIds } = await reparseAndSelect(body.rawSpec, body.selectedIds, 'generate');
 
   // ─── 4. Generate the bundle ────────────────────────────────────────────
   let files;
