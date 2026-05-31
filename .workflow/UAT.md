@@ -479,3 +479,33 @@ Voir `.workflow/RETRO.md` § « Après phase Pivot-1 » : dette `mode`/`hosting`
 ### Findings reportés (RETRO)
 
 Voir `.workflow/RETRO.md` § « Après phase Pivot-2 » : Docker docs inconditionnelles (OK car `mode` figé remote), E2E `docker build` en UAT manuel, `npm` vs `pnpm` dans le Dockerfile.
+
+## Phase Pivot-3 : Mode relai d'auth (2026-05-31)
+
+### Tests techniques (générés par Claude depuis PLAN Pivot-3)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `pnpm test` → 384 verts (57 fichiers) | ✓ | +3 E2E relai, +1 régression ALS, +structure |
+| 2 | `pnpm typecheck` → exit 0 | ✓ | strict ; bundle généré compile via tsc smoke |
+| 3 | Mécanisme : ALS traverse le SDK MCP (`handleRequest` → tool) | ✓ | relay-threading.test.ts (de-risk OQ-3) |
+| 4 | **Runtime** : MCP en `relay` + `Bearer USERSECRET123` → l'amont reçoit l'API key = `USERSECRET123` (RC2.6) | ✓ | mcp-generator.relay.test.ts via `tsx` |
+| 5 | **Runtime** : header absent → aucun credential amont (RC2.4) | ✓ | |
+| 6 | **Runtime** : header mal formé (`Token …`) → aucun credential (RC2.7) | ✓ | |
+| 7 | `http-client` lit `MCP_AUTH_MODE`, throw boot gaté sur `env` (RC2.1/2.3) | ✓ | |
+| 8 | `UPSTREAM_BASE_URL` reste requis quel que soit le mode (RC2.3) | ✓ | |
+| 9 | Sécurité : token relayé restreint à l'ASCII imprimable (anti-CRLF) | ✓ | fix EVALUATE, test de garde |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Générer un MCP, le lancer en `MCP_AUTH_MODE=relay`, appeler un tool depuis un agent avec son token → l'appel amont réussit avec ce token | ⏳ | manuel |
+| 2 | Même bundle en `MCP_AUTH_MODE=env` (défaut) → self-host inchangé (token via `.env`) | ⏳ | manuel |
+| 3 | Aucun log ne contient la valeur du header `Authorization` (RC2.5) | ⏳ | manuel — vérifié par revue de code (seul log = port) |
+
+### Findings reportés (RETRO) — importants pour Pivot-4
+
+Voir `.workflow/RETRO.md` § « Après phase Pivot-3 » :
+- **Multi-session** : le serveur généré ne gère qu'une session à la fois (transport partagé) → à corriger pour l'hébergement multi-agents.
+- **Contrôle d'accès relay** : repose entièrement sur l'URL non-devinable → exigence infra (entropie, 404 uniforme, pas de log d'URL).
