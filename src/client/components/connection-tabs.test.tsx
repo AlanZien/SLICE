@@ -54,4 +54,36 @@ describe('<ConnectionTabs />', () => {
     fireEvent.keyDown(tablist, { key: 'ArrowRight' });
     expect(screen.getByRole('tab', { name: /n8n/i }).getAttribute('aria-selected')).toBe('true');
   });
+
+  describe('hosted mode (hostedUrl) — RC5.3', () => {
+    function setupHosted(over: Partial<SliceConfig> = {}) {
+      return render(
+        <ToastProvider>
+          <ConnectionTabs
+            config={{ ...BASE, mode: 'local', ...over }}
+            hostedUrl="https://slice.test/m/abc123"
+          />
+        </ToastProvider>
+      );
+    }
+
+    it('keeps all three tabs enabled regardless of mode', () => {
+      setupHosted();
+      expect(
+        screen.getByRole('tab', { name: /claude desktop/i }).getAttribute('aria-disabled')
+      ).not.toBe('true');
+      expect(screen.getByRole('tab', { name: /n8n/i }).getAttribute('aria-disabled')).not.toBe(
+        'true'
+      );
+      expect(screen.getByRole('tab', { name: /airia/i }).getAttribute('aria-disabled')).not.toBe(
+        'true'
+      );
+    });
+
+    it('renders the real url and the token placeholder in the snippet', () => {
+      setupHosted();
+      expect(screen.getAllByText(/slice\.test\/m\/abc123/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/COLLE_TON_TOKEN_ICI/).length).toBeGreaterThan(0);
+    });
+  });
 });
