@@ -4,41 +4,23 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 ## Phase en cours
 
-**Pivot stratégique en cours (2026-05-29)** — Le modèle "binaire double-clic" (phases 11/12 explorées sur `feature/11-standalone-binary`) est **abandonné** après validation de l'impossibilité Gatekeeper (signature Apple obligatoire, notarisation per-request inviable pour MVP). Nouveau modèle : **SLICE Cloud + self-host PaaS/Docker**, livrable = URL + snippet à coller dans l'agent.
+**Pivot SLICE Cloud livré (2026-06-01)** — Le modèle "binaire double-clic" est abandonné (Gatekeeper). Modèle retenu et **implémenté** : SLICE héberge les MCP, livrable = **URL + snippet à coller dans l'agent**, token relayé (jamais stocké).
 
-**Phases mergées sur main** : 01 → 10 (PR #1-13), hotfix #14 (useDownload idempotent).
+**Mergé sur main** : phases 01 → 10 (PR #1-13), hotfix #14, PR #15 (hyphenated params), puis **Pivots 1 → 4** :
+- Pivot-1/2 — Track C self-host (écran 3 choix d'hébergement, bundle Docker).
+- Pivot-3 — mode relai d'auth dans le code généré (`MCP_AUTH_MODE=relay`).
+- **Pivot-4 (PR #20) — runtime MCP hébergé / SLICE Cloud** : `POST /api/host` range une config + renvoie une URL ; `ALL /m/:id` sert le MCP **stateless** (multi-session) et relaie le token. Guard SSRF. Front « Deploy to SLICE Cloud » → écran 4 URL + snippets mode URL. **Validé bout-en-bout dans Claude Desktop contre la vraie API Notion.**
+- LEARN Pivot-4 : PR #21 (REVIEW + règle relai E2E).
 
-**En cours** :
-- **PR #15** ouverte : `fix: quote hyphenated param names in generated tools.ts` (hotfix universellement utile, extrait de la branche binaire abandonnée)
-- **Branche `feature/11-standalone-binary` parkée sur origin** comme exploration archivée (binaire Bun + détection OS + hotfix hyphenated). À ne pas merger. Contient les PLAN.md 11-standalone-binary et 12-claude-desktop-connector qui ne s'appliquent plus.
+**État technique** : 414 tests verts, typecheck strict clean. Store hébergé **in-memory** (URL meurt au restart — persistance = dette). `/api/generate` (ZIP) toujours présent pour le self-host.
 
-**Prochaine étape** : **Phase SPEC pour "SLICE Cloud (MVP)"** (workflow FORGE) — cadrer l'architecture hébergée :
-- Où héberger (Cloudflare Workers, Fly.io, Railway, VPS managé) ?
-- Auth model : MVP anonyme (URL = secret) puis comptes pour facturation/dashboard
-- Secrets utilisateur : **JAMAIS stockés côté SLICE** — transmis par le client (Claude/n8n/etc.) à chaque requête dans un header, le MCP-hébergé relaie
-- Snippet généré contient `url:` + `headers: { Authorization: Bearer <token-user> }`
-- Self-host track : bouton "Deploy to Railway/Render/Fly.io" + bundle Docker (pas de ZIP source nu)
+**Prochaine étape recommandée** : **forwarding du body de requête** (`in:'body'`) — le parser ne flatten pas encore `requestBody`, donc les tools POST/PATCH et la **recherche Notion** partent sans corps (limite vue en UAT). Plus forte valeur produit. Cf. `.workflow/BACKLOG.md` § « Runtime hébergé — suites Pivot-4 ».
 
-**Flow utilisateur cible (validé)** :
-1. Upload spec → 2. Sélection endpoints → 3. Config (sans token) → 4. Choix d'hébergement (SLICE Cloud / PaaS one-click / Docker bundle) → 5. URL + snippet renvoyés → 6. Utilisateur colle dans Claude/n8n + remplace `COLLE_TON_TOKEN_ICI`
+**Outils** : `scripts/try-hosted.ts` teste un MCP hébergé en CLI (`NOTION_TOKEN=… pnpm exec tsx scripts/try-hosted.ts <url> <tool> '<jsonArgs>'`).
 
-**État technique** :
-- 371 tests verts sur main, typecheck strict clean (avant PR #15)
-- Phase 10 livre actuellement un ZIP source — **à remplacer** par le double bouton "Deploy to SLICE Cloud" / "Self-host (Docker)" dans la prochaine phase
-- ConnectionTabs existant à refondre : snippets passent tous en mode URL + header (le mode stdio local disparaît du parcours nominal)
-- `/api/generate` (route ZIP) à déprécier après bascule
-- Le mode HTTP transport déjà implémenté dans le générateur MCP est exactement ce qu'il faut pour l'hébergement
+**Dette ouverte (BACKLOG)** : body forwarding, cache McpServer (perf hot path), durcissement SSRF DNS-rebinding, parité runtime↔kit, persistance store, snippet Claude Desktop (supergateway), `cookie`/`allowPrivateHosts`.
 
-**Reprise** :
-1. `git pull --ff-only` pour resynchroniser main
-2. Vérifier que PR #15 est mergée (hotfix hyphenated-params)
-3. Lancer **phase SPEC** (`.claude/rules/phases/03-spec.md`) pour cadrer SLICE Cloud :
-   - SPEC fonctionnelle (le flow validé ci-dessus + cas d'erreur)
-   - Décisions techniques : hébergement, auth MVP, secrets, déploiement PaaS, packaging Docker
-   - Mise à jour `.workflow/PRD.md` / `.workflow/DECISIONS.md` avec le pivot
-4. Puis REFINE pour découper en phases exécutables
-
-**Anciens jalons (toujours pertinents post-launch, à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/` — gardés tels quels sur main car non liés au pivot.
+**Anciens jalons (à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/`.
 
 Détails sessions précédentes : `.workflow/sessions/`.
 
