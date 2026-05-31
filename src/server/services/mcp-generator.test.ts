@@ -256,3 +256,37 @@ describe('generateMcp — static files (07-3)', () => {
     expect(ignore).toContain('dist');
   });
 });
+
+describe('generateMcp — Docker kit (Pivot-2, RC3.2)', () => {
+  it('emits a multi-stage Dockerfile exposing 8787 and running the built server', () => {
+    const docker = asMap(generateMcp(buildRequest())).get('Dockerfile');
+    expect(docker).toBeDefined();
+    // Multi-stage: at least two `FROM` instructions (build + runtime).
+    expect(docker!.match(/^FROM /gm)?.length).toBeGreaterThanOrEqual(2);
+    expect(docker).toContain('EXPOSE 8787');
+    expect(docker).toContain('node dist/index.js');
+  });
+
+  it('emits a docker-compose.yml with a service named after the MCP', () => {
+    const compose = asMap(generateMcp(buildRequest())).get('docker-compose.yml');
+    expect(compose).toBeDefined();
+    expect(compose).toContain('shopify-admin');
+    expect(compose).toContain('build: .');
+    expect(compose).toContain('8787:8787');
+    expect(compose).toContain('env_file');
+  });
+
+  it('emits a .dockerignore excluding secrets and build artifacts', () => {
+    const di = asMap(generateMcp(buildRequest())).get('.dockerignore');
+    expect(di).toBeDefined();
+    expect(di).toContain('.env');
+    expect(di).toContain('node_modules');
+    expect(di).toContain('dist');
+  });
+
+  it('README documents the Docker quickstart and PaaS deployment', () => {
+    const readme = asMap(generateMcp(buildRequest())).get('README.md')!;
+    expect(readme).toContain('docker compose up');
+    expect(readme).toMatch(/Coolify|Railway|Render/);
+  });
+});
