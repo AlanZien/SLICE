@@ -8,6 +8,22 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - Surprise : repo déjà bootstrappé hors phase BOOTSTRAP — décalage avec CLAUDE.md "Phase en cours". Pas de pattern récurrent à promouvoir (1 occurrence).
 - Patterns à observer en phases 02–04 : PLAN ↔ code drift, concat de classes verbeux, config Express globale.
 
+## 2026-05-31 — LEARN groupé Pivot 1-3 ✓ mergées (PR #16, #17, #18)
+
+Rétro des 3 premières phases du pivot « SLICE Cloud + self-host ». Détail par phase : `REVIEW.md` dans chaque dossier `.workflow/phases/pivot-N-*/`.
+
+- **Pivot-1** (écran « Où héberger ? ») : remplacement de la question transport par le choix d'hébergement, sans toucher au générateur. Dette `mode`/`hosting` assumée.
+- **Pivot-2** (kit Docker) : bundle self-host déployable en une commande. Réutilisation forte de l'écran de succès existant.
+- **Pivot-3** (relai d'auth) : le MCP relaie le token client sans le stocker. De-risk en spike TDD, E2E runtime via `tsx`, 1 finding sécurité (CRLF) trouvé+corrigé en CRITIQUE.
+
+**Pattern récurrent promu en règle** (seuil 3 atteint) : *tests coûteux/d'intégration tracés, jamais omis silencieusement* → `.claude/rules/03-testing.md`. Détecté sur phases 01, 02, 03, 04, Pivot-2 (perf p95 + docker build reportés).
+
+**Patterns à surveiller** (pas encore 3 occurrences distinctes) :
+- EVALUATE proportionnel (revue inline pour diff de templates sans logique) : Pivot-2 + Pivot-3. Promouvoir si réapparaît.
+- i18n/langue (hardcode `'Autres'` 02, accent-folding 04, FR/EN UI Pivot-1) : hétérogène → versé au BACKLOG plutôt qu'en règle.
+
+**Reporté à Pivot-4** (bloquants hébergement, issus de Pivot-3) : support multi-session du serveur généré + contrôle d'accès relay par URL haute entropie.
+
 ## Findings "à considérer" en attente (alimentés par EVALUATE, traités en LEARN)
 
 ### Après phase 01 — Squelette (2026-05-25)
