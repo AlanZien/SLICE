@@ -45,6 +45,10 @@ const STATIC_TEMPLATES: ReadonlyArray<TemplateBinding> = [
   { source: 'tools.ts.hbs', dest: 'src/tools.ts' },
   { source: 'index.ts.hbs', dest: 'src/index.ts' },
   { source: 'readme.md.hbs', dest: 'README.md' },
+  // Pivot-2 — Docker kit so the self-host bundle runs with one command.
+  { source: 'Dockerfile.hbs', dest: 'Dockerfile' },
+  { source: 'docker-compose.yml.hbs', dest: 'docker-compose.yml' },
+  { source: 'dockerignore.hbs', dest: '.dockerignore' },
 ];
 
 interface ToolBinding {

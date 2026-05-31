@@ -264,7 +264,8 @@ describe('generateMcp — Docker kit (Pivot-2, RC3.2)', () => {
     // Multi-stage: at least two `FROM` instructions (build + runtime).
     expect(docker!.match(/^FROM /gm)?.length).toBeGreaterThanOrEqual(2);
     expect(docker).toContain('EXPOSE 8787');
-    expect(docker).toContain('node dist/index.js');
+    // Exec-form CMD running the compiled entrypoint.
+    expect(docker).toContain('dist/index.js');
   });
 
   it('emits a docker-compose.yml with a service named after the MCP', () => {
