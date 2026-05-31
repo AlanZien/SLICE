@@ -263,6 +263,10 @@ describe('generateMcp — relay auth mode (Pivot-3, RC2)', () => {
     expect(ac).toBeDefined();
     expect(ac).toContain('AsyncLocalStorage');
     expect(ac).toContain('relayedToken');
+    // Security (EVALUATE finding): the token charset must reject control
+    // chars (CR/LF) to close off header injection — not the permissive `.+`.
+    expect(ac).toContain('\\x21-\\x7e');
+    expect(ac).not.toMatch(/Bearer\\s\+\(\.\+\)/);
   });
 
   it('http-client branches on MCP_AUTH_MODE and gates the boot secret check on env mode (RC2.1/2.3)', () => {

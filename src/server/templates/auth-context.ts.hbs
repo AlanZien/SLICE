@@ -16,10 +16,14 @@ export const authStore = new AsyncLocalStorage<{ authorization: string }>();
  * well-formed `Authorization: Bearer <value>` is present. Case-insensitive on
  * the scheme; a missing, empty, or non-bearer header yields `undefined` so the
  * upstream call goes out unauthenticated and the API's own error surfaces.
+ *
+ * The token is restricted to printable, space-free ASCII (0x21-0x7e): this
+ * matches every real bearer/API-key charset (hex, base64url, etc.) and rejects
+ * control characters such as CR/LF, closing off header-injection before the
+ * value is placed into an outbound request header.
  */
 export function relayedToken(): string | undefined {
   const raw = authStore.getStore()?.authorization ?? '';
-  const match = /^Bearer\s+(.+)$/i.exec(raw.trim());
-  const value = match?.[1]?.trim();
-  return value ? value : undefined;
+  const match = /^Bearer\s+([\x21-\x7e]+)\s*$/i.exec(raw.trim());
+  return match?.[1];
 }
