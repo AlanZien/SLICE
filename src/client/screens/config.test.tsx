@@ -53,39 +53,83 @@ describe('<ConfigScreen> (phase 06)', () => {
     expect(screen.getByRole('button', { name: /bearer/i })).toBeInTheDocument();
   });
 
-  it('renders the form fields, dest cards, advanced toggle and generate button', () => {
+  it('renders the form fields, the two hosting cards and the advanced toggle', () => {
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
     );
     expect(screen.getByDisplayValue('shopify')).toBeInTheDocument();
     expect(screen.getByDisplayValue('https://api.shopify.com/v1')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /on my machine/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /on a remote/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /both/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /advanced options/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /generate my mcp/i })).toBeInTheDocument();
   });
 
-  it('disables Generate when the form is invalid', async () => {
+  // RC1.2 — the transport question is replaced by the hosting question.
+  it('shows the two hosting cards and drops the old transport cards', () => {
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
     );
+    expect(screen.getByRole('button', { name: /slice cloud/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /on my server/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /on my machine/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /on a remote/i })).not.toBeInTheDocument();
+  });
+
+  // RC1.3 — action disabled until a hosting target is picked, label adapts.
+  it('keeps the action disabled until a hosting target is picked and adapts its label', async () => {
+    render(
+      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
+    );
+    expect(
+      screen.getByRole('button', { name: /deploy to slice cloud|download the kit/i })
+    ).toBeDisabled();
+
+    await userEvent.click(screen.getByRole('button', { name: /on my server/i }));
+    expect(screen.getByRole('button', { name: /download the kit/i })).toBeEnabled();
+
+    await userEvent.click(screen.getByRole('button', { name: /slice cloud/i }));
+    expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeEnabled();
+  });
+
+  // RC1.4 — the MCP server token field is gone from the UI.
+  it('no longer exposes the MCP server token field', async () => {
+    render(
+      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /advanced options/i }));
+    expect(screen.queryByText(/mcp server token/i)).not.toBeInTheDocument();
+  });
+
+  // RC1.5 — the detailed parameter descriptions toggle stays.
+  it('still offers the detailed parameter descriptions toggle', async () => {
+    render(
+      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /advanced options/i }));
+    expect(screen.getByText(/detailed parameter descriptions/i)).toBeInTheDocument();
+  });
+
+  it('disables the action when the form is invalid even after choosing hosting', async () => {
+    render(
+      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
+    );
+    await userEvent.click(screen.getByRole('button', { name: /slice cloud/i }));
     const name = screen.getByDisplayValue('shopify');
     await userEvent.clear(name);
     await userEvent.type(name, 'Bad Name');
-    expect(screen.getByRole('button', { name: /generate my mcp/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeDisabled();
   });
 
-  it('calls onGenerate with the final config when Generate is clicked', async () => {
+  it('calls onGenerate with the final config incl. hosting when the action is clicked', async () => {
     const onGenerate = vi.fn();
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={onGenerate} />
     );
-    await userEvent.click(screen.getByRole('button', { name: /generate my mcp/i }));
+    await userEvent.click(screen.getByRole('button', { name: /slice cloud/i }));
+    await userEvent.click(screen.getByRole('button', { name: /deploy to slice cloud/i }));
     expect(onGenerate).toHaveBeenCalledOnce();
     const arg = onGenerate.mock.calls[0][0];
     expect(arg.mcpName).toBe('shopify');
-    expect(arg.mode).toBe('both');
+    expect(arg.hosting).toBe('cloud');
+    expect(arg.mode).toBe('remote');
     expect(arg.upstreamAuth.type).toBe('apiKey');
   });
 
