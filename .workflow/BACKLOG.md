@@ -56,6 +56,12 @@ Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qua
 - [ ] Support Basic Auth (idem)
 - [ ] Validation sémantique : cohérence requestBody/responses, schémas $ref cassés, types inconsistants
 
+## Dette technique & qualité (issu de LEARN Pivot 1-3, 2026-05-31)
+
+- [ ] **Résoudre la dette `mode`/`hosting`** : `mode` est figé à `'remote'` et fait doublon avec `hosting`. Migrer le générateur/snippets vers `hosting`, puis dériver ou supprimer `mode` (deux sources de vérité aujourd'hui). Nettoyer au passage `transportLabelFor` (branches mortes). (issu de Pivot-1)
+- [ ] **Batch tests de performance** : les tests perf p95 (R1.1.9 parse < 2s sur shopify-50, R1.2.5 filtre < 100ms sur 500 endpoints, conversions Swagger/Postman < 1s) ont été reportés de phase en phase. À écrire en un batch dédié avant tout claim de perf produit. (issu de LEARN, règle promue dans 03-testing.md)
+- [ ] **Décision langue UI (i18n)** : l'UI est en anglais, la SPEC en français ; `'Autres'` hardcodé (phase 02), pas d'accent-folding dans la recherche (phase 04). Trancher EN seul vs bilingue/i18n, puis appliquer. (issu de Pivot-1 + phases 02/04)
+
 ## Idees a clarifier
 
 - [ ] {{Idee floue qui demande un brainstorm avant de devenir une feature concrete}}
