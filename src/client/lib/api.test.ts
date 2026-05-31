@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { apiGenerate, ApiError } from './api';
+import { apiGenerate, apiHost, ApiError } from './api';
 import type { GenerateRequest, ParsedSpec, SliceConfig } from '@shared/types';
 
 const FAKE_PARSED: ParsedSpec = {
@@ -89,5 +89,46 @@ describe('apiGenerate', () => {
     ) as typeof fetch;
 
     await expect(apiGenerate(FAKE_REQ)).rejects.toBeInstanceOf(ApiError);
+  });
+});
+
+describe('apiHost', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('POSTs to /api/host and returns { id, url } on 200', async () => {
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ id: 'abc123', url: 'https://slice.test/m/abc123' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+    globalThis.fetch = fetchMock as typeof fetch;
+
+    const out = await apiHost(FAKE_REQ);
+    expect(out).toEqual({ id: 'abc123', url: 'https://slice.test/m/abc123' });
+    expect(fetchMock).toHaveBeenCalledWith('/api/host', expect.objectContaining({ method: 'POST' }));
+  });
+
+  it('throws ApiError with typed code on 4xx JSON error', async () => {
+    globalThis.fetch = vi.fn(async () =>
+      new Response(JSON.stringify({ code: 'NO_ENDPOINT_SELECTED', message: 'pick one' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    ) as typeof fetch;
+
+    await expect(apiHost(FAKE_REQ)).rejects.toMatchObject({
+      name: 'ApiError',
+      status: 400,
+      code: 'NO_ENDPOINT_SELECTED',
+    });
   });
 });
