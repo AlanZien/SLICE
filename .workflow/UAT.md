@@ -509,3 +509,36 @@ Voir `.workflow/RETRO.md` § « Après phase Pivot-2 » : Docker docs inconditio
 Voir `.workflow/RETRO.md` § « Après phase Pivot-3 » :
 - **Multi-session** : le serveur généré ne gère qu'une session à la fois (transport partagé) → à corriger pour l'hébergement multi-agents.
 - **Contrôle d'accès relay** : repose entièrement sur l'URL non-devinable → exigence infra (entropie, 404 uniforme, pas de log d'URL).
+
+## Pivot-4 — Runtime MCP hébergé / SLICE Cloud
+
+### Tests techniques (générés depuis le PLAN)
+
+| # | Scenario | Résultat | Test |
+|---|----------|----------|------|
+| 1 | Factory : MCP construit depuis une config, tools exposés, appel proxifié + token relayé (substitution path param) | ✓ | `hosted-mcp-factory.test.ts` |
+| 2 | Factory : params `in:'header'` forwardés à l'amont (ex. `Notion-Version`), auth relay prioritaire | ✓ | `hosted-mcp-factory.test.ts` |
+| 3 | Store : `put` rend un id ≥22 chars url-safe ; `get` rend la config ; id inconnu → undefined | ✓ | `hosted-store.test.ts` |
+| 4 | Distilleur : `parsedSpec + selectedIds` → config (endpoints/baseURL/auth) | ✓ | `spec-to-hosted-config.test.ts` |
+| 5 | `/m/:id` E2E : 2 agents en parallèle, chacun relaie son propre token | ✓ | `hosted-mcp.test.ts` |
+| 6 | `/m/:id` sur id inconnu → 404 | ✓ | `hosted-mcp.test.ts` |
+| 7 | `/api/host` rejette un `baseUrl` privé/loopback → `400 BLOCKED_HOST` (guard SSRF on) | ✓ | `hosted-mcp.test.ts` |
+| 8 | SSRF guard : rejette loopback/privé/link-local/metadata + IPv4-mapped IPv6 | ✓ | `ssrf-guard.test.ts` |
+| 9 | Client `apiHost` POST `/api/host` → `{ id, url }` ; ApiError typé sur 4xx | ✓ | `api.test.ts` |
+| 10 | Snippets mode URL (Claude/n8n/Airia) : URL réelle + `COLLE_TON_TOKEN_ICI` | ✓ | `snippets.test.ts` |
+| 11 | `ConnectionTabs` mode hosted : 3 onglets actifs, snippets URL | ✓ | `connection-tabs.test.ts` |
+| 12 | `SuccessScreen` hosted : affiche l'URL, pas de bouton download | ✓ | `success.test.tsx` |
+
+### Tests métier / UX (validés en session)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Parcours UI complet → bouton « Deploy to SLICE Cloud » → écran 4 avec URL + snippets | ✓ | validé visuellement (notion-api, 19 endpoints) |
+| 2 | MCP hébergé appelé via `scripts/try-hosted.ts` avec vraie clé Notion → `GET /v1/users/me` renvoie le bot user | ✓ | test réel, workspace « Notion de GiveMe5 » |
+| 3 | **Bout-en-bout dans Claude Desktop** : `slice-notion` (supergateway) → `list_all_users` renvoie les vrais users | ✓ | validé en session (UAT réel) |
+| 4 | Écritures / recherche (POST avec body) | ✗ | **limite connue** — pas de forwarding du body (→ BACKLOG) |
+
+### Findings reportés (RETRO/BACKLOG)
+
+Voir `.workflow/RETRO.md` § « Après phase Pivot-4 » et la section dette du `BACKLOG.md` :
+forwarding du body, cache McpServer (perf), durcissement SSRF DNS-rebinding, parité runtime↔kit, persistance du store, snippet Claude Desktop.
