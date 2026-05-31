@@ -67,7 +67,7 @@ describe('<ConfigScreen> (phase 06)', () => {
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
     );
-    expect(screen.getByRole('button', { name: /slice cloud/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /we host it for you/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /on my server/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /on my machine/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /on a remote/i })).not.toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('<ConfigScreen> (phase 06)', () => {
     await userEvent.click(screen.getByRole('button', { name: /on my server/i }));
     expect(screen.getByRole('button', { name: /download the kit/i })).toBeEnabled();
 
-    await userEvent.click(screen.getByRole('button', { name: /slice cloud/i }));
+    await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
     expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeEnabled();
   });
 
@@ -111,7 +111,7 @@ describe('<ConfigScreen> (phase 06)', () => {
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
     );
-    await userEvent.click(screen.getByRole('button', { name: /slice cloud/i }));
+    await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
     const name = screen.getByDisplayValue('shopify');
     await userEvent.clear(name);
     await userEvent.type(name, 'Bad Name');
@@ -123,7 +123,7 @@ describe('<ConfigScreen> (phase 06)', () => {
     render(
       <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={onGenerate} />
     );
-    await userEvent.click(screen.getByRole('button', { name: /slice cloud/i }));
+    await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
     await userEvent.click(screen.getByRole('button', { name: /deploy to slice cloud/i }));
     expect(onGenerate).toHaveBeenCalledOnce();
     const arg = onGenerate.mock.calls[0][0];

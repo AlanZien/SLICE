@@ -220,52 +220,33 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
             <div className="flex flex-col gap-3">
               <p className="eyebrow">the only real question</p>
               <h3 className="h2 text-foreground" style={{ fontSize: 22 }}>
-                Where will your agent use it?
+                Where should we host it?
               </h3>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <DestCard
-                  value="local"
-                  active={config.mode === 'local'}
-                  onSelect={(v) => setField('mode', v)}
-                  title="On my machine"
-                  blurb="The agent reads your MCP locally."
-                  apps={['Claude Desktop', 'Cursor', 'Windsurf']}
-                  transport="stdio"
-                />
-                <DestCard
-                  value="remote"
-                  active={config.mode === 'remote'}
-                  onSelect={(v) => setField('mode', v)}
-                  title="On a remote server"
-                  blurb="The MCP is exposed over HTTP, reachable from any cloud agent."
-                  apps={['n8n', 'Airia', 'Zapier']}
-                  transport="http"
-                />
-                <DestCard
-                  value="both"
-                  active={config.mode === 'both'}
-                  onSelect={(v) => setField('mode', v)}
-                  title="Both"
-                  blurb="We generate both modes side-by-side."
-                  apps={['local + remote']}
-                  transport="stdio + http"
+                  value="cloud"
+                  active={config.hosting === 'cloud'}
+                  onSelect={(v) => setField('hosting', v)}
+                  title="SLICE Cloud"
+                  blurb="We host it for you — you get a ready URL to paste into your agent."
+                  apps={['Claude', 'n8n', 'Airia']}
+                  transport="hosted"
                   recommended
+                />
+                <DestCard
+                  value="self"
+                  active={config.hosting === 'self'}
+                  onSelect={(v) => setField('hosting', v)}
+                  title="On my server"
+                  blurb="Download a ready-to-run kit and deploy it wherever you want."
+                  apps={['Coolify', 'Railway', 'VPS']}
+                  transport="self-host"
                 />
               </div>
             </div>
 
-            <AdvancedOptions summary="HTTP token, parameter detail, retries">
+            <AdvancedOptions summary="parameter detail, retries">
               <div className="flex flex-col gap-1">
-                {config.mode !== 'local' && (
-                  <Field
-                    label="MCP server token"
-                    hint="auto-generated · injected into the .env"
-                    value={config.mcpServerToken ?? ''}
-                    onChange={(v) => setField('mcpServerToken', v)}
-                    error={errors.mcpServerToken}
-                    mono
-                  />
-                )}
                 <ToggleRow
                   title="Detailed parameter descriptions"
                   hint="better for the agent, +12% context"
@@ -336,7 +317,7 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
             isValid ? 'hover:opacity-90' : 'cursor-not-allowed opacity-40'
           )}
         >
-          Generate my MCP →
+          {config.hosting === 'self' ? 'Download the kit' : 'Deploy to SLICE Cloud'} →
         </button>
       </footer>
     </div>
