@@ -41,6 +41,8 @@ const STATIC_TEMPLATES: ReadonlyArray<TemplateBinding> = [
   { source: 'tsconfig.json.hbs', dest: 'tsconfig.json' },
   { source: 'env.example.hbs', dest: '.env.example' },
   { source: 'gitignore.hbs', dest: '.gitignore' },
+  // Pivot-3 — per-request auth context, shared by index.ts and http-client.ts.
+  { source: 'auth-context.ts.hbs', dest: 'src/auth-context.ts' },
   { source: 'http-client.ts.hbs', dest: 'src/http-client.ts' },
   { source: 'tools.ts.hbs', dest: 'src/tools.ts' },
   { source: 'index.ts.hbs', dest: 'src/index.ts' },

@@ -96,6 +96,14 @@ Synthèse courte (détail dans `.workflow/phases/01-skeleton/REVIEW.md`) :
 - **[Process / EVALUATE]** Revue /simplify faite **manuellement** (proportionnalité : diff de 3 templates statiques + 2 edits, zéro logique). Pas de fan-out 4 agents. Pattern : réserver le fan-out aux diffs avec logique/branches, faire une revue inline pour les ajouts de templates/config.
 - **[Dépendance]** Dockerfile en `npm` (pas `pnpm` comme le README d'install) pour éviter d'installer pnpm dans l'image Node alpine. Scripts `build`/`start` runner-agnostiques, donc OK — mais divergence à garder en tête si on ajoute un lockfile au bundle.
 
+### Après phase Pivot-3 — Mode relai d'auth (2026-05-31)
+
+- **[Sécurité — CORRIGÉ]** EVALUATE CRITIQUE / security-review : la regex `relayedToken` `/^Bearer\s+(.+)$/i` laissait passer un `\r` interne (le `.` matche `\r`) → injection de header CRLF théorique dans le token relayé vers l'amont. Neutralisé en pratique par undici, mais **durci** en `[\x21-\x7e]+` (ASCII imprimable sans espace) + test de garde. Pattern à retenir : **toute valeur issue d'un header entrant et replacée dans un header sortant doit rejeter les caractères de contrôle**.
+- **[Sécurité — DESIGN, à documenter Pivot-4]** En mode `relay`, le MCP **ne fait aucun contrôle d'accès descendant** (pas de `MCP_SERVER_TOKEN`) : l'accès repose **entièrement sur l'URL non-devinable** côté infra. Pas un bug (choix assumé, RC4.4) mais **exigence infra forte** : URL à haute entropie (CSPRNG ≥128 bits), non loggée par le reverse-proxy/analytics, 404 uniforme pour URL inconnue. À implémenter/tester en **Pivot-4** (Coolify).
+- **[Architecture — IMPORTANT, à traiter Pivot-4]** Découvert pendant l'E2E : le serveur MCP généré utilise **un seul transport partagé** (`server.connect(transport)` une fois) → il ne gère qu'**une session à la fois** (`"Server already initialized"` au 2ᵉ client). Acceptable self-host mono-agent, **bloquant pour l'hébergement multi-agents** (SLICE Cloud sert plusieurs sessions). À corriger en Pivot-4 : transport par session (map `sessionId → transport`) OU mode stateless. Pré-existant, mais le cloud le rend critique.
+- **[Process / Spike]** De-risk ALS (OQ-3) fait en spike TDD in-process avant de toucher les templates → validé en ~1s, plan B écarté sans coût. Spike promu en test de régression permanent (`relay-threading.test.ts`). Bon pattern pour une inconnue traversant une lib tierce.
+- **[Tests]** E2E runtime du code généré rendu praticable via **`tsx`** (pas de build `tsc` dans le test) + serveur enfant + upstream mocké. Réutilisable pour les futurs tests de comportement du code généré.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

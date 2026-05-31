@@ -75,6 +75,7 @@ describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
         'README.md',
         'docker-compose.yml',
         'package.json',
+        'src/auth-context.ts',
         'src/http-client.ts',
         'src/index.ts',
         'src/tools.ts',

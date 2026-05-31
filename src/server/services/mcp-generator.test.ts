@@ -257,6 +257,38 @@ describe('generateMcp — static files (07-3)', () => {
   });
 });
 
+describe('generateMcp — relay auth mode (Pivot-3, RC2)', () => {
+  it('emits src/auth-context.ts holding an AsyncLocalStorage + relayedToken helper', () => {
+    const ac = asMap(generateMcp(buildRequest())).get('src/auth-context.ts');
+    expect(ac).toBeDefined();
+    expect(ac).toContain('AsyncLocalStorage');
+    expect(ac).toContain('relayedToken');
+    // Security (EVALUATE finding): the token charset must reject control
+    // chars (CR/LF) to close off header injection — not the permissive `.+`.
+    expect(ac).toContain('\\x21-\\x7e');
+    expect(ac).not.toMatch(/Bearer\\s\+\(\.\+\)/);
+  });
+
+  it('http-client branches on MCP_AUTH_MODE and gates the boot secret check on env mode (RC2.1/2.3)', () => {
+    const hc = asMap(generateMcp(buildRequest())).get('src/http-client.ts')!;
+    expect(hc).toContain('MCP_AUTH_MODE');
+    expect(hc).toContain('relayedToken');
+    // The "throw if secret missing" guard must only fire in env mode.
+    expect(hc).toMatch(/=== 'env'/);
+  });
+
+  it('keeps UPSTREAM_BASE_URL required whatever the auth mode (RC2.3)', () => {
+    const hc = asMap(generateMcp(buildRequest())).get('src/http-client.ts')!;
+    expect(hc).toContain('UPSTREAM_BASE_URL is required');
+  });
+
+  it('http server wraps handleRequest in the auth store when relaying (RC2.2)', () => {
+    const idx = asMap(generateMcp(buildRequest({ mode: 'remote' }))).get('src/index.ts')!;
+    expect(idx).toContain('MCP_AUTH_MODE');
+    expect(idx).toContain('authStore.run');
+  });
+});
+
 describe('generateMcp — Docker kit (Pivot-2, RC3.2)', () => {
   it('emits a multi-stage Dockerfile exposing 8787 and running the built server', () => {
     const docker = asMap(generateMcp(buildRequest())).get('Dockerfile');
