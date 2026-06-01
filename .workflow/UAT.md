@@ -542,3 +542,28 @@ Voir `.workflow/RETRO.md` § « Après phase Pivot-3 » :
 
 Voir `.workflow/RETRO.md` § « Après phase Pivot-4 » et la section dette du `BACKLOG.md` :
 forwarding du body, cache McpServer (perf), durcissement SSRF DNS-rebinding, parité runtime↔kit, persistance du store, snippet Claude Desktop.
+
+## Forwarding du body de requête
+
+### Tests techniques (générés depuis le PLAN)
+
+| # | Scenario | Résultat | Test |
+|---|----------|----------|------|
+| 1 | `toZodShape` : OpenAPI schema → ZodSchemaShape (object/array/required→requiredFields/additionalProperties/non-objet) | ✓ | `to-zod-shape.test.ts` |
+| 2 | Builders : objets `.passthrough()` (clés extra conservées) ; parité kit↔runtime | ✓ | `zod-builders-parity.test.ts` |
+| 3 | Parser aplatit le body en params `in:'body'` (+description, required, wireName) ; fallback ; non-JSON ignoré ; collision | ✓ | `spec-normalizer.body.test.ts` |
+| 4 | Runtime hébergé : réassemble + envoie le corps ; `{}` quand vide ; requis manquant → pas d'appel ; collision→wireName ; auth/header intacts | ✓ | `hosted-mcp-factory.test.ts` |
+| 5 | Kit généré : expose les body fields + passe `body: { … }` ; quoting hyphené ; fallback `body: args.body` | ✓ | `mcp-generator.body.test.ts` |
+| 6 | Kit E2E (`tsx`) : le bundle généré envoie réellement le corps à l'amont | ✓ | `mcp-generator.relay.test.ts` |
+| 7 | E2E pipeline complet : objet free-form à clés dynamiques transmis **intact** (passthrough) | ✓ | `body-forwarding.e2e.test.ts` |
+| 8 | `spec-to-hosted-config` propage `in:'body'` + schema + wireName + description | ✓ | `spec-to-hosted-config.test.ts` |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Régénérer le MCP Notion hébergé, le rebrancher dans Claude Desktop, demander une **recherche** (`POST /v1/search`) → résultats réels | ⏳ | manuel — ferme le trou Pivot-4 |
+| 2 | Création d'une page Notion via l'agent (`properties` à clés dynamiques) → page créée | ⏳ | manuel |
+
+### Limites assumées (HORS SCOPE V2)
+Content-types non-JSON (multipart/binaire), `enum`/`nullable`/`oneOf`/`anyOf`, aplatissement récursif au-delà du 1er niveau. GET+body : non envoyé (limite fetch/undici).

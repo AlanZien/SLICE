@@ -64,7 +64,7 @@ Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qua
 
 ## Runtime hébergé — suites Pivot-4 (issu de LEARN Pivot-4, 2026-06-01)
 
-- [ ] **Forwarding du body de requête** (`in:'body'`) : le parser ne flatten pas `requestBody`, donc les tools POST/PATCH et la **recherche Notion** (`POST /v1/search`) partent sans corps. Débloque les écritures + la recherche. **Plus haute valeur produit.** (issu de Pivot-4, vu en UAT Claude/Notion)
+- [x] **Forwarding du body de requête** (`in:'body'`) — LIVRÉ (phase body-forwarding) : parser aplatit `requestBody` en params `in:'body'`, runtime hébergé + kit réassemblent et envoient le corps JSON, objets free-form transmis intacts (passthrough). Débloque écritures + recherche Notion.
 - [ ] **Cache du McpServer hébergé** (perf hot path) : `/m/:id` reconstruit tout par requête. Mémoïser par id (LRU), configs immutables. Garder le transport par requête. (issu de Pivot-4, D003 le prévoyait)
 - [ ] **Durcissement SSRF anti-DNS-rebinding** : pinner l'IP résolue dans le dispatcher `fetch` (undici) au lieu du `dns.lookup` par appel non-pinné. (issu de Pivot-4 security-review)
 - [ ] **Snippet Claude Desktop** : générer un format `supergateway`/`mcp-remote` (fichier de config) pour l'onglet Claude — le bloc `url + headers` brut ne se colle pas dans l'écran connecteur. (issu de Pivot-4, UAT)
