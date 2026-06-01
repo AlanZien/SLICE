@@ -1,9 +1,8 @@
 import { type RequestHandler, Router } from 'express';
 import multer, { type Multer } from 'multer';
-import { parseSpec } from '../services/parser';
-import { ParseError, type ParseErrorCode } from '@shared/types';
+import { parseSpecIsolated, ParseBusyError } from '../services/parse-isolated';
+import { MAX_SPEC_BYTES, ParseError, type ParseErrorCode } from '@shared/types';
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2 / R1.6.9)
 
 const ALLOWED_EXTENSIONS = new Set(['.json', '.yaml', '.yml']);
 
@@ -23,13 +22,14 @@ const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE', number> = {
   POSTMAN_CONVERSION_FAILED: 400,
   PARSE_TIMEOUT: 504,
   PARSE_DEPTH_EXCEEDED: 400,
+  PARSE_TOO_COMPLEX: 422, // syntactically fine but we refuse to process it (anti-DoS, D004)
   NO_FILE: 400,
 };
 
 function buildUploader(): Multer {
   return multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: MAX_BYTES, files: 1 },
+    limits: { fileSize: MAX_SPEC_BYTES, files: 1 },
   });
 }
 
@@ -55,9 +55,13 @@ const handler: RequestHandler = async (req, res) => {
 
   try {
     const raw = file.buffer.toString('utf-8');
-    const parsed = await parseSpec(raw, { sizeBytes: file.size });
+    const parsed = await parseSpecIsolated(raw, { sizeBytes: file.size });
     res.status(200).json(parsed);
   } catch (err) {
+    if (err instanceof ParseBusyError) {
+      res.status(429).json({ code: 'PARSE_BUSY', message: err.message });
+      return;
+    }
     if (err instanceof ParseError) {
       res.status(STATUS_BY_CODE[err.code]).json({ code: err.code, message: err.message });
       return;

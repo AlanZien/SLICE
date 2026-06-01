@@ -7,6 +7,10 @@
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/** Hard upload limit for an API description (10 MB) — shared by the parser, the
+ * upload route and the isolation guard (R1.1.2 / R1.6.9). */
+export const MAX_SPEC_BYTES = 10 * 1024 * 1024;
+
 /**
  * A narrow OpenAPI-ish schema fragment, shared by the kit's string Zod builder
  * (`zod-schema-builder`) and the hosted runtime's Zod builder. It lives here in
@@ -166,8 +170,9 @@ export type ParseErrorCode =
   | 'UNSUPPORTED_AUTH'            // spec requires oauth2/openIdConnect/http-basic/http-digest (MVP supports none/apiKey/bearer — phase 04 task 12.a)
   | 'SWAGGER2_CONVERSION_FAILED'  // swagger2openapi could not convert the doc (phase 03)
   | 'POSTMAN_CONVERSION_FAILED'   // postman-to-openapi could not convert the collection (phase 03)
-  | 'PARSE_TIMEOUT'               // > 5 s (R1.1.5)
-  | 'PARSE_DEPTH_EXCEEDED';       // > 200k nodes (R1.1.6)
+  | 'PARSE_TIMEOUT'               // > 5 s (R1.1.5), or the isolated parse worker was killed on timeout
+  | 'PARSE_DEPTH_EXCEEDED'        // > 200k nodes (R1.1.6)
+  | 'PARSE_TOO_COMPLEX';          // isolated parse OOM'd / died (e.g. $ref explosion) — anti-DoS (D004)
 
 /**
  * Payload posted by the client to `/api/generate` (phase 08). Held in shared
@@ -218,6 +223,8 @@ export type ApiErrorCode =
   | 'PAYLOAD_TOO_LARGE'
   | 'GENERATION_FAILED'
   | 'BLOCKED_HOST'
+  | 'PARSE_TOO_COMPLEX'
+  | 'PARSE_BUSY'
   | 'TIMEOUT';
 
 export interface ApiErrorPayload {

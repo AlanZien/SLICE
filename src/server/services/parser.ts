@@ -1,11 +1,10 @@
 import yaml from 'js-yaml';
 import SwaggerParser from '@apidevtools/swagger-parser';
-import { ParseError, type ParsedSpec } from '@shared/types';
+import { MAX_SPEC_BYTES, ParseError, type ParsedSpec } from '@shared/types';
 import { convertToOpenAPI3 } from './format-converter';
 import { normalizeSpec } from './spec-normalizer';
 import { sanitizeSpec } from './spec-sanitizer';
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2)
 // SPEC R1.1.6 originally specified a depth ceiling (initially 20, raised to 50)
 // to bound recursive descent. After real-world testing (Stripe, GitHub, .NET
 // enterprise specs), we found legitimate deep schemas constantly tripped it
@@ -38,7 +37,7 @@ export async function parseSpec(
   raw: string,
   options: ParseSpecOptions
 ): Promise<ParsedSpec> {
-  if (options.sizeBytes > MAX_BYTES) {
+  if (options.sizeBytes > MAX_SPEC_BYTES) {
     throw new ParseError(
       'PAYLOAD_TOO_LARGE',
       `File exceeds the 10 MB limit (${options.sizeBytes} bytes).`
