@@ -189,7 +189,10 @@ describe('buildHostedMcpServer — runtime MCP from config', () => {
 
   it('a missing required body field fails validation — no upstream call (R-B13)', async () => {
     received = [];
-    await expect(client.callTool({ name: 'search', arguments: {} })).rejects.toBeDefined();
+    const res = await client.callTool({ name: 'search', arguments: {} });
+    // The SDK surfaces a validation failure as an error result (not a throw);
+    // the invariant that matters is that the upstream was never called.
+    expect(res.isError).toBe(true);
     expect(received).toHaveLength(0);
   });
 

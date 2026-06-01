@@ -96,6 +96,35 @@ function shapeOfParam(p: EndpointParam): ZodSchemaShape {
   return { type: p.type, required: p.required, description: p.description };
 }
 
+/**
+ * Reassemble the outgoing JSON body from the `in:'body'` params (R-B9/R-B10).
+ * Flattened fields → `{ [wireName]: value }` (always sent, even `{}`). A single
+ * whole-body fallback param (no `wireName`) → its value is the body, sent only
+ * when provided. Undici refuses a body on GET/HEAD, so we skip it there.
+ */
+function assembleBody(
+  endpoint: HostedEndpoint,
+  args: Record<string, unknown>
+): string | undefined {
+  if (endpoint.method === 'GET') return undefined;
+  const bodyParams = endpoint.params.filter((p) => p.in === 'body');
+  if (bodyParams.length === 0) return undefined;
+
+  const fallback =
+    bodyParams.length === 1 && bodyParams[0]!.wireName === undefined ? bodyParams[0]! : undefined;
+  if (fallback) {
+    const value = args[fallback.name];
+    return value === undefined ? undefined : JSON.stringify(value);
+  }
+
+  const obj: Record<string, unknown> = {};
+  for (const p of bodyParams) {
+    const value = args[p.name];
+    if (value !== undefined) obj[p.wireName ?? p.name] = value;
+  }
+  return JSON.stringify(obj);
+}
+
 /** Issue the upstream call for one tool invocation, relaying the caller token. */
 async function callUpstream(
   config: HostedMcpConfig,
@@ -141,7 +170,9 @@ async function callUpstream(
     }
   }
 
-  const res = await fetch(url, { method: endpoint.method, headers });
+  const body = assembleBody(endpoint, args);
+
+  const res = await fetch(url, { method: endpoint.method, headers, body });
   if (!res.ok) {
     throw new Error(`Upstream ${res.status} ${res.statusText}: ${await res.text()}`);
   }
@@ -163,7 +194,9 @@ export function buildHostedMcpServer(
   for (const endpoint of config.endpoints) {
     const shape: Record<string, ZodTypeAny> = {};
     for (const p of endpoint.params) {
-      shape[p.name] = buildZodSchema(shapeOfParam(p));
+      // Body fields carry a nested schema; everything else is a flat scalar.
+      shape[p.name] =
+        p.in === 'body' && p.schema ? buildZodSchema(p.schema) : buildZodSchema(shapeOfParam(p));
     }
     server.tool(endpoint.name, endpoint.description, shape, async (args: Record<string, unknown>) => {
       const result = await callUpstream(config, endpoint, args, allowPrivateHosts);
