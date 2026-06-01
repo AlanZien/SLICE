@@ -567,3 +567,32 @@ forwarding du body, cache McpServer (perf), durcissement SSRF DNS-rebinding, par
 
 ### Limites assumées (HORS SCOPE V2)
 Content-types non-JSON (multipart/binaire), `enum`/`nullable`/`oneOf`/`anyOf`, aplatissement récursif au-delà du 1er niveau. GET+body : non envoyé (limite fetch/undici).
+
+## Isolation mémoire du parsing (anti-OOM / anti-DoS, D004)
+
+### Tests techniques (générés depuis le PLAN)
+
+| # | Scenario | Résultat | Test |
+|---|----------|----------|------|
+| 1 | `PARSE_TOO_COMPLEX` (422) préservé à travers reparse-and-select (pas aplati en INVALID_SPEC) | ✓ | `reparse-and-select.test.ts` |
+| 2 | `classifyExit` : timeout→PARSE_TIMEOUT, sinon→PARSE_TOO_COMPLEX | ✓ | `parse-isolated.test.ts` |
+| 3 | Smoke : `parseSpecIsolated` parse une spec triviale dans un child (spawn Vitest OK) | ✓ | `parse-isolated.test.ts` |
+| 4 | Équivalence : même `ParsedSpec` qu'in-process sur une spec riche (params/body/auth) | ✓ | `parse-isolated.test.ts` |
+| 5 | Code d'erreur typé préservé (UNSUPPORTED_FORMAT, UNSUPPORTED_AUTH) à travers la frontière | ✓ | `parse-isolated.test.ts` |
+| 6 | Spec >10 MB rejetée **sans spawn** (PAYLOAD_TOO_LARGE) | ✓ | `parse-isolated.test.ts` |
+| 7 | **`$ref` bomb + timeout court → PARSE_TIMEOUT, et le parent SURVIT** (parse normal juste après OK) | ✓ | `parse-isolated.test.ts` |
+| 8 | Sémaphore : file pleine → `ParseBusyError` ; queue dans le cap → pas de rejet | ✓ | `parse-isolated.test.ts` |
+| 9 | Non-régression : upload/generate/host (20 tests) passent avec le parsing isolé | ✓ | route tests |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Uploader une spec « bombe »/DocuSign → l'UI affiche « trop complexe » et **le serveur reste debout** (autres requêtes OK) | ⏳ | manuel — ferme le DoS Pivot-corpus |
+
+### Tests coûteux / non en CI (tracés)
+- **OOM-pur via SIGABRT** : non testé en CI (l'OOM réel met ~132 s, flaky). Couvert par le test unitaire du classifieur + à valider en UAT manuel.
+- **Smoke build prod du child** (T6) : **bloqué** par un bug pré-existant — le build prod compilé ne démarre pas (imports ESM sans extension `.js` + alias `@shared`). Tracé PROD-CRITIQUE au BACKLOG. La résolution de chemin du child est correcte par design (par extension de `import.meta.url`) ; vérifiable une fois le build prod réparé.
+
+### Durcissements défense-en-profondeur (EVALUATE security-review)
+Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfant. Tracés : dépendance rate-limit amont, dimensionnement `concurrence × cap mémoire` vs RAM instance.

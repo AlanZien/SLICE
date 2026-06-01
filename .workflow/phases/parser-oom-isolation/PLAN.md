@@ -3,7 +3,7 @@
 Date : 2026-06-01
 SPEC : `.workflow/SPEC-PARSER-OOM.md` (patchée post-spike) · Décision : D004 · Spike : SPIKE-LOG
 Niveau : Complexe + **CRITIQUE** (DoS)
-Statut : EN ATTENTE DE VALIDATION (REFINE)
+Statut : GENERATE+EVALUATE terminés (459 tests verts) → DELIVER. T6 prod-smoke bloqué par build prod pré-existant (tracé).
 
 ## Objectif
 
@@ -35,14 +35,14 @@ Statut : EN ATTENTE DE VALIDATION (REFINE)
 
 ## Tâches (ordre TDD)
 
-- [ ] **T1 — Code d'erreur + mapping HTTP** : `ParseErrorCode += 'PARSE_TOO_COMPLEX'` ; mapper dans les routes (statut 4xx — la spec est en cause — + message « Spec trop complexe : trop de références imbriquées »).
+- [x] **T1 — Code d'erreur + mapping HTTP** : `ParseErrorCode += 'PARSE_TOO_COMPLEX'` ; mapper dans les routes (statut 4xx — la spec est en cause — + message « Spec trop complexe : trop de références imbriquées »).
   - RED : route upload reçoit une `ParseError('PARSE_TOO_COMPLEX')` → répond 4xx + message.
-- [ ] **T2 — Enfant `parse-child.ts` + contrat d'erreur (C1/R-O3)** : lit stdin, `parseSpec(raw, {sizeBytes, timeoutMs:Infinity})`, écrit `{ ok:true, parsed }` ou `{ ok:false, code, message }`. (Testé indirectement via T3 ; pas d'I/O process dans un unit pur — couvert par l'E2E T3.)
-- [ ] **T3 — `parseSpecIsolated` (cœur)** : spawn enfant + stdin/stdout + **timeout parent (kill, primaire)** + cap mémoire (filet) ; classifie : stdout `{ok:true}` → `ParsedSpec` ; `{ok:false,code}` → re-`throw new ParseError(code,message)` ; `close` sans stdout / signal → `PARSE_TOO_COMPLEX`. `opts.maxMemoryMb`/`opts.timeoutMs` pour les tests.
+- [x] **T2 — Enfant `parse-child.ts` + contrat d'erreur (C1/R-O3)** : lit stdin, `parseSpec(raw, {sizeBytes, timeoutMs:Infinity})`, écrit `{ ok:true, parsed }` ou `{ ok:false, code, message }`. (Testé indirectement via T3 ; pas d'I/O process dans un unit pur — couvert par l'E2E T3.)
+- [x] **T3 — `parseSpecIsolated` (cœur)** : spawn enfant + stdin/stdout + **timeout parent (kill, primaire)** + cap mémoire (filet) ; classifie : stdout `{ok:true}` → `ParsedSpec` ; `{ok:false,code}` → re-`throw new ParseError(code,message)` ; `close` sans stdout / signal → `PARSE_TOO_COMPLEX`. `opts.maxMemoryMb`/`opts.timeoutMs` pour les tests.
   - RED (intégration, marqué « coûteux ») : (a) spec normale → même `ParsedSpec` que `parseSpec` (R-O2) ; (b) malformé → `UNSUPPORTED_FORMAT` préservé (R-O3) ; (c) **`$ref` bomb + `timeoutMs:1500` → rejette typé (`PARSE_TIMEOUT`/`PARSE_TOO_COMPLEX`) en <3s ET un parse normal juste après réussit** (R-O1/R-O4/B1) ; (d) résolution dev (`tsx`) OK.
-- [ ] **T4 — Sémaphore de concurrence (R-O7)** : `MAX_CONCURRENT_PARSES` (env-overridable, défaut 3) ; au-delà, file d'attente ; file trop longue → `ParseError('PARSE_TOO_COMPLEX'?` ou nouveau `PARSE_BUSY`/`429`). **Décider en T4 : réutiliser un code existant ou ajouter `PARSE_BUSY`.**
+- [x] **T4 — Sémaphore de concurrence (R-O7)** : `MAX_CONCURRENT_PARSES` (env-overridable, défaut 3) ; au-delà, file d'attente ; file trop longue → `ParseError('PARSE_TOO_COMPLEX'?` ou nouveau `PARSE_BUSY`/`429`). **Décider en T4 : réutiliser un code existant ou ajouter `PARSE_BUSY`.**
   - RED : 6 appels concurrents avec cap=2 → jamais plus de 2 enfants en vol simultanément (compteur observé).
-- [ ] **T5 — Intégration** : `upload.ts` + `reparse-and-select.ts` basculent sur `parseSpecIsolated`. Comportement inchangé pour les specs valides.
+- [x] **T5 — Intégration** : `upload.ts` + `reparse-and-select.ts` basculent sur `parseSpecIsolated`. Comportement inchangé pour les specs valides.
   - RED : les tests existants `upload.test.ts` / `generate.test.ts` / `host*.test.ts` restent verts (non-régression) — ajuster s'ils mockaient `parseSpec`.
 
 ## Build / dev-prod
