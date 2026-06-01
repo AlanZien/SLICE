@@ -52,5 +52,14 @@ Toute couche qui **relaie ou proxifie** vers un service externe (le code MCP gé
 
 Règle : avant de déclarer une couche de relai « fonctionnelle », écrire un **E2E avec un vrai client** (SDK MCP, ou `scripts/try-hosted.ts`) **contre un vrai upstream ou un mock fidèle** (serveur enfant qui enregistre headers/body/URL reçus). Le runner léger `tsx` + serveur enfant + upstream mocké (`mcp-generator.relay.test.ts`, `hosted-mcp-factory.test.ts`) rend ça praticable sans build. Un test unitaire de la couche ne suffit jamais à valider le comportement de relai.
 
+### Avant tout claim « prêt pour la prod », valider contre la RÉALITÉ — pas contre des tests verts
+*Issu de LEARN après 4+ occurrences (session 2026-06-01) : flag `required` body (vu en UAT live Notion), bug `\r` + OOM DocuSign (vus au corpus check), worker_threads impraticable (vu au spike), build prod cassé (vu au smoke T6).*
+
+Des tests unitaires verts ne garantissent **jamais** l'état production. À chaque fois qu'on a validé contre une entrée/condition réelle, on a trouvé un blocage invisible aux units. Trois leviers, à activer avant un claim « prod » :
+- **Entrées réelles** : `scripts/corpus-check.ts` passe N vraies specs (APIs.guru) dans le pipeline. À mettre en CI pré-release.
+- **Vrai chemin de build** : un smoke qui **lance le build prod compilé** (`build:server` + spawn/start), pas seulement le dev `tsx`. (Le build prod cassé est resté invisible jusqu'au smoke T6.)
+- **Vrai client / vraie API** : cf. règle relai ci-dessus.
+Et : une **inconnue technique non triviale → spike jetable d'abord** (le worker_threads aurait coûté une journée d'impasse sans le spike).
+
 ---
 Ce fichier est mis a jour par le workflow FORGE (phase LEARN) quand des patterns de tests recurrents sont detectes.

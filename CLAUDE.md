@@ -16,11 +16,13 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 **Validation prod — corpus check (PR #23)** : `scripts/corpus-check.ts` passe N vraies specs d'APIs.guru dans le pipeline. Run 500 API : **412 ok, 83 rejets gracieux (62 OAuth), 5 too-big, 0 bug**. A surfacé 2 bugs corrigés (`\r` dans descriptions) + 1 finding PROD-CRITIQUE (OOM parser).
 
-**Prochaine étape (PROD-CRITIQUE) : isolation mémoire du parsing** — une spec valide de 3 MB (DocuSign) fait OOM (>2 GB) et **crashe le serveur** (DoS). SPEC prête + critiquée : `.workflow/SPEC-PARSER-OOM.md` (sur branche `feature/parser-oom-isolation`). **Commence par le spike ORIENT (~2h)** — voir la section « Corrections /advisor » de la SPEC. Ajouter un cap de concurrence (R-O7).
+**Isolation mémoire du parsing livrée (PR #24, mergé 2026-06-01, D004)** : `parseSpec` tourne dans un **child_process** (timeout-kill primaire + cap mémoire + sémaphore de concurrence). Une spec « bombe »/DocuSign → erreur typée `PARSE_TOO_COMPLEX`/`PARSE_TIMEOUT` (422/504), **le serveur survit**. Saturation → 429 `PARSE_BUSY`. Le spike ORIENT a écarté worker_threads (résolution module cassée sous tsx). 459 tests verts.
+
+**Prochaine étape (PROD-CRITIQUE) : réparer le build prod** — découvert au smoke T6 : `node dist/server/server/index.js` ne démarre pas (imports ESM sans extension `.js` + alias `@shared` non réécrit ; **pré-existant**, le dev marche via tsx). **Bloquant absolu avant tout déploiement.** Fix : bundler (esbuild/tsup) OU `tsc` + `tsc-alias` + extensions. Doit aussi rendre `parse-child.js` lançable en standalone. Cf. BACKLOG § robustesse prod.
 
 **Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — à mettre en CI pré-release).
 
-**Dette ouverte (BACKLOG)** : OOM parser (PROD-CRITIQUE), OAuth amont (plus gros levier de couverture), matrice de features (levier A), rapport fail-loud (levier C), cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
+**Dette ouverte (BACKLOG, par impact prod)** : 1) **build prod cassé** (PROD-CRITIQUE), 2) **OAuth amont** (plus gros levier de couverture API), 3) matrice de features (levier A), 4) rapport fail-loud (levier C), unification contrat d'erreur, cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
 
 **Anciens jalons (à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/`.
 
