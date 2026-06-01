@@ -23,6 +23,7 @@ const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE', number> = {
   POSTMAN_CONVERSION_FAILED: 400,
   PARSE_TIMEOUT: 504,
   PARSE_DEPTH_EXCEEDED: 400,
+  PARSE_TOO_COMPLEX: 422, // syntactically fine but we refuse to process it (anti-DoS, D004)
   NO_FILE: 400,
 };
 

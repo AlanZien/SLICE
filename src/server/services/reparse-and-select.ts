@@ -7,7 +7,7 @@
  * attributable to the calling route.
  */
 import { parseSpec } from './parser';
-import { ApiError, type Endpoint, type ParsedSpec } from '@shared/types';
+import { ApiError, ParseError, type Endpoint, type ParsedSpec } from '@shared/types';
 
 export interface ReparsedSelection {
   reparsed: ParsedSpec;
@@ -27,6 +27,18 @@ export async function reparseAndSelect(
     // message so we don't leak parser internals.
     // eslint-disable-next-line no-console
     console.warn(`[${logPrefix}] re-parse failed:`, err instanceof Error ? err.message : err);
+    // Preserve the codes that carry a distinct, actionable meaning (anti-DoS,
+    // D004) instead of flattening them into a generic INVALID_SPEC.
+    if (err instanceof ParseError && err.code === 'PARSE_TOO_COMPLEX') {
+      throw new ApiError(
+        'PARSE_TOO_COMPLEX',
+        'This API description is too complex to process (too many nested references).',
+        422
+      );
+    }
+    if (err instanceof ParseError && err.code === 'PARSE_TIMEOUT') {
+      throw new ApiError('TIMEOUT', 'Parsing the spec timed out.', 504);
+    }
     throw new ApiError('INVALID_SPEC', 'Failed to re-parse the spec.', 400);
   }
 
