@@ -18,7 +18,7 @@ export function registerTools(server: McpServer): void {
         path: '{{path}}',
         {{#if hasPathParams}}pathParams: { {{pathParamsExpr}} },{{/if}}
         {{#if hasQuery}}query: { {{queryExpr}} },{{/if}}
-        {{#if hasBody}}body: args.body,{{/if}}
+        {{#if hasBody}}body: {{#if bodyFallback}}{{{bodyExpr}}}{{else}}{ {{{bodyExpr}}} }{{/if}},{{/if}}
       });
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }

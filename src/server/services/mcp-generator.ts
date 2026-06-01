@@ -64,6 +64,10 @@ interface ToolBinding {
   hasQuery: boolean;
   queryExpr: string;
   hasBody: boolean;
+  /** True when the body is a single whole-body value (`body: args.body`). */
+  bodyFallback: boolean;
+  /** For flattened bodies: `field: args.field, …`; for fallback: the args access. */
+  bodyExpr: string;
 }
 
 /**
@@ -83,17 +87,28 @@ export function toolNameFor(endpoint: Endpoint): string {
 function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBinding {
   const path = endpoint.params.filter((p: EndpointParam) => p.in === 'path');
   const query = endpoint.params.filter((p: EndpointParam) => p.in === 'query');
+  const body = endpoint.params.filter((p: EndpointParam) => p.in === 'body');
 
   // MCP SDK's `server.tool(name, desc, paramsSchema, cb)` expects a
   // ZodRawShape ({ [k: string]: ZodType }), not a wrapping `z.object({...})`.
   // We emit the raw shape directly so the generated code typechecks.
   // Header-style param names (`Notion-Version`, `X-Api-Key`) MUST be quoted
-  // — bare hyphens parse as subtraction in object-literal keys.
-  const entries = endpoint.params.map(
-    (p) =>
-      `${formatPropertyKey(p.name)}: ${buildZodExpression(shapeOfParam(p), includeDescriptions)}`
-  );
+  // — bare hyphens parse as subtraction in object-literal keys. Body fields
+  // carry a nested schema; everything else is a flat scalar.
+  const entries = endpoint.params.map((p) => {
+    const shape = p.in === 'body' && p.schema ? p.schema : shapeOfParam(p);
+    return `${formatPropertyKey(p.name)}: ${buildZodExpression(shape, includeDescriptions)}`;
+  });
   const inputSchema = entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`;
+
+  // Reassemble the request body (R-B9). A single whole-body fallback param has
+  // no wireName → `body: args.<name>`; flattened fields → `{ wire: args.key }`.
+  const fallback = body.length === 1 && body[0]!.wireName === undefined ? body[0]! : undefined;
+  const bodyExpr = fallback
+    ? formatArgsAccess(fallback.name)
+    : body
+        .map((p) => `${formatPropertyKey(p.wireName ?? p.name)}: ${formatArgsAccess(p.name)}`)
+        .join(', ');
 
   return {
     name: toolNameFor(endpoint),
@@ -109,7 +124,9 @@ function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBindin
     queryExpr: query
       .map((p) => `${formatPropertyKey(p.name)}: ${formatArgsAccess(p.name)}`)
       .join(', '),
-    hasBody: false, // Phase 07 ignores requestBody — phase 04 doesn't flatten it yet.
+    hasBody: body.length > 0,
+    bodyFallback: !!fallback,
+    bodyExpr,
   };
 }
 
