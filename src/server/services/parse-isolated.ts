@@ -60,6 +60,43 @@ export function classifyExit(timedOut: boolean): ParseErrorCode {
   return timedOut ? 'PARSE_TIMEOUT' : 'PARSE_TOO_COMPLEX';
 }
 
+/**
+ * Thrown when too many parses are already running/queued. NOT a `ParseErrorCode`
+ * — the spec is fine, the server is momentarily busy → routes map it to 429.
+ */
+export class ParseBusyError extends Error {
+  constructor(message = 'Too many specs are being processed. Please retry shortly.') {
+    super(message);
+    this.name = 'ParseBusyError';
+  }
+}
+
+// Singleton semaphore shared by every entry point (upload + reparse) so the
+// effective concurrency — and thus peak memory (cap × concurrency) — is bounded
+// once, not per-route. Limits read lazily so deployment/tests can tune them.
+let inFlight = 0;
+const waiters: Array<() => void> = [];
+function limits(): { maxConcurrent: number; maxQueue: number } {
+  return {
+    maxConcurrent: Math.max(1, Number(process.env.PARSE_MAX_CONCURRENT ?? 3)),
+    maxQueue: Math.max(0, Number(process.env.PARSE_MAX_QUEUE ?? 12)),
+  };
+}
+async function acquire(): Promise<void> {
+  const { maxConcurrent, maxQueue } = limits();
+  if (inFlight < maxConcurrent) {
+    inFlight += 1;
+    return;
+  }
+  if (waiters.length >= maxQueue) throw new ParseBusyError();
+  await new Promise<void>((res) => waiters.push(res)); // slot is handed over by release()
+}
+function release(): void {
+  const next = waiters.shift();
+  if (next) next(); // transfer the slot to a waiter — inFlight unchanged
+  else inFlight -= 1;
+}
+
 interface ChildResult {
   ok: boolean;
   parsed?: ParsedSpec;
@@ -71,12 +108,21 @@ export async function parseSpecIsolated(
   raw: string,
   opts: ParseIsolatedOptions
 ): Promise<ParsedSpec> {
-  // 10 MB guard BEFORE spawning — never start a process for a spec we already
-  // know is too large (anti spawn-spam).
+  // 10 MB guard BEFORE acquiring a slot or spawning — never queue/start a
+  // process for a spec we already know is too large (anti spawn-spam).
   if (opts.sizeBytes > MAX_BYTES) {
     throw new ParseError('PAYLOAD_TOO_LARGE', `File exceeds the 10 MB limit (${opts.sizeBytes} bytes).`);
   }
 
+  await acquire();
+  try {
+    return await runChild(raw, opts);
+  } finally {
+    release();
+  }
+}
+
+async function runChild(raw: string, opts: ParseIsolatedOptions): Promise<ParsedSpec> {
   const memoryMb = opts.maxMemoryMb ?? DEFAULT_MEMORY_MB;
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   // Cap memory via argv only; scrub inherited NODE_OPTIONS so a deploy-time
