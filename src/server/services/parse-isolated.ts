@@ -18,29 +18,13 @@
  */
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { ParseError, type ParsedSpec, type ParseErrorCode } from '@shared/types';
+import { MAX_SPEC_BYTES, ParseError, type ParsedSpec, type ParseErrorCode } from '@shared/types';
 
-const MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_MEMORY_MB = 512;
 const DEFAULT_TIMEOUT_MS = 8000;
 // Cap accumulated child stdout — defense in depth so a runaway child can't grow
 // the parent's memory unbounded.
 const MAX_STDOUT_BYTES = 32 * 1024 * 1024;
-
-/** Codes the child is allowed to tunnel back; anything else → generic. */
-const KNOWN_CODES = new Set<ParseErrorCode>([
-  'PAYLOAD_TOO_LARGE',
-  'UNSUPPORTED_FORMAT',
-  'INVALID_SPEC',
-  'EMPTY_SPEC',
-  'UNSUPPORTED_VERSION',
-  'UNSUPPORTED_AUTH',
-  'SWAGGER2_CONVERSION_FAILED',
-  'POSTMAN_CONVERSION_FAILED',
-  'PARSE_TIMEOUT',
-  'PARSE_DEPTH_EXCEEDED',
-  'PARSE_TOO_COMPLEX',
-]);
 
 export interface ParseIsolatedOptions {
   sizeBytes: number;
@@ -113,7 +97,7 @@ export async function parseSpecIsolated(
 ): Promise<ParsedSpec> {
   // 10 MB guard BEFORE acquiring a slot or spawning — never queue/start a
   // process for a spec we already know is too large (anti spawn-spam).
-  if (opts.sizeBytes > MAX_BYTES) {
+  if (opts.sizeBytes > MAX_SPEC_BYTES) {
     throw new ParseError('PAYLOAD_TOO_LARGE', `File exceeds the 10 MB limit (${opts.sizeBytes} bytes).`);
   }
 
@@ -181,10 +165,9 @@ async function runChild(raw: string, opts: ParseIsolatedOptions): Promise<Parsed
           const msg = JSON.parse(out) as ChildResult;
           if (msg.ok && msg.parsed) return settle(() => resolve(msg.parsed as ParsedSpec));
           if (msg.ok === false) {
-            const code =
-              msg.code && KNOWN_CODES.has(msg.code as ParseErrorCode)
-                ? (msg.code as ParseErrorCode)
-                : 'INVALID_SPEC';
+            // The child only ever writes a typed `ParseError.code` (or null);
+            // fall back to INVALID_SPEC when absent.
+            const code = (msg.code as ParseErrorCode | null) ?? 'INVALID_SPEC';
             return settle(() => reject(new ParseError(code, msg.message ?? 'Failed to parse the spec.')));
           }
         } catch {

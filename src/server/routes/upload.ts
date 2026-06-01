@@ -1,9 +1,8 @@
 import { type RequestHandler, Router } from 'express';
 import multer, { type Multer } from 'multer';
 import { parseSpecIsolated, ParseBusyError } from '../services/parse-isolated';
-import { ParseError, type ParseErrorCode } from '@shared/types';
+import { MAX_SPEC_BYTES, ParseError, type ParseErrorCode } from '@shared/types';
 
-const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2 / R1.6.9)
 
 const ALLOWED_EXTENSIONS = new Set(['.json', '.yaml', '.yml']);
 
@@ -30,7 +29,7 @@ const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE', number> = {
 function buildUploader(): Multer {
   return multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: MAX_BYTES, files: 1 },
+    limits: { fileSize: MAX_SPEC_BYTES, files: 1 },
   });
 }
 

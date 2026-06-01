@@ -7,6 +7,10 @@
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/** Hard upload limit for an API description (10 MB) — shared by the parser, the
+ * upload route and the isolation guard (R1.1.2 / R1.6.9). */
+export const MAX_SPEC_BYTES = 10 * 1024 * 1024;
+
 /**
  * A narrow OpenAPI-ish schema fragment, shared by the kit's string Zod builder
  * (`zod-schema-builder`) and the hosted runtime's Zod builder. It lives here in
