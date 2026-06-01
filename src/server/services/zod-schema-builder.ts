@@ -140,5 +140,9 @@ function baseExpression(shape: ZodSchemaShape, includeDescriptions: boolean): st
 }
 
 function escapeStringLiteral(input: string): string {
-  return `"${input.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+  // JSON.stringify produces a valid JS double-quoted string literal for ANY
+  // input — it escapes quotes, backslashes AND every control char (CR, tab,
+  // form-feed…). Hand-rolling missed `\r`, which broke generated source for
+  // real specs whose descriptions used CRLF (found via the corpus check).
+  return JSON.stringify(input);
 }
