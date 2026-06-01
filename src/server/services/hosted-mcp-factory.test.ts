@@ -93,7 +93,10 @@ beforeAll(async () => {
         description: 'Search with no required body field',
         method: 'POST',
         path: '/search-open',
-        params: [{ name: 'q', in: 'body', type: 'string', required: false, wireName: 'q' }],
+        // Faithful to the parser: a flattened body field always carries `schema`.
+        params: [
+          { name: 'q', in: 'body', type: 'string', required: false, wireName: 'q', schema: { type: 'string' } },
+        ],
       },
       {
         name: 'tagged',
