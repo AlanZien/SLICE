@@ -138,6 +138,16 @@ Rétro des 3 premières phases du pivot « SLICE Cloud + self-host ». Détail p
 - **Snippet Claude Desktop** : le bloc `url + headers` généré par SLICE ne se colle pas dans Claude Desktop (l'écran connecteur n'a pas de champ header ; il faut `supergateway`/`mcp-remote` via le fichier de config). SLICE devrait générer ce format pour l'onglet Claude.
 - **Persistance du store** : `hostedStore` in-memory → l'URL meurt au restart serveur. KV/DB pour la prod.
 
+## 2026-06-01 — fix: réparation du build prod ✓ mergé (PR #26)
+
+Détail : `.workflow/phases/fix-prod-build/REVIEW.md`.
+
+- Le build prod compilé ne démarrait **jamais** (PROD-CRITIQUE tracé au smoke T6). **3 bugs prod distincts déroulés en lançant le binaire** : imports ESM sans `.js` + alias `@shared` non réécrit (`ERR_MODULE_NOT_FOUND`) ; route catch-all `'*'` rejetée par Express 5 ; `clientDist` faux (`../client` → `../../client`). Les 2 derniers vivent dans une branche `if (production)` jamais exécutée en dev/test.
+- **4ᵉ bug en cascade attrapé par le nouveau smoke** : `tsc -b` (typecheck) ré-émettait du JS sans `tsc-alias` dans `dist/server`, clobbant le bon artefact. Fix : `noEmit` au typecheck, émission réservée à `tsconfig.server.build.json`.
+- **Choix `tsc` + `tsc-alias`** (pas bundler) pour préserver les hypothèses filesystem du runtime isolé (`parse-child.js` sibling, templates en `../templates`).
+- **Pattern récurrent — « valider contre la réalité » (5ᵉ confirmation)** : déjà promu en règle (`03-testing.md`) la session précédente. Le smoke `pnpm prod:smoke` (boot du binaire compilé + health + statique + fallback SPA + upload réel via `parse-child.js` compilé) matérialise le levier « vrai chemin de build ». Sous-pattern à surveiller : les branches `NODE_ENV==='production'` sont systématiquement non testées (3/4 bugs y vivaient).
+- **Dette → BACKLOG** : câbler `pnpm prod:smoke` en CI pré-release ; figer la version pnpm (`packageManager` + corepack) — store v9 du PATH incompatible avec le `node_modules` v10.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.

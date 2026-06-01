@@ -18,11 +18,13 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 **Isolation mémoire du parsing livrée (PR #24, mergé 2026-06-01, D004)** : `parseSpec` tourne dans un **child_process** (timeout-kill primaire + cap mémoire + sémaphore de concurrence). Une spec « bombe »/DocuSign → erreur typée `PARSE_TOO_COMPLEX`/`PARSE_TIMEOUT` (422/504), **le serveur survit**. Saturation → 429 `PARSE_BUSY`. Le spike ORIENT a écarté worker_threads (résolution module cassée sous tsx). 459 tests verts.
 
-**Prochaine étape (PROD-CRITIQUE) : réparer le build prod** — découvert au smoke T6 : `node dist/server/server/index.js` ne démarre pas (imports ESM sans extension `.js` + alias `@shared` non réécrit ; **pré-existant**, le dev marche via tsx). **Bloquant absolu avant tout déploiement.** Fix : bundler (esbuild/tsup) OU `tsc` + `tsc-alias` + extensions. Doit aussi rendre `parse-child.js` lançable en standalone. Cf. BACKLOG § robustesse prod.
+**Build prod réparé (PR #26, mergé 2026-06-01)** — le binaire compilé ne démarrait jamais (4 bugs en cascade : imports ESM sans `.js` + alias `@shared`, route Express 5 `'*'`, `clientDist` faux, `typecheck` clobbant `dist`). Fix : `tsc` + `tsc-alias` (`tsconfig.server.build.json`, tests exclus) + `noEmit` au typecheck. **Garde-fou ajouté : `pnpm prod:smoke`** (boot du binaire compilé + health + statique + fallback SPA + upload réel via `parse-child.js` compilé). 459 tests verts. Détail : `.workflow/phases/fix-prod-build/REVIEW.md`.
+
+**Prochaine étape (plus gros levier de couverture) : OAuth amont** — ~1/5 des APIs réelles (corpus APIs.guru) rejetées en `UNSUPPORTED_AUTH` (OAuth2). Débloque une part majeure du marché. Cf. BACKLOG. Avant : câbler `pnpm prod:smoke` + `corpus-check` en CI pré-release, et figer la version pnpm (`packageManager` + corepack).
 
 **Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — à mettre en CI pré-release).
 
-**Dette ouverte (BACKLOG, par impact prod)** : 1) **build prod cassé** (PROD-CRITIQUE), 2) **OAuth amont** (plus gros levier de couverture API), 3) matrice de features (levier A), 4) rapport fail-loud (levier C), unification contrat d'erreur, cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
+**Dette ouverte (BACKLOG, par impact prod)** : 1) **OAuth amont** (plus gros levier de couverture API), 2) **CI pré-release** (`prod:smoke` + `corpus-check`) + figer pnpm, 3) matrice de features (levier A), 4) rapport fail-loud (levier C), unification contrat d'erreur, cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
 
 **Anciens jalons (à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/`.
 
