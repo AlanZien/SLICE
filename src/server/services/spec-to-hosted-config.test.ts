@@ -52,4 +52,44 @@ describe('specToHostedConfig', () => {
     const hosted = specToHostedConfig(SPEC, ['GET /things', 'GET /nope'], CONFIG);
     expect(hosted.endpoints.map((e) => e.name)).toEqual(['list_things']);
   });
+
+  it('propagates in:body params (schema, wireName, description) to the hosted config (T8)', () => {
+    const spec: ParsedSpec = {
+      ...SPEC,
+      groups: [
+        {
+          tag: 'Search',
+          endpoints: [
+            {
+              id: 'POST /search',
+              method: 'POST',
+              path: '/search',
+              label: 'Search',
+              params: [
+                {
+                  name: 'filter_body',
+                  in: 'body',
+                  required: false,
+                  wireName: 'filter',
+                  description: 'the filter',
+                  schema: { type: 'object', additionalProperties: true },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const hosted = specToHostedConfig(spec, ['POST /search'], CONFIG);
+    expect(hosted.endpoints[0]!.params).toEqual([
+      {
+        name: 'filter_body',
+        in: 'body',
+        required: false,
+        wireName: 'filter',
+        description: 'the filter',
+        schema: { type: 'object', additionalProperties: true },
+      },
+    ]);
+  });
 });
