@@ -11,6 +11,7 @@
     "outDir": "./dist/server",
     "rootDir": "./src",
     "skipLibCheck": true,
+    "noEmit": true,
 
     "strict": true,
     "noUnusedLocals": true,
