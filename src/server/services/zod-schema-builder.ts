@@ -20,6 +20,48 @@
 export type { ZodSchemaShape } from '@shared/types';
 import type { ZodSchemaShape } from '@shared/types';
 
+/**
+ * Convert a (dereferenced) OpenAPI schema into the narrow `ZodSchemaShape` the
+ * builders consume. Pure and recursive. OpenAPI's `required: string[]` (list of
+ * required property names) maps to `requiredFields`; `additionalProperties`
+ * carries through (objects are permissive unless it's explicitly `false`).
+ * An unusable input yields an empty shape (→ `z.string()` fallback downstream).
+ */
+export function toZodShape(schema: unknown): ZodSchemaShape {
+  if (!schema || typeof schema !== 'object') return {};
+  const s = schema as Record<string, unknown>;
+  const type = typeof s.type === 'string' ? s.type.toLowerCase() : undefined;
+  const description = typeof s.description === 'string' ? s.description : undefined;
+  const base: ZodSchemaShape = {};
+  if (description) base.description = description;
+
+  const looksObject = type === 'object' || s.properties != null || s.additionalProperties != null;
+  if (looksObject) {
+    base.type = 'object';
+    if (s.properties && typeof s.properties === 'object') {
+      const properties: Record<string, ZodSchemaShape> = {};
+      for (const [key, value] of Object.entries(s.properties as Record<string, unknown>)) {
+        properties[key] = toZodShape(value);
+      }
+      base.properties = properties;
+      base.requiredFields = Array.isArray(s.required)
+        ? (s.required as unknown[]).filter((x): x is string => typeof x === 'string')
+        : [];
+    }
+    base.additionalProperties = s.additionalProperties !== false;
+    return base;
+  }
+
+  if (type === 'array') {
+    base.type = 'array';
+    if (s.items != null) base.items = toZodShape(s.items);
+    return base;
+  }
+
+  if (type) base.type = type;
+  return base;
+}
+
 export function buildZodExpression(
   shape: ZodSchemaShape,
   includeDescriptions = false
