@@ -20,7 +20,11 @@ import { generateMcp } from '../src/server/services/mcp-generator';
 import { ParseError, type GenerateRequest } from '../src/shared/types';
 
 const LIST_URL = 'https://api.apis.guru/v2/list.json';
-const MAX_BYTES = 10 * 1024 * 1024;
+// SLICE's real limit is 10 MB, but some specs UNDER that (e.g. DocuSign at
+// 3 MB) OOM the parser when swagger-parser dereferences their `$ref` graph —
+// a robustness finding tracked separately. Override with CORPUS_MAX_BYTES to
+// skip the OOM-prone giants so a bulk run can complete.
+const MAX_BYTES = Number(process.env.CORPUS_MAX_BYTES ?? 10 * 1024 * 1024);
 const MAX_ENDPOINTS = 120;
 
 interface Entry {

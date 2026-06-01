@@ -42,6 +42,16 @@ Aujourd'hui SLICE génère 1 MCP depuis 1 OpenAPI. Postman permet de piocher des
 - [ ] Snippets de config Claude Desktop / n8n / Airia adaptés (un seul serveur, plusieurs auths à fournir)
 - [ ] UX de "workspace MCP" : sauvegarde côté client de la sélection multi-API pour itérer (sans persistance serveur)
 
+## Robustesse production — issu du corpus check APIs.guru (2026-06-01)
+
+Un harnais (`scripts/corpus-check.ts`) passe N vraies specs d'APIs.guru dans le pipeline. Findings :
+
+- [ ] **PROD-CRITIQUE — OOM parser sur spec valide** : DocuSign (3,13 MB, **sous** la limite 10 MB) fait **OOM (>2 GB)** au déréférencement `$ref` de swagger-parser, **avant** que le timeout 5s / le check de profondeur ne s'activent. Une seule spec uploadée peut **crasher tout le serveur** (DoS). À durcir : parser dans un **worker/process isolé avec cap mémoire** (kill + erreur gracieuse « spec trop complexe »), ou pré-estimer l'explosion `$ref` avant deref. **Bloquant avant une vraie mise en prod multi-tenant.**
+- [ ] **Couverture OAuth amont** : ~1/5 des APIs réelles testées sont rejetées en `UNSUPPORTED_AUTH` (OAuth). C'est le **plus gros levier de couverture** réelle (plus que la perf). Débloque une part majeure des APIs du marché. (déjà listé V1.5, re-priorisé par la data corpus)
+- [ ] **Levier A — matrice de features OpenAPI** : un test ciblé par construction (oneOf/anyOf/allOf, nullable, enum, $ref circulaire, additionalProperties, formats…) avec verdict *géré/approximé/rejeté*. La version tractable d'« exhaustif ».
+- [ ] **Levier C — rapport de génération + fail-loud** : avant déploiement, montrer à l'utilisateur X endpoints supportés / Y approximés (oneOf→string, etc.) / Z ignorés, au lieu de produire un schéma faux en silence.
+- [ ] **Corpus check en CI/pré-deploy** : faire tourner `corpus-check` (N specs) avant chaque release comme garde anti-régression sur la diversité réelle.
+
 ## Qualification avancée de la spec (V1.1) — issu de réflexion qualité 2026-05-27
 
 Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qualification avancée est reportée pour limiter le scope MVP.
