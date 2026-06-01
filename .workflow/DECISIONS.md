@@ -68,6 +68,29 @@
 - Le track **self-host (kit Docker, Pivot-2)** reste inchangé — c'est l'autre voie, pour qui veut héberger lui-même.
 - Cœur livré : `src/server/services/hosted-mcp-factory.ts` (`buildHostedMcpServer` + relai), prouvé par `hosted-mcp-factory.test.ts`.
 
+## D004 : Isolation du parsing OpenAPI par child_process (anti-OOM) (2026-06-01)
+
+**Statut :** accepted (issu du spike ORIENT, cf. SPIKE-LOG).
+
+**Contexte :** Une spec valide mais pathologique (DocuSign, 3,13 MB < limite 10 MB) fait OOM (>2 GB) au déréférencement `$ref` de swagger-parser et **crashe tout le serveur** (DoS). Les gardes existantes (taille 10 MB, timeout 5s coopératif, profondeur de nœuds sur l'arbre brut) ne couvrent pas : l'explosion est *pendant* le deref, l'arbre brut est petit, et le timeout `Promise.race` ne peut pas interrompre du CPU-bound synchrone.
+
+**Décision :** Isoler `parseSpec` dans un **child_process** jetable par parse, avec :
+- **garde primaire = wall-clock timeout parent** qui `child.kill()` (~8 s) — le spike montre qu'à cap mémoire bas l'OOM met ~132 s (thrash GC), donc le timeout est la défense rapide ;
+- **filet = `--max-old-space-size`** (cap heap, OOM → SIGABRT capté) ;
+- **contrat d'erreur** : l'enfant écrit `{ ok, code, message }` JSON sur stdout, le parent re-`throw new ParseError(code, message)` ; pas de sortie / signal → `PARSE_TOO_COMPLEX` ;
+- **cap de concurrence** (sémaphore, 2–4 parses simultanés) pour ne pas rouvrir le DoS multi-requête.
+
+**Alternatives écartées :**
+- **worker_threads + resourceLimits** — résolution de module cassée sous `tsx` (le loader ne se propage pas au worker), nesting worker-dans-worker fragile sous Vitest. Écarté malgré l'API mémoire native plus propre.
+- **Heuristique d'estimation d'expansion `$ref`** — fragile, ne couvre pas l'inconnu ; l'isolation process est une barrière dure quel que soit le contenu.
+- **Baisser la limite de taille** — faux fix : la mémoire n'est pas proportionnelle à la taille.
+
+**Conséquences :**
+- Parsing hors du process serveur principal → un parse pathologique ne tue plus le serveur (prouvé en spike : parent survit au SIGABRT enfant).
+- Chemins concernés : `/api/upload`, `/api/generate`, `/api/host` (froids). `/m/:id` ne re-parse pas → aucune régression de latence agent.
+- Coût : spawn par parse (~centaines de ms, cold-path) + résolution dev (`node --import tsx`) vs prod (`node` compilé) à câbler au build.
+- À implémenter : branche `feature/parser-oom-isolation` (SPEC `.workflow/SPEC-PARSER-OOM.md`).
+
 ---
 Fichier append-only. Les decisions obsoletes sont marquees "superseded", jamais supprimees.
 Alimente par le workflow FORGE (phases ORIENT et LEARN).

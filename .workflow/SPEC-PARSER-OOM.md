@@ -15,18 +15,19 @@ Origine : corpus check APIs.guru — DocuSign (3,13 MB, **sous** la limite 10 MB
 
 Borner la **ressource réelle** (mémoire + temps) du parsing, quelle que soit la taille/forme de la spec. Une spec pathologique → **erreur gracieuse typée**, **le serveur survit**.
 
-## Approche retenue (à valider)
+## Approche retenue (dé-risquée par le spike — cf. SPIKE-LOG + D004)
 
-**Isoler `parseSpec` dans un worker avec plafond mémoire dur + timeout.**
-- `worker_threads` avec `resourceLimits.maxOldGenerationSizeMb` (~512 MB). Au dépassement, le worker **se termine seul** (event `error`/`exit`) → le main thread l'attrape et renvoie une `ParseError` typée. Le serveur n'est jamais touché.
-- Wall-clock timeout côté parent (ceinture + bretelles) → kill du worker s'il pend.
-- I/O worker : `rawSpec` (string) en entrée, `ParsedSpec` (JSON) en sortie ; les `ParseError` typées (`code`) sont reconstruites à la frontière.
+**Isoler `parseSpec` dans un `child_process` jetable avec timeout parent + cap mémoire.** (worker_threads écarté — résolution de module cassée sous tsx, cf. spike.)
+- **Garde primaire = wall-clock timeout côté parent** qui `child.kill()` (~8 s). Le spike montre qu'à cap bas l'OOM met ~132 s (thrash GC) → le timeout est la défense rapide et déterministe.
+- **Filet = `--max-old-space-size`** (cap heap V8 ; l'OOM tue l'enfant en SIGABRT, capté par `close(code, signal)`).
+- **I/O** : `rawSpec` via stdin, résultat via stdout JSON. **Contrat d'erreur** : l'enfant écrit `{ ok, code, message }` ; le parent re-`throw new ParseError(code, message)` ; pas de sortie / signal → `PARSE_TOO_COMPLEX`.
+- **Résolution dev/prod** (validée principe) : dev `node --import tsx parse-child.ts` ; prod `node parse-child.js` (le serveur tourne déjà compilé pareil). child_process **sidestep le worker-in-worker de Vitest** → testable proprement.
 
-**Hors hot path** : seuls `/api/upload`, `/api/generate`, `/api/host` parsent (chemins froids). Le runtime hébergé `/m/:id` **ne re-parse pas** (il sert une config stockée) → aucune régression de latence sur les appels d'agents.
+**Hors hot path** : seuls `/api/upload`, `/api/generate`, `/api/host` parsent (chemins froids). Le runtime hébergé `/m/:id` **ne re-parse pas** → aucune régression de latence agent.
 
-## Risque technique majeur (→ ORIENT / spike avant REFINE)
+## Spike ORIENT — FAIT (2026-06-01)
 
-**Résolution du fichier worker en dev vs prod.** Dev = `tsx watch src/server/index.ts` (le worker doit charger du `.ts`). Prod = `node dist/.../index.js` (le worker charge du `.js` compilé). Les workers **n'héritent pas** automatiquement du loader tsx. Il faut une stratégie qui marche dans les deux (ex. `execArgv: ['--import','tsx']` + `.ts` en dev, `.js` nu en prod, sélection par env). **À dé-risquer par un spike de ≤1h** (un worker minimal qui parse une spec, lancé sous `tsx` ET sous `node` compilé) avant d'investir dans l'implémentation.
+Les 4 hypothèses sont levées (cf. `.workflow/SPIKE-LOG.md`) : fixture bomb OK, worker_threads écarté, child_process validé bout-en-bout (parent survit au SIGABRT), code d'erreur préservé, timeout = garde primaire. **La SPEC est prête pour REFINE.**
 
 ## Règles métier (testables)
 
