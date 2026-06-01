@@ -91,7 +91,8 @@ export async function call({ method, path, pathParams, query, body }: CallOption
   const res = await fetch(fullUrl, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    // fetch refuses a body on GET/HEAD; skip it there (matches the hosted runtime).
+    body: body === undefined || method === 'GET' ? undefined : JSON.stringify(body),
   });
 
   if (!res.ok) {

@@ -14,14 +14,67 @@
  * rather than a runtime crash.
  */
 
-export interface ZodSchemaShape {
-  type?: string;
-  required?: boolean;
-  description?: string;
-  items?: ZodSchemaShape;
-  properties?: Record<string, ZodSchemaShape>;
-  /** Names of fields that must be present when `type === 'object'`. */
-  requiredFields?: ReadonlyArray<string>;
+// ZodSchemaShape now lives in `@shared/types` so EndpointParam can carry a
+// nested body-field schema. Re-exported here for back-compat with existing
+// `./zod-schema-builder` imports.
+export type { ZodSchemaShape } from '@shared/types';
+import type { EndpointParam, ZodSchemaShape } from '@shared/types';
+
+/**
+ * The `ZodSchemaShape` used to type one tool argument. A body field carries a
+ * nested schema; everything else is a flat scalar described by the param. Shared
+ * by the kit (string) and hosted (runtime) builders so the two can't drift in
+ * how they read a param.
+ */
+export function schemaShapeForParam(p: EndpointParam): ZodSchemaShape {
+  // A body field carries its structure in `schema` but the optionality lives on
+  // the param (from the requestBody `required` list) — `toZodShape` never sets
+  // `required`, so we must graft it on or every body field reads as required.
+  if (p.in === 'body' && p.schema) return { ...p.schema, required: p.required };
+  // Default missing `required` to true so non-flagged params aren't `.optional()`.
+  return { type: p.type, required: p.required !== false, description: p.description };
+}
+
+/**
+ * Convert a (dereferenced) OpenAPI schema into the narrow `ZodSchemaShape` the
+ * builders consume. Pure and recursive. OpenAPI's `required: string[]` (list of
+ * required property names) maps to `requiredFields`; `additionalProperties`
+ * carries through (objects are permissive unless it's explicitly `false`).
+ * An unusable input yields an empty shape (→ `z.string()` fallback downstream).
+ */
+export function toZodShape(schema: unknown): ZodSchemaShape {
+  if (!schema || typeof schema !== 'object') return {};
+  const s = schema as Record<string, unknown>;
+  const type = typeof s.type === 'string' ? s.type.toLowerCase() : undefined;
+  const description = typeof s.description === 'string' ? s.description : undefined;
+  const base: ZodSchemaShape = {};
+  if (description) base.description = description;
+
+  const looksObject = type === 'object' || s.properties != null || s.additionalProperties != null;
+  if (looksObject) {
+    base.type = 'object';
+    if (s.properties && typeof s.properties === 'object') {
+      const properties: Record<string, ZodSchemaShape> = {};
+      for (const [key, value] of Object.entries(s.properties as Record<string, unknown>)) {
+        properties[key] = toZodShape(value);
+      }
+      base.properties = properties;
+      base.requiredFields = Array.isArray(s.required)
+        ? (s.required as unknown[]).filter((x): x is string => typeof x === 'string')
+        : [];
+    }
+    base.additionalProperties = s.additionalProperties !== false;
+    return base;
+  }
+
+  if (type === 'array') {
+    base.type = 'array';
+    if (s.items != null) base.items = toZodShape(s.items);
+    return base;
+  }
+
+  if (type) base.type = type;
+  return base;
 }
 
 export function buildZodExpression(
@@ -74,7 +127,11 @@ function baseExpression(shape: ZodSchemaShape, includeDescriptions: boolean): st
         );
         return `${formatPropertyKey(name)}: ${childExpr}`;
       });
-      return entries.length === 0 ? 'z.object({})' : `z.object({ ${entries.join(', ')} })`;
+      // `.passthrough()` keeps undeclared keys — request bodies routinely carry
+      // free-form objects (e.g. Notion page `properties`) that z.object would
+      // otherwise strip. Kept in lockstep with the runtime builder.
+      const obj = entries.length === 0 ? 'z.object({})' : `z.object({ ${entries.join(', ')} })`;
+      return `${obj}.passthrough()`;
     }
     case 'string':
     default:
@@ -83,5 +140,9 @@ function baseExpression(shape: ZodSchemaShape, includeDescriptions: boolean): st
 }
 
 function escapeStringLiteral(input: string): string {
-  return `"${input.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`;
+  // JSON.stringify produces a valid JS double-quoted string literal for ANY
+  // input — it escapes quotes, backslashes AND every control char (CR, tab,
+  // form-feed…). Hand-rolling missed `\r`, which broke generated source for
+  // real specs whose descriptions used CRLF (found via the corpus check).
+  return JSON.stringify(input);
 }

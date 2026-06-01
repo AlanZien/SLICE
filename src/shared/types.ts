@@ -7,22 +7,51 @@
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/**
+ * A narrow OpenAPI-ish schema fragment, shared by the kit's string Zod builder
+ * (`zod-schema-builder`) and the hosted runtime's Zod builder. It lives here in
+ * `shared` so `EndpointParam` can carry a nested body-field schema without the
+ * shared layer depending on server code.
+ */
+export interface ZodSchemaShape {
+  type?: string;
+  required?: boolean;
+  description?: string;
+  items?: ZodSchemaShape;
+  properties?: Record<string, ZodSchemaShape>;
+  /** Names of fields that must be present when `type === 'object'`. */
+  requiredFields?: ReadonlyArray<string>;
+  /** When true, an object tolerates undeclared keys (Zod `.passthrough()`). */
+  additionalProperties?: boolean;
+}
+
 export interface EndpointParam {
-  /** Param name (path, query, header, or cookie). */
+  /** Tool-facing param name (may be disambiguated from the wire name — see wireName). */
   name: string;
   /**
-   * Param location. Phase 02 only flattens `parameters`; `requestBody` fields
-   * are added in a later phase (cf. PLAN 04/06). Until then the `'body'`
-   * variant is intentionally absent from this union so callers can't lean on
-   * data we don't yet produce.
+   * Param location. `'body'` covers a flattened `requestBody` field (phase
+   * "body forwarding"); such params are reassembled into the request body at
+   * call time rather than sent in the path/query/headers.
    */
-  in: 'path' | 'query' | 'header' | 'cookie';
+  in: 'path' | 'query' | 'header' | 'cookie' | 'body';
   /** OpenAPI type hint when available. */
   type?: string;
   /** True if the spec marks the param as required. */
   required: boolean;
   /** Param description if present in the spec. */
   description?: string;
+  /**
+   * Nested schema for `in: 'body'` fields that are objects/arrays. Scalars use
+   * `type` only; this carries the structure so the Zod builders can type it.
+   */
+  schema?: ZodSchemaShape;
+  /**
+   * For a flattened `in:'body'` field: the real upstream field name (the tool
+   * key `name` may have been disambiguated on collision — R-B7). Its PRESENCE
+   * also marks the param as a flattened field; a whole-body fallback param has
+   * no `wireName`. Forwarding reassembles `{ [wireName]: value }`.
+   */
+  wireName?: string;
 }
 
 export interface Endpoint {

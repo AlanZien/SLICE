@@ -27,6 +27,13 @@ const SPEC: ParsedSpec = {
       tag: 'Products',
       endpoints: [
         { id: 'GET /products', method: 'GET', path: '/products', label: 'List products', params: [] },
+        {
+          id: 'POST /products',
+          method: 'POST',
+          path: '/products',
+          label: 'Create product',
+          params: [{ name: 'title', in: 'body', type: 'string', required: true, wireName: 'title' }],
+        },
       ],
     },
   ],
@@ -46,15 +53,22 @@ let dir: string;
 let upstream: Server;
 let upstreamPort: number;
 let received: Array<Record<string, string | string[] | undefined>> = [];
+let bodies: unknown[] = [];
 
 beforeAll(async () => {
   upstreamPort = await freePort();
 
-  // Mock upstream: record headers, always 200.
+  // Mock upstream: record headers + parsed body, always 200.
   upstream = createServer((req, res) => {
-    received.push({ ...req.headers });
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ ok: true }));
+    const chunks: Buffer[] = [];
+    req.on('data', (c) => chunks.push(c as Buffer));
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString();
+      received.push({ ...req.headers });
+      bodies.push(raw.length > 0 ? JSON.parse(raw) : undefined);
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: true }));
+    });
   });
   await new Promise<void>((r) => upstream.listen(upstreamPort, r));
 
@@ -62,7 +76,7 @@ beforeAll(async () => {
   const req: GenerateRequest = {
     parsedSpec: { ...SPEC, baseUrl: `http://127.0.0.1:${upstreamPort}` },
     rawSpec: '',
-    selectedIds: ['GET /products'],
+    selectedIds: ['GET /products', 'POST /products'],
     config: {
       mcpName: 'relay-mcp',
       baseUrl: `http://127.0.0.1:${upstreamPort}`,
@@ -130,6 +144,16 @@ async function callTool(port: number, authHeader?: string): Promise<void> {
   await client.close();
 }
 
+async function callCreate(port: number, title: string): Promise<void> {
+  const client = new Client({ name: 'relay-test', version: '0.0.0' });
+  const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/`), {
+    requestInit: { headers: { Authorization: 'Bearer USERSECRET123' } },
+  });
+  await client.connect(transport);
+  await client.callTool({ name: 'create_product', arguments: { title } });
+  await client.close();
+}
+
 describe('generated MCP — relay mode runtime (RC2.6)', () => {
   it('forwards the caller bearer token as the upstream API key', async () => {
     received = [];
@@ -162,5 +186,16 @@ describe('generated MCP — relay mode runtime (RC2.6)', () => {
       srv.stop();
     }
     expect(received.at(-1)?.[UPSTREAM_HEADER]).toBeUndefined();
+  }, 30_000);
+
+  it('reassembles a flattened in:body field into the request body', async () => {
+    bodies = [];
+    const srv = await startServer();
+    try {
+      await callCreate(srv.port, 'Wool Hat');
+    } finally {
+      srv.stop();
+    }
+    expect(bodies.at(-1)).toEqual({ title: 'Wool Hat' });
   }, 30_000);
 });

@@ -10,7 +10,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { z, type ZodTypeAny } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { EndpointParam, HttpMethod, UpstreamAuth } from '@shared/types';
-import { type ZodSchemaShape } from './zod-schema-builder';
+import { type ZodSchemaShape, schemaShapeForParam } from './zod-schema-builder';
 import { assertPublicUrl } from './ssrf-guard';
 
 /** Knobs for the hosted engine. `allowPrivateHosts` is for tests/dev only. */
@@ -54,8 +54,14 @@ export function relayedToken(): string | undefined {
   return match?.[1];
 }
 
-/** Build a real Zod schema from a (narrow) OpenAPI shape, at runtime. */
-function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
+/**
+ * Build a real Zod schema from a (narrow) OpenAPI shape, at runtime. Kept in
+ * behavioural lockstep with the kit's string builder (`buildZodExpression`):
+ * objects `.passthrough()` so undeclared keys (free-form request bodies like
+ * Notion page `properties`) survive instead of being stripped. Exported for
+ * the parity test.
+ */
+export function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
   let base: ZodTypeAny;
   switch ((shape.type ?? '').toLowerCase()) {
     case 'integer':
@@ -77,7 +83,7 @@ function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
       for (const [name, child] of Object.entries(props)) {
         entries[name] = buildZodSchema({ ...child, required: requiredSet.has(name) });
       }
-      base = z.object(entries);
+      base = z.object(entries).passthrough();
       break;
     }
     default:
@@ -86,8 +92,33 @@ function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
   return shape.required === false ? base.optional() : base;
 }
 
-function shapeOfParam(p: EndpointParam): ZodSchemaShape {
-  return { type: p.type, required: p.required, description: p.description };
+/**
+ * Reassemble the outgoing JSON body from the `in:'body'` params (R-B9/R-B10).
+ * Flattened fields → `{ [wireName]: value }` (always sent, even `{}`). A single
+ * whole-body fallback param (no `wireName`) → its value is the body, sent only
+ * when provided. Undici refuses a body on GET/HEAD, so we skip it there.
+ */
+function assembleBody(
+  endpoint: HostedEndpoint,
+  args: Record<string, unknown>
+): string | undefined {
+  if (endpoint.method === 'GET') return undefined;
+  const bodyParams = endpoint.params.filter((p) => p.in === 'body');
+  if (bodyParams.length === 0) return undefined;
+
+  const fallback =
+    bodyParams.length === 1 && bodyParams[0]!.wireName === undefined ? bodyParams[0]! : undefined;
+  if (fallback) {
+    const value = args[fallback.name];
+    return value === undefined ? undefined : JSON.stringify(value);
+  }
+
+  const obj: Record<string, unknown> = {};
+  for (const p of bodyParams) {
+    const value = args[p.name];
+    if (value !== undefined) obj[p.wireName ?? p.name] = value;
+  }
+  return JSON.stringify(obj);
 }
 
 /** Issue the upstream call for one tool invocation, relaying the caller token. */
@@ -135,7 +166,9 @@ async function callUpstream(
     }
   }
 
-  const res = await fetch(url, { method: endpoint.method, headers });
+  const body = assembleBody(endpoint, args);
+
+  const res = await fetch(url, { method: endpoint.method, headers, body });
   if (!res.ok) {
     throw new Error(`Upstream ${res.status} ${res.statusText}: ${await res.text()}`);
   }
@@ -157,7 +190,7 @@ export function buildHostedMcpServer(
   for (const endpoint of config.endpoints) {
     const shape: Record<string, ZodTypeAny> = {};
     for (const p of endpoint.params) {
-      shape[p.name] = buildZodSchema(shapeOfParam(p));
+      shape[p.name] = buildZodSchema(schemaShapeForParam(p));
     }
     server.tool(endpoint.name, endpoint.description, shape, async (args: Record<string, unknown>) => {
       const result = await callUpstream(config, endpoint, args, allowPrivateHosts);

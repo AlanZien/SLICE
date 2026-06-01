@@ -42,6 +42,16 @@ Aujourd'hui SLICE génère 1 MCP depuis 1 OpenAPI. Postman permet de piocher des
 - [ ] Snippets de config Claude Desktop / n8n / Airia adaptés (un seul serveur, plusieurs auths à fournir)
 - [ ] UX de "workspace MCP" : sauvegarde côté client de la sélection multi-API pour itérer (sans persistance serveur)
 
+## Robustesse production — issu du corpus check APIs.guru (2026-06-01)
+
+Un harnais (`scripts/corpus-check.ts`) passe N vraies specs d'APIs.guru dans le pipeline. Findings :
+
+- [ ] **PROD-CRITIQUE — OOM parser sur spec valide** : DocuSign (3,13 MB, **sous** la limite 10 MB) fait **OOM (>2 GB)** au déréférencement `$ref` de swagger-parser, **avant** que le timeout 5s / le check de profondeur ne s'activent. Une seule spec uploadée peut **crasher tout le serveur** (DoS). À durcir : parser dans un **worker/process isolé avec cap mémoire** (kill + erreur gracieuse « spec trop complexe »), ou pré-estimer l'explosion `$ref` avant deref. **Bloquant avant une vraie mise en prod multi-tenant.**
+- [ ] **Couverture OAuth amont** : ~1/5 des APIs réelles testées sont rejetées en `UNSUPPORTED_AUTH` (OAuth). C'est le **plus gros levier de couverture** réelle (plus que la perf). Débloque une part majeure des APIs du marché. (déjà listé V1.5, re-priorisé par la data corpus)
+- [ ] **Levier A — matrice de features OpenAPI** : un test ciblé par construction (oneOf/anyOf/allOf, nullable, enum, $ref circulaire, additionalProperties, formats…) avec verdict *géré/approximé/rejeté*. La version tractable d'« exhaustif ».
+- [ ] **Levier C — rapport de génération + fail-loud** : avant déploiement, montrer à l'utilisateur X endpoints supportés / Y approximés (oneOf→string, etc.) / Z ignorés, au lieu de produire un schéma faux en silence.
+- [ ] **Corpus check en CI/pré-deploy** : faire tourner `corpus-check` (N specs) avant chaque release comme garde anti-régression sur la diversité réelle.
+
 ## Qualification avancée de la spec (V1.1) — issu de réflexion qualité 2026-05-27
 
 Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qualification avancée est reportée pour limiter le scope MVP.
@@ -64,7 +74,7 @@ Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qua
 
 ## Runtime hébergé — suites Pivot-4 (issu de LEARN Pivot-4, 2026-06-01)
 
-- [ ] **Forwarding du body de requête** (`in:'body'`) : le parser ne flatten pas `requestBody`, donc les tools POST/PATCH et la **recherche Notion** (`POST /v1/search`) partent sans corps. Débloque les écritures + la recherche. **Plus haute valeur produit.** (issu de Pivot-4, vu en UAT Claude/Notion)
+- [x] **Forwarding du body de requête** (`in:'body'`) — LIVRÉ (phase body-forwarding) : parser aplatit `requestBody` en params `in:'body'`, runtime hébergé + kit réassemblent et envoient le corps JSON, objets free-form transmis intacts (passthrough). Débloque écritures + recherche Notion.
 - [ ] **Cache du McpServer hébergé** (perf hot path) : `/m/:id` reconstruit tout par requête. Mémoïser par id (LRU), configs immutables. Garder le transport par requête. (issu de Pivot-4, D003 le prévoyait)
 - [ ] **Durcissement SSRF anti-DNS-rebinding** : pinner l'IP résolue dans le dispatcher `fetch` (undici) au lieu du `dns.lookup` par appel non-pinné. (issu de Pivot-4 security-review)
 - [ ] **Snippet Claude Desktop** : générer un format `supergateway`/`mcp-remote` (fichier de config) pour l'onglet Claude — le bloc `url + headers` brut ne se colle pas dans l'écran connecteur. (issu de Pivot-4, UAT)

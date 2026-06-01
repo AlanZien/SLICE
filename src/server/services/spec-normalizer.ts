@@ -14,6 +14,7 @@ import type {
 import { detectAuth } from './auth-detector';
 import { slugify } from './slug';
 import { generateMcpServerToken } from './token-generator';
+import { toZodShape } from './zod-schema-builder';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -91,6 +92,11 @@ function collectGroups(doc: any): { groups: EndpointGroup[]; excludedCount: numb
       const tag: string = op.tags?.[0] ?? 'Other';
       const label = pickLabel(op, upperMethod, pathKey);
       const params = mergeParams(pathLevelParams, op.parameters);
+      // Flatten a JSON requestBody into in:'body' params (reassembled into the
+      // request body at call time). Field names that collide with an existing
+      // param are disambiguated; the real wire name is kept in `wireName`.
+      const existingNames = new Set(params.map((p) => p.name));
+      params.push(...flattenRequestBody(op.requestBody, existingNames));
 
       const endpoint: Endpoint = {
         id: `${upperMethod} ${pathKey}`,
@@ -159,6 +165,48 @@ function mergeParams(pathLevel: any[], opLevel: unknown): EndpointParam[] {
     merged.set(`${normalised.in}:${normalised.name}`, normalised);
   }
   return Array.from(merged.values());
+}
+
+/**
+ * Flatten an operation's JSON `requestBody` into `in:'body'` params.
+ *
+ * - Object body with declared properties → one param per top-level property
+ *   (`wireName` = the real field name; `name` disambiguated on collision).
+ * - Any other body (array, scalar, free-form object) → a single fallback `body`
+ *   param carrying the whole schema, marked by the ABSENCE of `wireName`.
+ * - Non-JSON content (multipart, etc.) → no body params (MVP limit).
+ */
+function flattenRequestBody(requestBody: any, existingNames: Set<string>): EndpointParam[] {
+  const schema = requestBody?.content?.['application/json']?.schema;
+  if (!schema || typeof schema !== 'object') return [];
+  const shape = toZodShape(schema);
+
+  if (shape.type === 'object' && shape.properties && Object.keys(shape.properties).length > 0) {
+    const requiredSet = new Set(shape.requiredFields ?? []);
+    return Object.entries(shape.properties).map(([propName, propShape]) => {
+      const name = existingNames.has(propName) ? `${propName}_body` : propName;
+      const param: EndpointParam = {
+        name,
+        in: 'body',
+        required: requiredSet.has(propName),
+        wireName: propName,
+        schema: propShape,
+      };
+      if (propShape.type) param.type = propShape.type;
+      if (propShape.description) param.description = propShape.description;
+      return param;
+    });
+  }
+
+  // Fallback: the whole body is a single value (no wireName).
+  const param: EndpointParam = {
+    name: existingNames.has('body') ? 'requestBody' : 'body',
+    in: 'body',
+    required: requestBody.required === true,
+    schema: shape,
+  };
+  if (shape.type) param.type = shape.type;
+  return [param];
 }
 
 function normaliseParam(raw: any): EndpointParam | null {
