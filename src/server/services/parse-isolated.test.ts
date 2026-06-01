@@ -2,7 +2,6 @@
 // spec can't crash the server. Integration (spawns processes) — kept fast by
 // using a short timeout (the kill is the primary guard, not the slow OOM).
 import { describe, it, expect } from 'vitest';
-import { ParseError } from '@shared/types';
 import { parseSpec } from './parser';
 import { parseSpecIsolated, classifyExit } from './parse-isolated';
 import { refBomb } from './_fixtures/ref-bomb';
