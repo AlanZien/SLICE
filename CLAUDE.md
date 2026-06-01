@@ -12,13 +12,15 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 - **Pivot-4 (PR #20) — runtime MCP hébergé / SLICE Cloud** : `POST /api/host` range une config + renvoie une URL ; `ALL /m/:id` sert le MCP **stateless** (multi-session) et relaie le token. Guard SSRF. Front « Deploy to SLICE Cloud » → écran 4 URL + snippets mode URL. **Validé bout-en-bout dans Claude Desktop contre la vraie API Notion.**
 - LEARN Pivot-4 : PR #21 (REVIEW + règle relai E2E).
 
-**État technique** : 414 tests verts, typecheck strict clean. Store hébergé **in-memory** (URL meurt au restart — persistance = dette). `/api/generate` (ZIP) toujours présent pour le self-host.
+**Body forwarding livré (PR #23, mergé 2026-06-01)** : le parser aplatit `requestBody` en params `in:'body'`, runtime hébergé + kit réassemblent et envoient le corps JSON (objets free-form transmis intacts via passthrough). **Recherche/création Notion validées en live.** 446 tests verts.
 
-**Prochaine étape recommandée** : **forwarding du body de requête** (`in:'body'`) — le parser ne flatten pas encore `requestBody`, donc les tools POST/PATCH et la **recherche Notion** partent sans corps (limite vue en UAT). Plus forte valeur produit. Cf. `.workflow/BACKLOG.md` § « Runtime hébergé — suites Pivot-4 ».
+**Validation prod — corpus check (PR #23)** : `scripts/corpus-check.ts` passe N vraies specs d'APIs.guru dans le pipeline. Run 500 API : **412 ok, 83 rejets gracieux (62 OAuth), 5 too-big, 0 bug**. A surfacé 2 bugs corrigés (`\r` dans descriptions) + 1 finding PROD-CRITIQUE (OOM parser).
 
-**Outils** : `scripts/try-hosted.ts` teste un MCP hébergé en CLI (`NOTION_TOKEN=… pnpm exec tsx scripts/try-hosted.ts <url> <tool> '<jsonArgs>'`).
+**Prochaine étape (PROD-CRITIQUE) : isolation mémoire du parsing** — une spec valide de 3 MB (DocuSign) fait OOM (>2 GB) et **crashe le serveur** (DoS). SPEC prête + critiquée : `.workflow/SPEC-PARSER-OOM.md` (sur branche `feature/parser-oom-isolation`). **Commence par le spike ORIENT (~2h)** — voir la section « Corrections /advisor » de la SPEC. Ajouter un cap de concurrence (R-O7).
 
-**Dette ouverte (BACKLOG)** : body forwarding, cache McpServer (perf hot path), durcissement SSRF DNS-rebinding, parité runtime↔kit, persistance store, snippet Claude Desktop (supergateway), `cookie`/`allowPrivateHosts`.
+**Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — à mettre en CI pré-release).
+
+**Dette ouverte (BACKLOG)** : OOM parser (PROD-CRITIQUE), OAuth amont (plus gros levier de couverture), matrice de features (levier A), rapport fail-loud (levier C), cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
 
 **Anciens jalons (à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/`.
 
