@@ -1,5 +1,28 @@
 import { describe, it, expect } from 'vitest';
+import { z } from 'zod';
 import { buildZodExpression, formatPropertyKey } from './zod-schema-builder';
+
+describe('buildZodExpression — description escaping (real-world specs)', () => {
+  // Descriptions in real specs carry CR, tabs and quotes; the emitted source
+  // must stay a valid string literal. Found via the APIs.guru corpus check.
+  const NASTY = 'Line one.\r\nNOTE: "quoted" & tab\there. end';
+
+  it('produces an evaluable expression for a description with CR/tab/quote', () => {
+    const expr = buildZodExpression({ type: 'string', description: NASTY }, true);
+    expect(() => new Function('z', `return (${expr})`)(z)).not.toThrow();
+  });
+
+  it('escapes nested object field descriptions too', () => {
+    const expr = buildZodExpression(
+      {
+        type: 'array',
+        items: { type: 'object', properties: { a: { type: 'string', description: NASTY } } },
+      },
+      true
+    );
+    expect(() => new Function('z', `return (${expr})`)(z)).not.toThrow();
+  });
+});
 
 describe('buildZodExpression', () => {
   describe('primitive types', () => {
