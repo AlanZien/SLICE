@@ -66,7 +66,13 @@ describe('parseSpecIsolated', () => {
   it('equivalence: same ParsedSpec as in-process on a rich spec (R-O2)', async () => {
     const isolated = await parseSpecIsolated(rich, { sizeBytes: Buffer.byteLength(rich) });
     const inProcess = await parseSpec(rich, { sizeBytes: Buffer.byteLength(rich) });
-    expect(isolated).toEqual(inProcess);
+    // The default MCP server token is generated randomly per parse — neutralise
+    // it so the comparison checks the structural fidelity of the round-trip.
+    const strip = (s: typeof isolated) => ({
+      ...s,
+      defaultConfig: s.defaultConfig ? { ...s.defaultConfig, mcpServerToken: 'X' } : undefined,
+    });
+    expect(strip(isolated)).toEqual(strip(inProcess));
   }, 15_000);
 
   it('preserves a typed ParseError code across the boundary (R-O3)', async () => {
