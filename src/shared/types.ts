@@ -220,6 +220,7 @@ export type ApiErrorCode =
   | 'GENERATION_FAILED'
   | 'BLOCKED_HOST'
   | 'PARSE_TOO_COMPLEX'
+  | 'PARSE_BUSY'
   | 'TIMEOUT';
 
 export interface ApiErrorPayload {

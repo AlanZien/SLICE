@@ -6,7 +6,7 @@
  * routes. `logPrefix` tags the server-side warning so a failure stays
  * attributable to the calling route.
  */
-import { parseSpec } from './parser';
+import { parseSpecIsolated, ParseBusyError } from './parse-isolated';
 import { ApiError, ParseError, type Endpoint, type ParsedSpec } from '@shared/types';
 
 export interface ReparsedSelection {
@@ -21,8 +21,12 @@ export async function reparseAndSelect(
 ): Promise<ReparsedSelection> {
   let reparsed: ParsedSpec;
   try {
-    reparsed = await parseSpec(rawSpec, { sizeBytes: Buffer.byteLength(rawSpec) });
+    reparsed = await parseSpecIsolated(rawSpec, { sizeBytes: Buffer.byteLength(rawSpec) });
   } catch (err) {
+    // Server momentarily saturated — retryable, not the spec's fault.
+    if (err instanceof ParseBusyError) {
+      throw new ApiError('PARSE_BUSY', err.message, 429);
+    }
     // Log the underlying cause server-side; the client sees a stable generic
     // message so we don't leak parser internals.
     // eslint-disable-next-line no-console

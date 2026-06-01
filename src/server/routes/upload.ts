@@ -1,6 +1,6 @@
 import { type RequestHandler, Router } from 'express';
 import multer, { type Multer } from 'multer';
-import { parseSpec } from '../services/parser';
+import { parseSpecIsolated, ParseBusyError } from '../services/parse-isolated';
 import { ParseError, type ParseErrorCode } from '@shared/types';
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB strict (R1.1.2 / R1.6.9)
@@ -56,9 +56,13 @@ const handler: RequestHandler = async (req, res) => {
 
   try {
     const raw = file.buffer.toString('utf-8');
-    const parsed = await parseSpec(raw, { sizeBytes: file.size });
+    const parsed = await parseSpecIsolated(raw, { sizeBytes: file.size });
     res.status(200).json(parsed);
   } catch (err) {
+    if (err instanceof ParseBusyError) {
+      res.status(429).json({ code: 'PARSE_BUSY', message: err.message });
+      return;
+    }
     if (err instanceof ParseError) {
       res.status(STATUS_BY_CODE[err.code]).json({ code: err.code, message: err.message });
       return;
