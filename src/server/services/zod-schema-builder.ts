@@ -18,7 +18,19 @@
 // nested body-field schema. Re-exported here for back-compat with existing
 // `./zod-schema-builder` imports.
 export type { ZodSchemaShape } from '@shared/types';
-import type { ZodSchemaShape } from '@shared/types';
+import type { EndpointParam, ZodSchemaShape } from '@shared/types';
+
+/**
+ * The `ZodSchemaShape` used to type one tool argument. A body field carries a
+ * nested schema; everything else is a flat scalar described by the param. Shared
+ * by the kit (string) and hosted (runtime) builders so the two can't drift in
+ * how they read a param.
+ */
+export function schemaShapeForParam(p: EndpointParam): ZodSchemaShape {
+  if (p.in === 'body' && p.schema) return p.schema;
+  // Default missing `required` to true so non-flagged params aren't `.optional()`.
+  return { type: p.type, required: p.required !== false, description: p.description };
+}
 
 /**
  * Convert a (dereferenced) OpenAPI schema into the narrow `ZodSchemaShape` the

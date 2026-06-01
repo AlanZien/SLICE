@@ -8,7 +8,7 @@ import type {
   GenerateRequest,
   GeneratedFile,
 } from '@shared/types';
-import { buildZodExpression, formatPropertyKey } from './zod-schema-builder';
+import { buildZodExpression, formatPropertyKey, schemaShapeForParam } from './zod-schema-builder';
 
 /**
  * Emit a JS property access on `args`. Identifiers use dot access
@@ -95,10 +95,10 @@ function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBindin
   // Header-style param names (`Notion-Version`, `X-Api-Key`) MUST be quoted
   // — bare hyphens parse as subtraction in object-literal keys. Body fields
   // carry a nested schema; everything else is a flat scalar.
-  const entries = endpoint.params.map((p) => {
-    const shape = p.in === 'body' && p.schema ? p.schema : shapeOfParam(p);
-    return `${formatPropertyKey(p.name)}: ${buildZodExpression(shape, includeDescriptions)}`;
-  });
+  const entries = endpoint.params.map(
+    (p) =>
+      `${formatPropertyKey(p.name)}: ${buildZodExpression(schemaShapeForParam(p), includeDescriptions)}`
+  );
   const inputSchema = entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`;
 
   // Reassemble the request body (R-B9). A single whole-body fallback param has
@@ -127,19 +127,6 @@ function buildTool(endpoint: Endpoint, includeDescriptions: boolean): ToolBindin
     hasBody: body.length > 0,
     bodyFallback: !!fallback,
     bodyExpr,
-  };
-}
-
-function shapeOfParam(p: EndpointParam): {
-  type?: string;
-  required: boolean;
-  description?: string;
-} {
-  return {
-    type: p.type,
-    // Default to required: true so non-flagged params don't get `.optional()`.
-    required: p.required !== false,
-    description: p.description,
   };
 }
 

@@ -10,7 +10,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import { z, type ZodTypeAny } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { EndpointParam, HttpMethod, UpstreamAuth } from '@shared/types';
-import { type ZodSchemaShape } from './zod-schema-builder';
+import { type ZodSchemaShape, schemaShapeForParam } from './zod-schema-builder';
 import { assertPublicUrl } from './ssrf-guard';
 
 /** Knobs for the hosted engine. `allowPrivateHosts` is for tests/dev only. */
@@ -90,10 +90,6 @@ export function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
       base = z.string();
   }
   return shape.required === false ? base.optional() : base;
-}
-
-function shapeOfParam(p: EndpointParam): ZodSchemaShape {
-  return { type: p.type, required: p.required, description: p.description };
 }
 
 /**
@@ -194,9 +190,7 @@ export function buildHostedMcpServer(
   for (const endpoint of config.endpoints) {
     const shape: Record<string, ZodTypeAny> = {};
     for (const p of endpoint.params) {
-      // Body fields carry a nested schema; everything else is a flat scalar.
-      shape[p.name] =
-        p.in === 'body' && p.schema ? buildZodSchema(p.schema) : buildZodSchema(shapeOfParam(p));
+      shape[p.name] = buildZodSchema(schemaShapeForParam(p));
     }
     server.tool(endpoint.name, endpoint.description, shape, async (args: Record<string, unknown>) => {
       const result = await callUpstream(config, endpoint, args, allowPrivateHosts);
