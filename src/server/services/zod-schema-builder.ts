@@ -27,7 +27,10 @@ import type { EndpointParam, ZodSchemaShape } from '@shared/types';
  * how they read a param.
  */
 export function schemaShapeForParam(p: EndpointParam): ZodSchemaShape {
-  if (p.in === 'body' && p.schema) return p.schema;
+  // A body field carries its structure in `schema` but the optionality lives on
+  // the param (from the requestBody `required` list) — `toZodShape` never sets
+  // `required`, so we must graft it on or every body field reads as required.
+  if (p.in === 'body' && p.schema) return { ...p.schema, required: p.required };
   // Default missing `required` to true so non-flagged params aren't `.optional()`.
   return { type: p.type, required: p.required !== false, description: p.description };
 }
