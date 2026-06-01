@@ -23,6 +23,9 @@ import { ParseError, type ParsedSpec, type ParseErrorCode } from '@shared/types'
 const MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_MEMORY_MB = 512;
 const DEFAULT_TIMEOUT_MS = 8000;
+// Cap accumulated child stdout — defense in depth so a runaway child can't grow
+// the parent's memory unbounded.
+const MAX_STDOUT_BYTES = 32 * 1024 * 1024;
 
 /** Codes the child is allowed to tunnel back; anything else → generic. */
 const KNOWN_CODES = new Set<ParseErrorCode>([
@@ -133,7 +136,15 @@ async function runChild(raw: string, opts: ParseIsolatedOptions): Promise<Parsed
     const child = spawn(process.execPath, args, {
       cwd: process.cwd(),
       stdio: ['pipe', 'pipe', 'ignore'],
-      env: { ...process.env, NODE_OPTIONS: '' },
+      // Allowlisted env — the child only parses untrusted specs, so it inherits
+      // NO server secrets. NODE_OPTIONS is scrubbed so a deploy-time
+      // `--max-old-space-size`/`--inspect` can't override our argv cap.
+      env: {
+        PATH: process.env.PATH ?? '',
+        HOME: process.env.HOME ?? '',
+        NODE_ENV: process.env.NODE_ENV ?? '',
+        NODE_OPTIONS: '',
+      },
     });
 
     let out = '';
@@ -153,7 +164,14 @@ async function runChild(raw: string, opts: ParseIsolatedOptions): Promise<Parsed
       child.kill('SIGKILL');
     }, timeoutMs);
 
-    child.stdout.on('data', (d) => (out += d));
+    child.stdout.on('data', (d) => {
+      out += d;
+      if (out.length > MAX_STDOUT_BYTES) {
+        settle(() =>
+          reject(new ParseError('PARSE_TOO_COMPLEX', 'The parsed result is unexpectedly large.'))
+        );
+      }
+    });
     child.on('error', (e) =>
       settle(() => reject(new ParseError('PARSE_TOO_COMPLEX', `Isolated parse failed: ${e.message}`)))
     );
