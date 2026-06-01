@@ -52,7 +52,7 @@ describe('buildZodExpression', () => {
           required: true,
           properties: { a: { type: 'string' } },
         })
-      ).toBe('z.object({ a: z.string().optional() })');
+      ).toBe('z.object({ a: z.string().optional() }).passthrough()');
     });
 
     it('object property listed in requiredFields drops .optional()', () => {
@@ -63,7 +63,7 @@ describe('buildZodExpression', () => {
           properties: { a: { type: 'string' } },
           requiredFields: ['a'],
         })
-      ).toBe('z.object({ a: z.string() })');
+      ).toBe('z.object({ a: z.string() }).passthrough()');
     });
 
     it('object with required + optional mixed properties', () => {
@@ -81,8 +81,10 @@ describe('buildZodExpression', () => {
       expect(out).toContain('limit: z.number().int().optional()');
     });
 
-    it('object without properties → z.object({})', () => {
-      expect(buildZodExpression({ type: 'object', required: true })).toBe('z.object({})');
+    it('object without properties → z.object({}).passthrough()', () => {
+      expect(buildZodExpression({ type: 'object', required: true })).toBe(
+        'z.object({}).passthrough()'
+      );
     });
   });
 
@@ -159,7 +161,7 @@ describe('buildZodExpression', () => {
         properties: { 'Notion-Version': { type: 'string' } },
         requiredFields: ['Notion-Version'],
       });
-      expect(out).toBe('z.object({ "Notion-Version": z.string() })');
+      expect(out).toBe('z.object({ "Notion-Version": z.string() }).passthrough()');
     });
   });
 });

@@ -70,7 +70,11 @@ function baseExpression(shape: ZodSchemaShape, includeDescriptions: boolean): st
         );
         return `${formatPropertyKey(name)}: ${childExpr}`;
       });
-      return entries.length === 0 ? 'z.object({})' : `z.object({ ${entries.join(', ')} })`;
+      // `.passthrough()` keeps undeclared keys — request bodies routinely carry
+      // free-form objects (e.g. Notion page `properties`) that z.object would
+      // otherwise strip. Kept in lockstep with the runtime builder.
+      const obj = entries.length === 0 ? 'z.object({})' : `z.object({ ${entries.join(', ')} })`;
+      return `${obj}.passthrough()`;
     }
     case 'string':
     default:

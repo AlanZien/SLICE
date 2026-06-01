@@ -54,8 +54,14 @@ export function relayedToken(): string | undefined {
   return match?.[1];
 }
 
-/** Build a real Zod schema from a (narrow) OpenAPI shape, at runtime. */
-function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
+/**
+ * Build a real Zod schema from a (narrow) OpenAPI shape, at runtime. Kept in
+ * behavioural lockstep with the kit's string builder (`buildZodExpression`):
+ * objects `.passthrough()` so undeclared keys (free-form request bodies like
+ * Notion page `properties`) survive instead of being stripped. Exported for
+ * the parity test.
+ */
+export function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
   let base: ZodTypeAny;
   switch ((shape.type ?? '').toLowerCase()) {
     case 'integer':
@@ -77,7 +83,7 @@ function buildZodSchema(shape: ZodSchemaShape): ZodTypeAny {
       for (const [name, child] of Object.entries(props)) {
         entries[name] = buildZodSchema({ ...child, required: requiredSet.has(name) });
       }
-      base = z.object(entries);
+      base = z.object(entries).passthrough();
       break;
     }
     default:
