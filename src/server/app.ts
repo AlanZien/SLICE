@@ -69,9 +69,9 @@ export function createApp(options: CreateAppOptions = {}): Express {
   app.use('/m', createHostedMcpRouter({ allowPrivateHosts }));
 
   if (nodeEnv === 'production') {
-    const clientDist = options.clientDist ?? path.resolve(__dirname, '../client');
+    const clientDist = options.clientDist ?? path.resolve(__dirname, '../../client');
     app.use(express.static(clientDist));
-    app.get('*', (_req, res) => {
+    app.get('/{*splat}', (_req, res) => {
       res.sendFile(path.join(clientDist, 'index.html'));
     });
   }
