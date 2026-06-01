@@ -46,9 +46,10 @@ export interface EndpointParam {
    */
   schema?: ZodSchemaShape;
   /**
-   * The real upstream field name, set only when `name` was disambiguated to
-   * avoid a collision with another param (R-B7). Forwarding uses
-   * `wireName ?? name`.
+   * For a flattened `in:'body'` field: the real upstream field name (the tool
+   * key `name` may have been disambiguated on collision — R-B7). Its PRESENCE
+   * also marks the param as a flattened field; a whole-body fallback param has
+   * no `wireName`. Forwarding reassembles `{ [wireName]: value }`.
    */
   wireName?: string;
 }
