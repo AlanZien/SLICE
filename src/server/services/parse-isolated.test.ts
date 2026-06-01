@@ -1,9 +1,9 @@
 // T3 — parseSpecIsolated: runs the parser in a child_process so a pathological
 // spec can't crash the server. Integration (spawns processes) — kept fast by
 // using a short timeout (the kill is the primary guard, not the slow OOM).
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { parseSpec } from './parser';
-import { parseSpecIsolated, classifyExit } from './parse-isolated';
+import { parseSpecIsolated, classifyExit, ParseBusyError } from './parse-isolated';
 import { refBomb } from './_fixtures/ref-bomb';
 
 const trivial = JSON.stringify({
@@ -100,5 +100,32 @@ describe('parseSpecIsolated', () => {
     // Parent survived: a normal parse still works right after.
     const parsed = await parseSpecIsolated(trivial, { sizeBytes: Buffer.byteLength(trivial) });
     expect(parsed.groups.length).toBeGreaterThan(0);
+  }, 20_000);
+});
+
+describe('parseSpecIsolated — concurrency (R-O7)', () => {
+  afterEach(() => {
+    delete process.env.PARSE_MAX_CONCURRENT;
+    delete process.env.PARSE_MAX_QUEUE;
+  });
+
+  it('rejects with ParseBusyError when the bounded queue is full', async () => {
+    process.env.PARSE_MAX_CONCURRENT = '1';
+    process.env.PARSE_MAX_QUEUE = '0';
+    const bomb = refBomb(12, 7);
+    // p1 holds the single slot for ~1.5s; p2 has nowhere to queue → busy.
+    const p1 = parseSpecIsolated(bomb, { sizeBytes: Buffer.byteLength(bomb), maxMemoryMb: 256, timeoutMs: 1500 });
+    const p2 = parseSpecIsolated(trivial, { sizeBytes: Buffer.byteLength(trivial) });
+    await expect(p2).rejects.toBeInstanceOf(ParseBusyError);
+    await p1.catch(() => {}); // drain
+  }, 20_000);
+
+  it('queues within the cap without rejecting', async () => {
+    process.env.PARSE_MAX_CONCURRENT = '1';
+    process.env.PARSE_MAX_QUEUE = '5';
+    const results = await Promise.allSettled(
+      [trivial, trivial, trivial].map((s) => parseSpecIsolated(s, { sizeBytes: Buffer.byteLength(s) }))
+    );
+    expect(results.every((r) => r.status === 'fulfilled')).toBe(true);
   }, 20_000);
 });
