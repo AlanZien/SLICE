@@ -596,3 +596,25 @@ Content-types non-JSON (multipart/binaire), `enum`/`nullable`/`oneOf`/`anyOf`, a
 
 ### Durcissements défense-en-profondeur (EVALUATE security-review)
 Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfant. Tracés : dépendance rate-limit amont, dimensionnement `concurrence × cap mémoire` vs RAM instance.
+
+## Phase ci-pre-release : CI gate + pnpm figé (2026-06-02)
+
+### Tests techniques (générés par Claude depuis le PLAN)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `hasRealBugs` → `true` si ≥1 verdict CRASH ou zodfail | ✓ | `corpus-check.test.ts` |
+| 2 | `hasRealBugs` → `false` pour reject/toobig/fetcherr/ok et run vide | ✓ | `corpus-check.test.ts` |
+| 3 | `corpus-check` importable sans déclencher `main()` (réseau) | ✓ | guard `import.meta.url` ; test importe le module |
+| 4 | Suite complète verte (463 tests) avec scripts/ inclus dans Vitest | ✓ | `pnpm test` |
+| 5 | `pnpm typecheck` → exit 0 | ✓ | tsc -b |
+| 6 | `pnpm prod:smoke` → build + boot binaire compilé + 4 checks verts | ✓ | reproduit le gate CI en local |
+| 7 | pnpm figé via `packageManager: pnpm@9.13.2` + `engines.node >=22` | ✓ | corepack en CI |
+| 8 | Smoke tsc du bundle généré hermétique en CI (binaire `tsc` direct, pas `pnpm exec`) | ✓ | finding du gate : `pnpm exec` déclenchait un install implicite en CI cassant les symlinks |
+
+### Tests métier / CI (validés par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `ci.yml` passe au vert sur la PR de cette phase (preuve réelle du gate) | ✓ | run #26808053054, 1m33s — a aussi attrapé le snapshot test non-CI-safe |
+| 2 | `corpus.yml` lançable d'un clic (onglet Actions → Corpus check → Run workflow) | ⏳ | `workflow_dispatch` n'apparaît qu'une fois le fichier sur main → à valider **après merge** (limitation GitHub) |

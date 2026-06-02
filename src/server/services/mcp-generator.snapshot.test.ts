@@ -107,8 +107,13 @@ describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
       mkdirSync(join(dir, 'node_modules/@types'), { recursive: true });
       execSync(`ln -s "${sdkRoot}/@types/node" "${dir}/node_modules/@types/node"`);
 
+      // Invoke the workspace tsc binary DIRECTLY (not via `pnpm exec`): under
+      // CI, corepack pulls a newer pnpm whose `verify-deps-before-run` fires an
+      // implicit `pnpm install` in this tmp dir, clobbering the symlinks above
+      // and breaking SDK subpath resolution. A direct binary call is hermetic.
+      const tscBin = join(process.cwd(), 'node_modules', '.bin', 'tsc');
       try {
-        execSync('pnpm exec tsc --noEmit -p tsconfig.json', { cwd: dir, stdio: 'pipe' });
+        execSync(`"${tscBin}" --noEmit -p tsconfig.json`, { cwd: dir, stdio: 'pipe' });
       } catch (err) {
         const e = err as { stdout?: Buffer; stderr?: Buffer };
         const out = `${e.stdout?.toString() ?? ''}\n${e.stderr?.toString() ?? ''}`;

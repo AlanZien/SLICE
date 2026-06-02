@@ -1,0 +1,36 @@
+name: Corpus check
+
+# Stress SLICE's pipeline against N real-world OpenAPI specs from APIs.guru.
+# Network-dependent and slow, so it is NOT part of the per-PR gate — run it
+# on demand (e.g. before a release or a big change like upstream OAuth).
+# Fails only on a real SLICE bug (CRASH / zodfail); graceful rejects and
+# network hiccups do not turn it red.
+on:
+  workflow_dispatch:
+    inputs:
+      sample_size:
+        description: Number of specs to check
+        required: false
+        default: "60"
+
+jobs:
+  corpus:
+    name: real-world specs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Run corpus check
+        run: pnpm corpus:check ${{ github.event.inputs.sample_size }}

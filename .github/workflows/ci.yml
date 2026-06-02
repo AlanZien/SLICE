@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: typecheck + tests + prod smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # corepack pins pnpm to the version in package.json#packageManager.
+      - name: Enable corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit + integration tests
+        run: pnpm test
+
+      # Boots the ACTUAL compiled prod bundle and exercises real prod paths
+      # (ESM/alias resolution, SPA fallback, parse child_process). The dev
+      # test suite never touches dist/, so this is the only gate that catches
+      # a broken production build.
+      - name: Prod smoke (compiled bundle)
+        run: pnpm prod:smoke

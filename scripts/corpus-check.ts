@@ -32,11 +32,21 @@ interface Entry {
   url: string;
 }
 
-interface Verdict {
+export interface Verdict {
   name: string;
   endpoints: number;
   status: 'ok' | 'reject' | 'CRASH' | 'zodfail' | 'fetcherr' | 'toobig';
   detail?: string;
+}
+
+/**
+ * A run "fails" only on a real SLICE bug: an unexpected throw (CRASH) or a
+ * generated Zod schema that doesn't construct (zodfail). Graceful rejects,
+ * oversized specs and network hiccups (reject/toobig/fetcherr) are NOT bugs —
+ * they must not turn the gate red. Used to pick the process exit code.
+ */
+export function hasRealBugs(results: Verdict[]): boolean {
+  return results.some((r) => r.status === 'CRASH' || r.status === 'zodfail');
 }
 
 async function getList(): Promise<Record<string, any>> {
@@ -164,9 +174,15 @@ async function main() {
     process.stdout.write(`\n=== BUGS TO FIX ===\n`);
     for (const b of bugs) process.stdout.write(`✗ [${b.status}] ${b.name}\n   ${b.detail}\n`);
   }
+
+  // Fail the run (and any CI gate) only on a real SLICE bug.
+  if (hasRealBugs(results)) process.exit(1);
 }
 
-main().catch((err) => {
-  process.stderr.write(`fatal: ${msg(err)}\n`);
-  process.exit(1);
-});
+// Only run when invoked as a script, not when imported by a test.
+if (process.argv[1] && import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    process.stderr.write(`fatal: ${msg(err)}\n`);
+    process.exit(1);
+  });
+}
