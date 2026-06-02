@@ -159,7 +159,10 @@ async function callUpstream(
   }
   const token = relayedToken();
   if (token) {
-    if (config.upstreamAuth.type === 'bearer') {
+    // oauth2 is relayed exactly like bearer here: the hosted runtime never runs
+    // the client_credentials flow (no secret on SLICE Cloud) — the agent's own
+    // access token is forwarded. The auto flow lives only in the self-host kit.
+    if (config.upstreamAuth.type === 'bearer' || config.upstreamAuth.type === 'oauth2') {
       headers.Authorization = `Bearer ${token}`;
     } else if (config.upstreamAuth.type === 'apiKey' && config.upstreamAuth.headerName) {
       headers[config.upstreamAuth.headerName] = token;

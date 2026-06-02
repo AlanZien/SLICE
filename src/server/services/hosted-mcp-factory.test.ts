@@ -205,4 +205,44 @@ describe('buildHostedMcpServer — runtime MCP from config', () => {
     const last = received.at(-1);
     expect(last?.body).toEqual({ tag: 'urgent' }); // wire name, not the tool key
   });
+
+  // OAuth-1c: a hosted oauth2 upstream relays the caller's bearer exactly like
+  // `bearer` — SLICE Cloud never fetches a token (R21/R22). The tokenUrl/scopes
+  // in the config are ignored by the runtime (the auto flow is self-host only).
+  it('relays the caller bearer for an oauth2 upstream, never calling the token endpoint (R21/R22)', async () => {
+    received = [];
+    const oauthConfig: HostedMcpConfig = {
+      name: 'oauth-demo',
+      baseUrl: `http://127.0.0.1:${upstreamPort}`,
+      upstreamAuth: { type: 'oauth2', tokenUrl: 'https://never.called/token', scopes: ['read'] },
+      endpoints: [
+        { name: 'list_things', description: 'List', method: 'GET', path: '/things', params: [] },
+      ],
+    };
+    const srv = buildHostedMcpServer(oauthConfig, { allowPrivateHosts: true });
+    const tr = new StreamableHTTPServerTransport({ sessionIdGenerator: () => randomUUID() });
+    await srv.connect(tr);
+    const port = await freePort();
+    const http = createServer((req, res) => {
+      const authorization = req.headers.authorization ?? '';
+      relayStore.run({ authorization }, () => {
+        void tr.handleRequest(req, res);
+      });
+    });
+    await new Promise<void>((r) => http.listen(port, r));
+    const c = new Client({ name: 'oauth-test', version: '0.0.0' });
+    const ct = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/`), {
+      requestInit: { headers: { Authorization: 'Bearer OAUTH_USER_TOKEN' } },
+    });
+    await c.connect(ct);
+    try {
+      await c.callTool({ name: 'list_things', arguments: {} });
+      const last = received.at(-1);
+      expect(last?.url).toBe('/things');
+      expect(last?.auth).toBe('Bearer OAUTH_USER_TOKEN');
+    } finally {
+      await c.close();
+      await new Promise<void>((r) => http.close(() => r()));
+    }
+  }, 20_000);
 });

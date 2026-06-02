@@ -667,3 +667,13 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | # | Scenario | Résultat | Notes |
 |---|----------|----------|-------|
 | 1 | Générer + self-host un MCP pour une vraie API en client_credentials (ex. une API B2B) → l'agent l'utilise sans gérer le token | ⏳ | manuel, après 1d (UI) |
+
+## Phase OAuth-1c : relai OAuth dans le runtime hébergé (2026-06-02)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Runtime hébergé : upstream oauth2 → relaie le Bearer de l'agent (R21) | ✓ | `hosted-mcp-factory.test.ts` |
+| 2 | Aucun appel au token endpoint côté cloud (R22) | ✓ | garanti structurellement (pas de logique tokenUrl) |
+| 3 | Non-régression : 488 tests verts + typecheck | ✓ | |
