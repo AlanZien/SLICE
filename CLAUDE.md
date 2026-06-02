@@ -20,11 +20,13 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 **Build prod réparé (PR #26, mergé 2026-06-01)** — le binaire compilé ne démarrait jamais (4 bugs en cascade : imports ESM sans `.js` + alias `@shared`, route Express 5 `'*'`, `clientDist` faux, `typecheck` clobbant `dist`). Fix : `tsc` + `tsc-alias` (`tsconfig.server.build.json`, tests exclus) + `noEmit` au typecheck. **Garde-fou ajouté : `pnpm prod:smoke`** (boot du binaire compilé + health + statique + fallback SPA + upload réel via `parse-child.js` compilé). 459 tests verts. Détail : `.workflow/phases/fix-prod-build/REVIEW.md`.
 
-**Prochaine étape (plus gros levier de couverture) : OAuth amont** — ~1/5 des APIs réelles (corpus APIs.guru) rejetées en `UNSUPPORTED_AUTH` (OAuth2). Débloque une part majeure du marché. Cf. BACKLOG. Avant : câbler `pnpm prod:smoke` + `corpus-check` en CI pré-release, et figer la version pnpm (`packageManager` + corepack).
+**CI pré-release livrée (PR #28, mergé 2026-06-02)** — `ci.yml` = gate sur chaque PR + push main (corepack pnpm figé → install --frozen-lockfile → typecheck → test → `prod:smoke`, déterministe, zéro réseau). `corpus.yml` = corpus-check en `workflow_dispatch` à la demande (réseau/lent, hors flux PR ; `corpus-check` sort `exit(1)` sur vrai bug). pnpm figé : `packageManager: pnpm@9.13.2` + `engines.node >=22`. **Le gate a immédiatement attrapé un test non-CI-safe** (`mcp-generator.snapshot.test.ts` via `pnpm exec tsc` → install implicite cassant les symlinks ; fix : binaire `tsc` direct). 463 tests verts. Détail : `.workflow/phases/ci-pre-release/REVIEW.md`.
 
-**Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — à mettre en CI pré-release).
+**Prochaine étape (plus gros levier de couverture) : OAuth amont** — ~1/5 des APIs réelles (corpus APIs.guru) rejetées en `UNSUPPORTED_AUTH` (OAuth2). Débloque une part majeure du marché. Cf. BACKLOG. Le filet CI est en place pour détecter toute régression pendant ce chantier.
 
-**Dette ouverte (BACKLOG, par impact prod)** : 1) **OAuth amont** (plus gros levier de couverture API), 2) **CI pré-release** (`prod:smoke` + `corpus-check`) + figer pnpm, 3) matrice de features (levier A), 4) rapport fail-loud (levier C), unification contrat d'erreur, cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
+**Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — aussi en CI via `corpus.yml` à la demande).
+
+**Dette ouverte (BACKLOG, par impact prod)** : 1) **OAuth amont** (plus gros levier de couverture API), 2) matrice de features (levier A), 3) rapport fail-loud (levier C), unification contrat d'erreur, cache McpServer (perf), DNS-rebinding, persistance store, snippet Claude Desktop.
 
 **Anciens jalons (à re-prioriser)** : `.workflow/phases/11-security-backend/`, `12-a11y-responsive/`, `13-polish-docs/`.
 

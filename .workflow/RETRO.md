@@ -148,6 +148,15 @@ Détail : `.workflow/phases/fix-prod-build/REVIEW.md`.
 - **Pattern récurrent — « valider contre la réalité » (5ᵉ confirmation)** : déjà promu en règle (`03-testing.md`) la session précédente. Le smoke `pnpm prod:smoke` (boot du binaire compilé + health + statique + fallback SPA + upload réel via `parse-child.js` compilé) matérialise le levier « vrai chemin de build ». Sous-pattern à surveiller : les branches `NODE_ENV==='production'` sont systématiquement non testées (3/4 bugs y vivaient).
 - **Dette → BACKLOG** : câbler `pnpm prod:smoke` en CI pré-release ; figer la version pnpm (`packageManager` + corepack) — store v9 du PATH incompatible avec le `node_modules` v10.
 
+## 2026-06-02 — CI pré-release + pnpm figé ✓ mergé (PR #28)
+
+Détail : `.workflow/phases/ci-pre-release/REVIEW.md`.
+
+- Filet de sécurité automatique posé avant le chantier OAuth : `ci.yml` (gate sur chaque PR/push main — typecheck + test + prod:smoke, déterministe) + `corpus.yml` (`workflow_dispatch` à la demande). pnpm figé (`packageManager: pnpm@9.13.2` + corepack). `corpus-check` rendu CI-utilisable (`exit(1)` sur vrai bug via `hasRealBugs` ; guard `import.meta.url`).
+- **Le gate a prouvé sa valeur au premier run** : échec de `mcp-generator.snapshot.test.ts`, un test jamais exécuté en CI qui passait en local mais cassait en environnement propre — `pnpm exec tsc` dans un tmp dir déclenche, via une pnpm récente récupérée par corepack (`verify-deps-before-run`), un install implicite qui écrase les symlinks. Fix : binaire `tsc` du workspace appelé directement.
+- **Process** : reformuler les options en langage humain (utilisateur « pas compris ») a débloqué la décision, et la question « ce test est-il essentiel ? » a allégé le scope (corpus en dispatch seul, pas de nightly).
+- **Pattern « valider contre la réalité » (Nᵉ confirmation, déjà en règle)** — sous-pattern affiné et promu dans `03-testing.md` : un test qui shell-out vers un package manager n'est pas hermétique ; invoquer le binaire directement.
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.
