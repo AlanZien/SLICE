@@ -157,6 +157,17 @@ Détail : `.workflow/phases/ci-pre-release/REVIEW.md`.
 - **Process** : reformuler les options en langage humain (utilisateur « pas compris ») a débloqué la décision, et la question « ce test est-il essentiel ? » a allégé le scope (corpus en dispatch seul, pas de nightly).
 - **Pattern « valider contre la réalité » (Nᵉ confirmation, déjà en règle)** — sous-pattern affiné et promu dans `03-testing.md` : un test qui shell-out vers un package manager n'est pas hermétique ; invoquer le binaire directement.
 
+## 2026-06-02 — Chantier OAuth amont (client_credentials) ✓ mergé (PR #30/#32/#33/#34)
+
+Détail : `.workflow/phases/oauth/REVIEW.md`.
+
+- Support OAuth2 amont en 4 sous-phases (1a acceptation → 1b flow client_credentials self-host → 1c relai hébergé → 1d UI+mesure). Débloque ~1/5 des API réelles (corpus : 0 rejet OAuth, Stripe & co passent).
+- **Découpage advisor d'une phase ~12 fichiers en 4 sous-phases** ordonnées par dépendance : chaque PR verte isolée, points d'arrêt nets. À refaire systématiquement pour > 5 fichiers.
+- **ORIENT sans spike (D005)** : la stratégie de test de 1b tranchée par analyse du banc relai existant (pattern dérivable + piège mono-session → concurrence testée sur module isolé). Demi-journée économisée.
+- **EVALUATE CRITIQUE a trouvé 2 RCE HIGH** invisibles à 487 tests verts : tokenUrl/scopes d'une spec hostile interpolés dans des string-literals du code généré → injection. Corrigé (JSON-encode + rejet Zod + tests). Justifie le classement CRITIQUE sur auth/codegen.
+- **Pattern promu** (`01-conventions.md`, 3 occurrences) : toute donnée externe injectée dans du code généré doit être `JSON.stringify`-ée, jamais interpolée brute ni échappée à la main.
+- Findings → BACKLOG : infra de test relay/oauth dupliquée ; audit de l'échappement maison de la description des tools (même classe de risque).
+
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.
