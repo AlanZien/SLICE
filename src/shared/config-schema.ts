@@ -39,6 +39,20 @@ const upstreamAuthSchema = z.discriminatedUnion('type', [
       .pipe(z.string().min(1, 'header name required for API key auth')),
   }),
   z.object({ type: z.literal('bearer') }),
+  z.object({
+    type: z.literal('oauth2'),
+    // client_credentials token endpoint — must be an absolute https URL.
+    tokenUrl: z
+      .string()
+      .refine((value) => {
+        try {
+          return new URL(value).protocol === 'https:';
+        } catch {
+          return false;
+        }
+      }, 'tokenUrl must be an absolute https URL'),
+    scopes: z.array(z.string()).optional(),
+  }),
 ]);
 
 const mcpServerTokenSchema = z
