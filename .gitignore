@@ -47,3 +47,6 @@ temp/
 # SLICE-specific (uploads + generated ZIPs, éphémères)
 uploads/
 generated/
+
+# transient: oauth-token module copied out for isolated R14 test
+.tmp-oauth-mod/

@@ -91,6 +91,25 @@
 - Coût : spawn par parse (~centaines de ms, cold-path) + résolution dev (`node --import tsx`) vs prod (`node` compilé) à câbler au build.
 - À implémenter : branche `feature/parser-oom-isolation` (SPEC `.workflow/SPEC-PARSER-OOM.md`).
 
+## D005 : Stratégie de test du flow OAuth client_credentials généré (OAuth-1b) — pas de spike (2026-06-02)
+
+**Statut :** accepted
+
+**Contexte (ORIENT) :** la SPEC OAuth recommandait un spike pour valider le banc de test de 1b (deux serveurs mockés — token + upstream — et mesure du nombre de POST tokenUrl à travers un client MCP). En lisant `mcp-generator.relay.test.ts`, deux choses deviennent claires sans prototypage :
+1. Ajouter un 2ᵉ serveur HTTP mocké (le token endpoint) est trivial — c'est le pattern exact du serveur `upstream` déjà présent (`createServer` + `freePort` + tableau-compteur).
+2. **Le kit généré est mono-session** (un client à la fois par process, cf. commentaire L109-110 du test relai). Donc tester la **dédup de concurrence in-flight (R14)** « 3 appels parallèles → 1 POST » via le client MCP est **impossible** (le 2ᵉ client parallèle déclenche `Server already initialized`).
+
+**Décision :** trancher la stratégie de test **par analyse, sans spike** (ORIENT étape 1 : réponse claire et fondée) :
+- **Banc runtime du kit** (process unique, appels **séquentiels**) + 2 serveurs mockés (token + upstream), dérivé de `mcp-generator.relay.test.ts` → couvre R11 (forme du POST token), R12 (bearer attaché à l'upstream), R13 (cache : 2ᵉ appel → 0 nouveau POST), R15 (retry 401), R16/R16bis (échec token, token_type).
+- **R14 (dédup concurrence in-flight)** : testé sur le **module `oauth-token` isolé** (importé en runtime via `tsx`, `getToken()` × 3 en parallèle → 1 seul fetch), **pas** via le transport MCP.
+- **tokenUrl http en test** : via l'échappatoire R19bis (validation https assouplie pour hôtes locaux, façon `allowPrivateHosts`).
+
+**Alternatives écartées :**
+- **Spike worktree (½ j)** : inutile — le pattern est entièrement dérivable du harness relai existant ; aucune inconnue persistante.
+- **Tester R14 via le transport MCP** : impossible (kit mono-session → `Server already initialized`).
+
+**Conséquences :** REFINE de 1b structure les tests sur ces deux bancs (kit séquentiel + module isolé). Gain : la demi-journée de spike est économisée. À implémenter : branche `feature/oauth-1b` (SPEC `.workflow/SPEC-OAUTH-UPSTREAM.md`, règles R10-R19bis).
+
 ---
 Fichier append-only. Les decisions obsoletes sont marquees "superseded", jamais supprimees.
 Alimente par le workflow FORGE (phases ORIENT et LEARN).

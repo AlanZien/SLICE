@@ -5,9 +5,47 @@ import { join, dirname } from 'node:path';
 import { execSync } from 'node:child_process';
 import { parseSpec } from './parser';
 import { generateMcp } from './mcp-generator';
-import type { GenerateRequest } from '@shared/types';
+import type { GenerateRequest, GeneratedFile } from '@shared/types';
 
 const FIXTURE_PATH = 'fixtures/shopify-50.yaml';
+
+/**
+ * Drop a generated bundle on disk, mirror the workspace's SDK deps via symlinks,
+ * and type-check it with the workspace tsc binary (hermetic — see the note on
+ * `pnpm exec` below). Throws with the tsc output on failure.
+ */
+function typecheckBundle(files: GeneratedFile[]): void {
+  const dir = mkdtempSync(join(tmpdir(), 'slice-mcp-'));
+  try {
+    for (const f of files) {
+      const full = join(dir, f.path);
+      mkdirSync(dirname(full), { recursive: true });
+      writeFileSync(full, f.content, 'utf-8');
+    }
+    const sdkRoot = join(process.cwd(), 'node_modules');
+    mkdirSync(join(dir, 'node_modules'), { recursive: true });
+    execSync(`ln -s "${sdkRoot}/@modelcontextprotocol" "${dir}/node_modules/@modelcontextprotocol"`);
+    execSync(`ln -s "${sdkRoot}/zod" "${dir}/node_modules/zod"`);
+    execSync(`ln -s "${sdkRoot}/dotenv" "${dir}/node_modules/dotenv"`);
+    mkdirSync(join(dir, 'node_modules/@types'), { recursive: true });
+    execSync(`ln -s "${sdkRoot}/@types/node" "${dir}/node_modules/@types/node"`);
+
+    // Invoke the workspace tsc binary DIRECTLY (not via `pnpm exec`): under CI,
+    // corepack pulls a newer pnpm whose `verify-deps-before-run` fires an
+    // implicit `pnpm install` in this tmp dir, clobbering the symlinks above and
+    // breaking SDK subpath resolution. A direct binary call is hermetic.
+    const tscBin = join(process.cwd(), 'node_modules', '.bin', 'tsc');
+    try {
+      execSync(`"${tscBin}" --noEmit -p tsconfig.json`, { cwd: dir, stdio: 'pipe' });
+    } catch (err) {
+      const e = err as { stdout?: Buffer; stderr?: Buffer };
+      const out = `${e.stdout?.toString() ?? ''}\n${e.stderr?.toString() ?? ''}`;
+      throw new Error(`tsc failed:\n${out}`);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
 
 /**
  * End-to-end snapshot: parse a real OpenAPI spec, run the generator, then
@@ -90,37 +128,32 @@ describe('generateMcp — snapshot + tsc smoke (07-6)', () => {
     expect(toolCalls).toBe(selectedIds.length);
 
     // Smoke: drop the bundle on disk and let tsc validate it.
-    const dir = mkdtempSync(join(tmpdir(), 'slice-mcp-'));
-    try {
-      for (const f of files) {
-        const full = join(dir, f.path);
-        mkdirSync(dirname(full), { recursive: true });
-        writeFileSync(full, f.content, 'utf-8');
-      }
-      // Mirror the resolution that `pnpm install` would set up: point the
-      // generated package at the SDK already installed in the workspace.
-      const sdkRoot = join(process.cwd(), 'node_modules');
-      mkdirSync(join(dir, 'node_modules'), { recursive: true });
-      execSync(`ln -s "${sdkRoot}/@modelcontextprotocol" "${dir}/node_modules/@modelcontextprotocol"`);
-      execSync(`ln -s "${sdkRoot}/zod" "${dir}/node_modules/zod"`);
-      execSync(`ln -s "${sdkRoot}/dotenv" "${dir}/node_modules/dotenv"`);
-      mkdirSync(join(dir, 'node_modules/@types'), { recursive: true });
-      execSync(`ln -s "${sdkRoot}/@types/node" "${dir}/node_modules/@types/node"`);
+    typecheckBundle(files);
+  }, 60_000);
 
-      // Invoke the workspace tsc binary DIRECTLY (not via `pnpm exec`): under
-      // CI, corepack pulls a newer pnpm whose `verify-deps-before-run` fires an
-      // implicit `pnpm install` in this tmp dir, clobbering the symlinks above
-      // and breaking SDK subpath resolution. A direct binary call is hermetic.
-      const tscBin = join(process.cwd(), 'node_modules', '.bin', 'tsc');
-      try {
-        execSync(`"${tscBin}" --noEmit -p tsconfig.json`, { cwd: dir, stdio: 'pipe' });
-      } catch (err) {
-        const e = err as { stdout?: Buffer; stderr?: Buffer };
-        const out = `${e.stdout?.toString() ?? ''}\n${e.stderr?.toString() ?? ''}`;
-        throw new Error(`tsc failed:\n${out}`);
-      }
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
-    }
+  it('produces a type-checkable bundle for an oauth2 upstream (incl. oauth-token.ts) (R19)', async () => {
+    const raw = readFileSync(FIXTURE_PATH, 'utf-8');
+    const parsed = await parseSpec(raw, { sizeBytes: raw.length });
+    const selectedIds = parsed.groups.flatMap((g) => g.endpoints.map((e) => e.id)).slice(0, 3);
+
+    const req: GenerateRequest = {
+      parsedSpec: parsed,
+      rawSpec: raw,
+      selectedIds,
+      config: {
+        mcpName: 'oauth-snapshot',
+        baseUrl: 'https://api.example.com',
+        upstreamAuth: { type: 'oauth2', tokenUrl: 'https://api.example.com/oauth/token', scopes: ['read'] },
+        mode: 'both',
+        mcpServerToken: 'a'.repeat(32),
+        includeParamDescriptions: false,
+        retryOnServerError: false,
+      },
+    };
+
+    const files = generateMcp(req);
+    // The oauth-token module is emitted only for oauth2 bundles.
+    expect(files.some((f) => f.path === 'src/oauth-token.ts')).toBe(true);
+    typecheckBundle(files);
   }, 60_000);
 });
