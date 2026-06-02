@@ -157,7 +157,11 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
                   >
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground">
-                        {detectedAuthType === 'apiKey' ? 'API Key' : 'Bearer'}
+                        {detectedAuthType === 'apiKey'
+                          ? 'API Key'
+                          : detectedAuthType === 'oauth2'
+                            ? 'Automatic connection (OAuth 2.0)'
+                            : 'Bearer'}
                       </span>
                       <span className="ml-auto rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-emerald-500">
                         auto-detected
@@ -166,8 +170,18 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
                     <span className="font-mono text-[11px] text-muted-foreground">
                       {detectedAuthType === 'apiKey' && config.upstreamAuth.type === 'apiKey'
                         ? `header · ${config.upstreamAuth.headerName}`
-                        : 'Authorization: Bearer …'}
+                        : detectedAuthType === 'oauth2' && config.upstreamAuth.type === 'oauth2'
+                          ? `token endpoint · ${config.upstreamAuth.tokenUrl}`
+                          : 'Authorization: Bearer …'}
                     </span>
+                    {detectedAuthType === 'oauth2' && (
+                      <span className="font-mono text-[11px] text-muted-foreground">
+                        The server signs in by itself. Self-host: set
+                        {' '}
+                        <span className="text-foreground">UPSTREAM_OAUTH_CLIENT_ID</span> /{' '}
+                        <span className="text-foreground">UPSTREAM_OAUTH_CLIENT_SECRET</span> in its env.
+                      </span>
+                    )}
                   </div>
                 ) : (
                   // Spec declared nothing — let the user fill it in.

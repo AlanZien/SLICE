@@ -677,3 +677,19 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | 1 | Runtime hébergé : upstream oauth2 → relaie le Bearer de l'agent (R21) | ✓ | `hosted-mcp-factory.test.ts` |
 | 2 | Aucun appel au token endpoint côté cloud (R22) | ✓ | garanti structurellement (pas de logique tokenUrl) |
 | 3 | Non-régression : 488 tests verts + typecheck | ✓ | |
+
+## Phase OAuth-1d : UI config OAuth + mesure de couverture (2026-06-02)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Suite complète verte (488) + typecheck | ✓ | |
+| 2 | Gain de couverture corpus : 0 rejet OAuth (Stripe & co passent en `ok`) | ✓ | `pnpm corpus:check 60` → 57 ok / 3 rejets gracieux (aucun OAuth) / 0 bug |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Écran config sur une spec OAuth2 → affiche « Automatic connection (OAuth 2.0) », le token endpoint et la note env vars | ⏳ | visuel |
+| 2 | Bout-en-bout : uploader une vraie spec OAuth2 client_credentials → générer → self-host → l'agent l'utilise | ⏳ | E2E live |
