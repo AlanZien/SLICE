@@ -7,7 +7,7 @@
 // scenario uses a fresh process and SEQUENTIAL calls (concurrency dedup R14 is
 // tested on the isolated module — see the "isolated module" describe block).
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, writeFileSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, mkdirSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { spawn, type ChildProcess } from 'node:child_process';
@@ -284,4 +284,140 @@ describe('generated MCP — oauth2 client_credentials runtime (env / self-host)'
     }
     expect(tokenHits.length).toBe(1);
   }, 60_000);
+
+  it('on a 401 from upstream, refetches the token once and replays (R15)', async () => {
+    resetState();
+    upstreamNext401 = 1; // first upstream call → 401, second → 200
+    const srv = await startServer();
+    try {
+      await callTool(srv.port); // should succeed after one token refetch + replay
+    } finally {
+      srv.stop();
+    }
+    // One fetch for the initial call + one after invalidation on the 401.
+    expect(tokenHits.length).toBe(2);
+    expect(upstreamAuthSeen.length).toBe(2);
+  }, 30_000);
+
+  it('refuses to start in env mode without client id/secret (R10)', async () => {
+    await expect(
+      startServer({ UPSTREAM_OAUTH_CLIENT_ID: '', UPSTREAM_OAUTH_CLIENT_SECRET: '' })
+    ).rejects.toThrow();
+  }, 30_000);
+
+  it('a token endpoint failure or non-bearer token_type aborts before the upstream (R16/R16bis)', async () => {
+    // Token endpoint 500 → getAccessToken throws → upstream never reached.
+    resetState();
+    tokenResponse = { status: 500, payload: { error: 'boom' } };
+    let srv = await startServer();
+    try {
+      await callTool(srv.port);
+    } finally {
+      srv.stop();
+    }
+    expect(tokenHits.length).toBeGreaterThanOrEqual(1);
+    expect(upstreamAuthSeen.length).toBe(0);
+
+    // token_type other than bearer → rejected, upstream never reached.
+    resetState();
+    tokenResponse = { status: 200, payload: { access_token: ACCESS_TOKEN, token_type: 'mac' } };
+    srv = await startServer();
+    try {
+      await callTool(srv.port);
+    } finally {
+      srv.stop();
+    }
+    expect(upstreamAuthSeen.length).toBe(0);
+  }, 30_000);
+
+  it('relay mode forwards the caller bearer and never calls the token endpoint (R20)', async () => {
+    resetState();
+    const srv = await startServer({ MCP_AUTH_MODE: 'relay' });
+    try {
+      await callTool(srv.port, 'Bearer USER_PROVIDED_TOKEN');
+    } finally {
+      srv.stop();
+    }
+    expect(upstreamAuthSeen.at(-1)).toBe('Bearer USER_PROVIDED_TOKEN');
+    expect(tokenHits.length).toBe(0);
+  }, 30_000);
+});
+
+// --- Static assertions on the generated source (no runtime) ---
+
+function genOAuthFiles(): GeneratedFile[] {
+  const req: GenerateRequest = {
+    parsedSpec: { ...SPEC, baseUrl: 'https://api.example.com' },
+    rawSpec: '',
+    selectedIds: ['GET /things'],
+    config: {
+      mcpName: 'oauth-mcp',
+      baseUrl: 'https://api.example.com',
+      upstreamAuth: { type: 'oauth2', tokenUrl: 'https://api.example.com/oauth/token', scopes: ['read'] },
+      hosting: 'self',
+      mode: 'both',
+      mcpServerToken: 'a'.repeat(32),
+      includeParamDescriptions: false,
+      retryOnServerError: false,
+    },
+  };
+  return generateMcp(req);
+}
+
+describe('generated oauth2 bundle — source-level guarantees', () => {
+  const files = genOAuthFiles();
+  const fileBy = (p: string) => files.find((f) => f.path === p)?.content ?? '';
+
+  it('emits src/oauth-token.ts only for oauth2 bundles (T1)', () => {
+    expect(files.some((f) => f.path === 'src/oauth-token.ts')).toBe(true);
+  });
+
+  it('reads the secret from env and never bakes it into an error message (R17/R17bis)', () => {
+    const oauthToken = fileBy('src/oauth-token.ts');
+    expect(oauthToken).toContain('process.env.UPSTREAM_OAUTH_CLIENT_SECRET');
+    // Error messages carry the status only — never the secret, the Basic
+    // header value, or the token response body.
+    expect(oauthToken).toMatch(/Failed to obtain OAuth token: \$\{res\.status\}/);
+    expect(oauthToken).not.toMatch(/Error\([^)]*\$\{basic\}/);
+    expect(oauthToken).not.toMatch(/Error\([^)]*clientSecret/);
+    expect(oauthToken).not.toContain('await res.text()');
+  });
+
+  it('documents the oauth2 env vars in .env.example (R18)', () => {
+    const env = fileBy('.env.example');
+    expect(env).toContain('UPSTREAM_OAUTH_CLIENT_ID=');
+    expect(env).toContain('UPSTREAM_OAUTH_CLIENT_SECRET=');
+  });
+});
+
+// --- Concurrency dedup on the isolated module (R14) ---
+// The kit is mono-session, so concurrent calls can't be driven through the MCP
+// transport. We import the generated oauth-token module directly and fire three
+// getAccessToken() calls at once: the in-flight promise must collapse them into
+// a single token request.
+describe('generated oauth-token module — concurrency dedup (R14)', () => {
+  it('dedups concurrent getAccessToken() into a single token fetch', async () => {
+    process.env.UPSTREAM_OAUTH_CLIENT_ID = CLIENT_ID;
+    process.env.UPSTREAM_OAUTH_CLIENT_SECRET = CLIENT_SECRET;
+    resetState();
+    // Vite refuses to load modules from outside the project root, so copy the
+    // generated module (it already points at the mock token endpoint) into a
+    // project-local temp dir before importing it.
+    const localDir = join(process.cwd(), '.tmp-oauth-mod');
+    mkdirSync(localDir, { recursive: true });
+    const modPath = join(localDir, 'oauth-token.ts');
+    writeFileSync(modPath, readFileSync(join(dir, 'src/oauth-token.ts'), 'utf-8'));
+    try {
+      const mod = (await import(modPath)) as { getAccessToken: () => Promise<string> };
+      const tokens = await Promise.all([
+        mod.getAccessToken(),
+        mod.getAccessToken(),
+        mod.getAccessToken(),
+      ]);
+      expect(tokens).toEqual([ACCESS_TOKEN, ACCESS_TOKEN, ACCESS_TOKEN]);
+      expect(tokenHits.length).toBe(1);
+    } finally {
+      rmSync(localDir, { recursive: true, force: true });
+    }
+  }, 30_000);
 });
