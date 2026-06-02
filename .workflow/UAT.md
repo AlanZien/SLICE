@@ -618,3 +618,25 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 |---|----------|----------|-------|
 | 1 | `ci.yml` passe au vert sur la PR de cette phase (preuve réelle du gate) | ✓ | run #26808053054, 1m33s — a aussi attrapé le snapshot test non-CI-safe |
 | 2 | `corpus.yml` lançable d'un clic (onglet Actions → Corpus check → Run workflow) | ⏳ | `workflow_dispatch` n'apparaît qu'une fois le fichier sur main → à valider **après merge** (limitation GitHub) |
+
+## Phase OAuth-1a : détection & acceptation OAuth2 (2026-06-02)
+
+### Tests techniques (générés par Claude depuis le PLAN)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Zod accepte `{oauth2, tokenUrl https, scopes?}` ; rejette tokenUrl absent/relatif/http (R9) | ✓ | `config-schema.test.ts` |
+| 2 | `detectAuth` : clientCredentials → `{oauth2, tokenUrl, scopes}` (R1) | ✓ | `auth-detector.test.ts` |
+| 3 | tokenUrl relatif résolu absolu via baseUrl (R2) | ✓ | `auth-detector.test.ts` |
+| 4 | clientCredentials sans tokenUrl → bearer (R5) ; autres flows → bearer (R3) ; OIDC → bearer (R4) | ✓ | `auth-detector.test.ts` |
+| 5 | Priorité oauth2-cc > bearer (R7) ; filtrage par schémas référencés (R7bis) ; fallback set vide → tous | ✓ | `auth-detector.test.ts` |
+| 6 | Parser accepte oauth2 (cc/authCode) + OIDC, rejette basic/digest seuls (R6/R8) | ✓ | `parser.test.ts` |
+| 7 | `normalizeSpec` propage `{oauth2, tokenUrl, scopes}` dans defaultConfig (B1/T7) | ✓ | `parser.test.ts` + `spec-normalizer.test.ts` |
+| 8 | Non-régression : round-trip d'erreur typée via child_process (basique au lieu d'oauth2) | ✓ | `parse-isolated.test.ts` |
+| 9 | Suite complète verte (473) + typecheck | ✓ | `pnpm test` / `pnpm typecheck` |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Uploader une vraie spec OAuth2 (ex. une API APIs.guru en client_credentials) → n'est plus refusée, arrive à l'écran de sélection | ⏳ | manuel — le code généré OAuth viendra en 1b |

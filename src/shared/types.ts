@@ -82,12 +82,16 @@ export interface EndpointGroup {
   endpoints: Endpoint[];
 }
 
-export type UpstreamAuthType = 'none' | 'apiKey' | 'bearer';
+export type UpstreamAuthType = 'none' | 'apiKey' | 'bearer' | 'oauth2';
 
 export interface UpstreamAuth {
   type: UpstreamAuthType;
   /** Only meaningful for `apiKey`. */
   headerName?: string;
+  /** Only meaningful for `oauth2` — absolute https token endpoint (client_credentials). */
+  tokenUrl?: string;
+  /** Only meaningful for `oauth2` — scopes to request at the token endpoint. */
+  scopes?: string[];
 }
 
 export interface DefaultConfig {

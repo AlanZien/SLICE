@@ -310,9 +310,37 @@ components:
     expect(result.apiName).toBe('apikey-ok');
   });
 
-  it('rejects oauth2 with UNSUPPORTED_AUTH (12.a)', async () => {
+  it('accepts oauth2 client_credentials and detects the oauth2 variant (R8/R1)', async () => {
     const spec = `openapi: "3.0.3"
-info: { title: oauth, version: "1" }
+info: { title: oauth-cc, version: "1" }
+servers: [{ url: https://api.example.com }]
+paths:
+  /things:
+    get:
+      summary: list
+      security: [{ OAuth2: [read] }]
+      responses: { "200": { description: ok } }
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.example.com/oauth/token
+          scopes: { read: "read" }
+`;
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.authType).toBe('oauth2');
+    expect(result.defaultConfig?.upstreamAuth).toMatchObject({
+      type: 'oauth2',
+      tokenUrl: 'https://api.example.com/oauth/token',
+      scopes: ['read'],
+    });
+  });
+
+  it('accepts oauth2 with a non-client-credentials flow (mapped to bearer) (R8/R3)', async () => {
+    const spec = `openapi: "3.0.3"
+info: { title: oauth-implicit, version: "1" }
 paths:
   /things:
     get:
@@ -328,12 +356,11 @@ components:
           authorizationUrl: https://example.com/oauth
           scopes: { read: "read" }
 `;
-    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
-      code: 'UNSUPPORTED_AUTH',
-    });
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.authType).toBe('bearer');
   });
 
-  it('rejects openIdConnect with UNSUPPORTED_AUTH (12.a)', async () => {
+  it('accepts openIdConnect (mapped to bearer) (R8/R4)', async () => {
     const spec = `openapi: "3.0.3"
 info: { title: oidc, version: "1" }
 paths:
@@ -346,9 +373,8 @@ components:
   securitySchemes:
     OIDC: { type: openIdConnect, openIdConnectUrl: https://example.com/.well-known/openid-configuration }
 `;
-    await expect(parseSpec(spec, { sizeBytes: spec.length })).rejects.toMatchObject({
-      code: 'UNSUPPORTED_AUTH',
-    });
+    const result = await parseSpec(spec, { sizeBytes: spec.length });
+    expect(result.authType).toBe('bearer');
   });
 
   it('rejects http+basic with UNSUPPORTED_AUTH (12.a)', async () => {

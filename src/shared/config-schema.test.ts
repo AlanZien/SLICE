@@ -92,9 +92,28 @@ describe('sliceConfigSchema', () => {
     expect(sliceConfigSchema.safeParse(bad).success).toBe(false);
   });
 
-  it('rejects unsupported upstream auth types (oauth2, basic, digest)', () => {
-    const oauth = { ...valid, upstreamAuth: { type: 'oauth2' } };
-    expect(sliceConfigSchema.safeParse(oauth).success).toBe(false);
+  it('rejects still-unsupported upstream auth types (basic, digest)', () => {
+    const basic = { ...valid, upstreamAuth: { type: 'basic' } };
+    expect(sliceConfigSchema.safeParse(basic).success).toBe(false);
+  });
+
+  it('accepts oauth2 with an absolute https tokenUrl (+ optional scopes) (R9)', () => {
+    const withScopes = {
+      ...valid,
+      upstreamAuth: { type: 'oauth2', tokenUrl: 'https://api.example.com/oauth/token', scopes: ['read', 'write'] },
+    };
+    expect(sliceConfigSchema.safeParse(withScopes).success).toBe(true);
+    const noScopes = { ...valid, upstreamAuth: { type: 'oauth2', tokenUrl: 'https://api.example.com/oauth/token' } };
+    expect(sliceConfigSchema.safeParse(noScopes).success).toBe(true);
+  });
+
+  it('rejects oauth2 with a missing, relative, or non-https tokenUrl (R9)', () => {
+    const missing = { ...valid, upstreamAuth: { type: 'oauth2' } };
+    const relative = { ...valid, upstreamAuth: { type: 'oauth2', tokenUrl: '/oauth/token' } };
+    const http = { ...valid, upstreamAuth: { type: 'oauth2', tokenUrl: 'http://api.example.com/oauth/token' } };
+    expect(sliceConfigSchema.safeParse(missing).success).toBe(false);
+    expect(sliceConfigSchema.safeParse(relative).success).toBe(false);
+    expect(sliceConfigSchema.safeParse(http).success).toBe(false);
   });
 });
 

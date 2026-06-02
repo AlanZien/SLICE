@@ -11,7 +11,7 @@ import type {
   HttpMethod,
   ParsedSpec,
 } from '@shared/types';
-import { detectAuth } from './auth-detector';
+import { collectReferencedSchemeNames, detectAuth } from './auth-detector';
 import { slugify } from './slug';
 import { generateMcpServerToken } from './token-generator';
 import { toZodShape } from './zod-schema-builder';
@@ -33,8 +33,13 @@ export function normalizeSpec(doc: any): ParsedSpec {
 
   // Phase 06 — pre-fill the config screen with everything we can deduce.
   // The detector falls back to `{ type: 'none' }` safely if the spec has
-  // no `securitySchemes` block.
-  const upstreamAuth = detectAuth(doc?.components?.securitySchemes ?? null);
+  // no `securitySchemes` block. We pass the referenced-schemes set (so a
+  // declared-but-unused scheme isn't imposed) and baseUrl (to resolve a
+  // relative OAuth2 tokenUrl) — phase OAuth-1a.
+  const upstreamAuth = detectAuth(doc?.components?.securitySchemes ?? null, {
+    referenced: collectReferencedSchemeNames(doc),
+    baseUrl,
+  });
   const defaultConfig: DefaultConfig = {
     mcpName: slugify(doc?.info?.title ?? ''),
     baseUrl,

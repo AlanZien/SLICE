@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { MAX_SPEC_BYTES, ParseError, type ParsedSpec } from '@shared/types';
+import { collectReferencedSchemeNames } from './auth-detector';
 import { convertToOpenAPI3 } from './format-converter';
 import { normalizeSpec } from './spec-normalizer';
 import { sanitizeSpec } from './spec-sanitizer';
@@ -186,43 +187,18 @@ function assertSupportedAuth(doc: any): void {
   const schemes: Record<string, any> = doc?.components?.securitySchemes ?? {};
   if (Object.keys(schemes).length === 0) return;
 
-  // Collect every scheme name that is actually required by an endpoint.
-  // OpenAPI's security model is an array of requirement objects, each whose
-  // keys reference scheme names. A root-level `security` applies as a
-  // default; operation-level `security` (including an empty array `[]`)
-  // overrides it.
-  const referenced = new Set<string>();
-  const rootSecurity: any[] = Array.isArray(doc?.security) ? doc.security : [];
-
-  for (const item of rootSecurity) {
-    if (item && typeof item === 'object') {
-      for (const name of Object.keys(item)) referenced.add(name);
-    }
-  }
-
-  const paths: Record<string, any> = doc?.paths ?? {};
-  const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'];
-  for (const pathItem of Object.values(paths)) {
-    if (!pathItem || typeof pathItem !== 'object') continue;
-    for (const method of HTTP_METHODS) {
-      const op = pathItem[method];
-      if (!op || typeof op !== 'object') continue;
-      const opSecurity = Array.isArray(op.security) ? op.security : null;
-      if (opSecurity === null) continue; // falls back to root, already counted
-      for (const item of opSecurity) {
-        if (item && typeof item === 'object') {
-          for (const name of Object.keys(item)) referenced.add(name);
-        }
-      }
-    }
-  }
+  // Collect every scheme name actually required by an endpoint (shared with
+  // the normalizer's detectAuth so both passes agree).
+  const referenced = collectReferencedSchemeNames(doc);
 
   // OpenAPI security entries are OR'd — an endpoint that lists `[bearer,
   // basic]` accepts either. So we only fail the whole spec when *every*
   // referenced scheme is unsupported; otherwise we let the auth-detector
   // pick the supported one and move on. This matches real-world specs like
   // Notion that ship `basicAuth` alongside `bearerAuth` for historical
-  // reasons (10.2 hotfix).
+  // reasons (10.2 hotfix). OAuth2 (any flow) and OpenID Connect are now
+  // supported — they carry a bearer token at the wire (env client_credentials
+  // or relay), so they no longer trigger UNSUPPORTED_AUTH.
   let supportedFound = false;
   let firstUnsupported: { name: string; reason: string } | null = null;
 
@@ -232,17 +208,18 @@ function assertSupportedAuth(doc: any): void {
     const type = String(scheme.type ?? '').toLowerCase();
     const httpScheme = String(scheme.scheme ?? '').toLowerCase();
 
-    if (type === 'apikey' || (type === 'http' && httpScheme === 'bearer')) {
+    if (
+      type === 'apikey' ||
+      type === 'oauth2' ||
+      type === 'openidconnect' ||
+      (type === 'http' && httpScheme === 'bearer')
+    ) {
       supportedFound = true;
       continue;
     }
 
     let reason: string | null = null;
-    if (type === 'oauth2') {
-      reason = `Auth scheme "${name}" uses OAuth2, which SLICE does not generate MCP code for yet. Re-export your API description with API Key or Bearer auth, or wait for V1.5.`;
-    } else if (type === 'openidconnect') {
-      reason = `Auth scheme "${name}" uses OpenID Connect, which SLICE does not generate MCP code for yet.`;
-    } else if (type === 'http' && (httpScheme === 'basic' || httpScheme === 'digest')) {
+    if (type === 'http' && (httpScheme === 'basic' || httpScheme === 'digest')) {
       reason = `Auth scheme "${name}" uses HTTP ${httpScheme}, which SLICE does not generate MCP code for yet. Use Bearer or API Key instead.`;
     }
 
