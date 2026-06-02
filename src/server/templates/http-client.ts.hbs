@@ -10,6 +10,10 @@ import { relayedToken } from './auth-context.js';
 {{#ifEquals upstreamAuth.type "bearer"}}
 import { relayedToken } from './auth-context.js';
 {{/ifEquals}}
+{{#ifEquals upstreamAuth.type "oauth2"}}
+import { relayedToken } from './auth-context.js';
+import { getAccessToken, invalidateToken } from './oauth-token.js';
+{{/ifEquals}}
 
 const BASE_URL = process.env.UPSTREAM_BASE_URL ?? '';
 
@@ -34,6 +38,18 @@ const BEARER_TOKEN = process.env.UPSTREAM_BEARER_TOKEN ?? '';
 
 if (AUTH_MODE === 'env' && !BEARER_TOKEN) {
   throw new Error('UPSTREAM_BEARER_TOKEN is required for this MCP.');
+}
+{{/ifEquals}}
+{{#ifEquals upstreamAuth.type "oauth2"}}
+// `env` (default): the MCP fetches its own token via client_credentials.
+// `relay`: forward the caller's own bearer token, never stored (SLICE Cloud).
+const AUTH_MODE = process.env.MCP_AUTH_MODE ?? 'env';
+
+if (
+  AUTH_MODE === 'env' &&
+  (!process.env.UPSTREAM_OAUTH_CLIENT_ID || !process.env.UPSTREAM_OAUTH_CLIENT_SECRET)
+) {
+  throw new Error('UPSTREAM_OAUTH_CLIENT_ID and UPSTREAM_OAUTH_CLIENT_SECRET are required for this MCP.');
 }
 {{/ifEquals}}
 
@@ -87,13 +103,27 @@ export async function call({ method, path, pathParams, query, body }: CallOption
     headers.Authorization = `Bearer ${BEARER_TOKEN}`;
   }
   {{/ifEquals}}
+  {{#ifEquals upstreamAuth.type "oauth2"}}
+  if (AUTH_MODE === 'relay') {
+    const relayed = relayedToken();
+    if (relayed) headers.Authorization = `Bearer ${relayed}`;
+  } else {
+    headers.Authorization = `Bearer ${await getAccessToken()}`;
+  }
+  {{/ifEquals}}
 
-  const res = await fetch(fullUrl, {
-    method,
-    headers,
-    // fetch refuses a body on GET/HEAD; skip it there (matches the hosted runtime).
-    body: body === undefined || method === 'GET' ? undefined : JSON.stringify(body),
-  });
+  // fetch refuses a body on GET/HEAD; skip it there (matches the hosted runtime).
+  const sendBody = body === undefined || method === 'GET' ? undefined : JSON.stringify(body);
+  let res = await fetch(fullUrl, { method, headers, body: sendBody });
+  {{#ifEquals upstreamAuth.type "oauth2"}}
+  // A cached client_credentials token can expire between calls — on a 401,
+  // drop it, fetch a fresh one and replay the request once (env mode only).
+  if (AUTH_MODE !== 'relay' && res.status === 401) {
+    invalidateToken();
+    headers.Authorization = `Bearer ${await getAccessToken()}`;
+    res = await fetch(fullUrl, { method, headers, body: sendBody });
+  }
+  {{/ifEquals}}
 
   if (!res.ok) {
     const text = await res.text();
