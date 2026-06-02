@@ -107,6 +107,19 @@ describe('sliceConfigSchema', () => {
     expect(sliceConfigSchema.safeParse(noScopes).success).toBe(true);
   });
 
+  it('rejects oauth2 tokenUrl/scopes with characters that could break out of generated code (security)', () => {
+    const badUrl = {
+      ...valid,
+      upstreamAuth: { type: 'oauth2', tokenUrl: "https://e.com/x';code;'" },
+    };
+    const badScope = {
+      ...valid,
+      upstreamAuth: { type: 'oauth2', tokenUrl: 'https://e.com/t', scopes: ["a';code;'"] },
+    };
+    expect(sliceConfigSchema.safeParse(badUrl).success).toBe(false);
+    expect(sliceConfigSchema.safeParse(badScope).success).toBe(false);
+  });
+
   it('rejects oauth2 with a missing, relative, or non-https tokenUrl (R9)', () => {
     const missing = { ...valid, upstreamAuth: { type: 'oauth2' } };
     const relative = { ...valid, upstreamAuth: { type: 'oauth2', tokenUrl: '/oauth/token' } };

@@ -166,8 +166,17 @@ interface TemplateContext {
   apiVersion: string;
   baseUrl: string;
   upstreamAuth: { type: string; headerName?: string; tokenUrl?: string; scopes?: string[] };
-  /** OAuth2 scopes joined by a space, ready for the token request body. */
+  /** OAuth2 scopes joined by a space — for human-readable docs (.env.example). */
   scopesJoined: string;
+  /**
+   * OAuth2 values JSON-encoded for safe injection into generated JS string
+   * literals. NEVER interpolate the raw value into a `'...'` literal — a
+   * quote/backtick/newline in a hostile spec would break out and inject code
+   * into the user's downloaded bundle. JSON.stringify yields a complete,
+   * escaped double-quoted literal.
+   */
+  tokenUrlJson: string;
+  scopesJson: string;
   mode: string;
   modeLocalOnly: boolean;
   modeHttpOnly: boolean;
@@ -189,6 +198,8 @@ function buildContext(req: GenerateRequest): TemplateContext {
     baseUrl: config.baseUrl,
     upstreamAuth: config.upstreamAuth,
     scopesJoined: (config.upstreamAuth.scopes ?? []).join(' '),
+    tokenUrlJson: JSON.stringify(config.upstreamAuth.tokenUrl ?? ''),
+    scopesJson: JSON.stringify((config.upstreamAuth.scopes ?? []).join(' ')),
     mode: config.mode,
     modeLocalOnly: config.mode === 'local',
     modeHttpOnly: config.mode === 'remote',

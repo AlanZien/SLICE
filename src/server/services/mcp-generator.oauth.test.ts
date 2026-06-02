@@ -388,6 +388,38 @@ describe('generated oauth2 bundle — source-level guarantees', () => {
     expect(env).toContain('UPSTREAM_OAUTH_CLIENT_ID=');
     expect(env).toContain('UPSTREAM_OAUTH_CLIENT_SECRET=');
   });
+
+  it('JSON-encodes a hostile tokenUrl/scopes so it cannot inject code (security)', () => {
+    // Bypass Zod (generateMcp is the generation-point defense): a hostile spec
+    // tries to break out of the string literal and run code in the user's kit.
+    const req: GenerateRequest = {
+      parsedSpec: { ...SPEC, baseUrl: 'https://api.example.com' },
+      rawSpec: '',
+      selectedIds: ['GET /things'],
+      config: {
+        mcpName: 'oauth-mcp',
+        baseUrl: 'https://api.example.com',
+        upstreamAuth: {
+          type: 'oauth2',
+          tokenUrl: "https://e.com/x';globalThis.PWNED=1;'",
+          scopes: ["a';globalThis.PWNED2=1;'"],
+        },
+        hosting: 'self',
+        mode: 'both',
+        mcpServerToken: 'a'.repeat(32),
+        includeParamDescriptions: false,
+        retryOnServerError: false,
+      },
+    };
+    const oauthToken = generateMcp(req).find((f) => f.path === 'src/oauth-token.ts')!.content;
+    // Values are emitted as JSON double-quoted literals — never raw single-quoted.
+    expect(oauthToken).toMatch(/const TOKEN_URL = "/);
+    expect(oauthToken).toMatch(/const SCOPES = "/);
+    expect(oauthToken).not.toMatch(/const TOKEN_URL = '/);
+    expect(oauthToken).not.toMatch(/const SCOPES = '/);
+    // The payload survives only as inert string data, never as a statement.
+    expect(oauthToken).not.toMatch(/^globalThis\.PWNED/m);
+  });
 });
 
 // --- Concurrency dedup on the isolated module (R14) ---

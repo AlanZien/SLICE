@@ -5,8 +5,10 @@
  * dedups concurrent fetches. The client secret is read from the environment
  * and never logged or thrown.
  */
-const TOKEN_URL = '{{upstreamAuth.tokenUrl}}';
-const SCOPES = '{{scopesJoined}}';
+// JSON-encoded by the generator so a hostile spec can't break out of the
+// string literal and inject code into this file.
+const TOKEN_URL = {{tokenUrlJson}};
+const SCOPES = {{scopesJson}};
 
 // Refresh proactively a little before the server-stated expiry to avoid racing
 // the clock; fall back to a short finite TTL when the server omits expires_in.
