@@ -640,3 +640,30 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | # | Scenario | Résultat | Notes |
 |---|----------|----------|-------|
 | 1 | Uploader une vraie spec OAuth2 (ex. une API APIs.guru en client_credentials) → n'est plus refusée, arrive à l'écran de sélection | ⏳ | manuel — le code généré OAuth viendra en 1b |
+
+## Phase OAuth-1b : flow client_credentials self-host (2026-06-02)
+
+### Tests techniques (générés depuis le PLAN)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Kit oauth2 POST le token : Basic(id:secret) + grant_type + scope (R11) | ✓ | banc runtime double-mock |
+| 2 | access_token obtenu attaché en Bearer à l'upstream (R12) | ✓ | runtime |
+| 3 | Cache : expiry long→1 POST ; =0→2 POST ; absent→300s→1 POST (R13) | ✓ | runtime séquentiel |
+| 4 | Dédup concurrence : 3 getAccessToken parallèles → 1 fetch (R14) | ✓ | module isolé |
+| 5 | Retry 401 : refetch 1× + rejoue (R15) | ✓ | runtime |
+| 6 | Token endpoint 500 / token_type≠bearer → abort avant upstream (R16/bis) | ✓ | runtime |
+| 7 | Refuse de démarrer sans client_id/secret en mode env (R10) | ✓ | runtime |
+| 8 | Relay : token agent relayé, aucun POST tokenUrl (R20) | ✓ | runtime |
+| 9 | Secret lu via env, jamais dans un message d'erreur (R17/bis) | ✓ | statique |
+| 10 | .env.example documente les vars oauth2 (R18) | ✓ | statique |
+| 11 | Bundle oauth2 type-checke (tsc) + oauth-token.ts émis (R19) | ✓ | snapshot |
+| 12 | **Sécurité** : tokenUrl/scopes hostiles JSON-encodés → pas d'injection de code | ✓ | finding security-review (2 HIGH RCE) corrigé |
+| 13 | **Sécurité** : Zod rejette tokenUrl/scopes avec caractères de breakout | ✓ | config-schema |
+| 14 | Non-régression : 487 tests verts + typecheck | ✓ | suite complète |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Générer + self-host un MCP pour une vraie API en client_credentials (ex. une API B2B) → l'agent l'utilise sans gérer le token | ⏳ | manuel, après 1d (UI) |
