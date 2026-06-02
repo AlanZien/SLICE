@@ -41,10 +41,12 @@ const rich = JSON.stringify({
   },
 });
 
-const oauthSpec = JSON.stringify({
+// HTTP basic is still rejected (oauth2 is now supported), so it remains a good
+// fixture for exercising a typed-error round-trip across the child process.
+const basicAuthSpec = JSON.stringify({
   openapi: '3.0.3',
   info: { title: 'O', version: '1' },
-  components: { securitySchemes: { o: { type: 'oauth2', flows: {} } } },
+  components: { securitySchemes: { o: { type: 'http', scheme: 'basic' } } },
   security: [{ o: [] }],
   paths: { '/z': { get: { summary: 'z', responses: { '200': { description: 'ok' } } } } },
 });
@@ -82,7 +84,7 @@ describe('parseSpecIsolated', () => {
 
   it('preserves a non-trivial code (UNSUPPORTED_AUTH) round-trip (A-3)', async () => {
     await expect(
-      parseSpecIsolated(oauthSpec, { sizeBytes: Buffer.byteLength(oauthSpec) })
+      parseSpecIsolated(basicAuthSpec, { sizeBytes: Buffer.byteLength(basicAuthSpec) })
     ).rejects.toMatchObject({ code: 'UNSUPPORTED_AUTH' });
   }, 15_000);
 

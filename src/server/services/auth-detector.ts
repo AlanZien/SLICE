@@ -12,9 +12,11 @@ export interface DetectedAuth {
 
 export interface DetectAuthOptions {
   /**
-   * When provided, only schemes whose name is in this set are considered —
-   * mirrors the parser's "referenced schemes" pass so a declared-but-unused
-   * scheme can't be imposed. When omitted, every declared scheme is eligible.
+   * When provided AND non-empty, only schemes whose name is in this set are
+   * considered — mirrors the parser's "referenced schemes" pass so a
+   * declared-but-unused scheme can't be imposed. An empty set (no endpoint
+   * declares any `security`) means "no explicit requirement": we fall back to
+   * every declared scheme rather than detect nothing.
    */
   referenced?: Set<string>;
   /** Base URL used to resolve a relative OAuth2 `tokenUrl` to an absolute one. */
@@ -48,8 +50,9 @@ export function detectAuth(
   let queryApiKey: string | null = null;
   let hasBearer = false;
 
+  const filter = opts.referenced && opts.referenced.size > 0 ? opts.referenced : null;
   for (const [name, scheme] of Object.entries(schemes)) {
-    if (opts.referenced && !opts.referenced.has(name)) continue;
+    if (filter && !filter.has(name)) continue;
     if (!scheme || typeof scheme !== 'object') continue;
     const type = String((scheme as any).type ?? '').toLowerCase();
 
@@ -82,6 +85,35 @@ export function detectAuth(
   if (headerApiKey) return { type: 'apiKey', headerName: headerApiKey };
   if (queryApiKey) return { type: 'apiKey', headerName: queryApiKey };
   return { type: 'none' };
+}
+
+/**
+ * Collect every securityScheme NAME actually required by an endpoint — the
+ * OpenAPI security model is an array of requirement objects whose keys
+ * reference scheme names. A root-level `security` is the default; an
+ * operation-level `security` (including `[]`) overrides it. Shared by the
+ * parser's `assertSupportedAuth` and the normalizer's `detectAuth` so both
+ * passes agree on which schemes count.
+ */
+export function collectReferencedSchemeNames(doc: any): Set<string> {
+  const referenced = new Set<string>();
+  const add = (security: any) => {
+    if (!Array.isArray(security)) return;
+    for (const item of security) {
+      if (item && typeof item === 'object') for (const name of Object.keys(item)) referenced.add(name);
+    }
+  };
+
+  add(doc?.security);
+  const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'];
+  for (const pathItem of Object.values(doc?.paths ?? {})) {
+    if (!pathItem || typeof pathItem !== 'object') continue;
+    for (const method of HTTP_METHODS) {
+      const op = (pathItem as any)[method];
+      if (op && typeof op === 'object' && Array.isArray(op.security)) add(op.security);
+    }
+  }
+  return referenced;
 }
 
 /**

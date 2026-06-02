@@ -117,6 +117,16 @@ describe('detectAuth', () => {
     expect(result).toEqual({ type: 'bearer' });
   });
 
+  it('falls back to all declared schemes when no scheme is referenced (empty set)', () => {
+    // A spec that declares apiKey but no endpoint/root `security` → empty
+    // referenced set → we still detect the declared scheme (not "none").
+    const result = detectAuth(
+      { ApiKey: { type: 'apiKey', name: 'X-API-Key', in: 'header' } },
+      { referenced: new Set() }
+    );
+    expect(result).toEqual({ type: 'apiKey', headerName: 'X-API-Key' });
+  });
+
   it('ignores schemes that are not real objects', () => {
     const result = detectAuth({
       Bogus: null,
