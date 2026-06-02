@@ -40,6 +40,8 @@ function authLabelFor(type: UpstreamAuthType): string {
       return 'api key';
     case 'bearer':
       return 'bearer';
+    case 'oauth2':
+      return 'OAuth 2.0';
   }
 }
 
