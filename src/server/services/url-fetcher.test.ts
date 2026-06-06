@@ -101,6 +101,37 @@ describe('fetchSpecFromUrl', () => {
     });
   });
 
+  // HTML auto-discovery
+  it('follows a spec link found in an HTML page', async () => {
+    const html = '<a href="/openapi.json">Download spec</a>';
+    mockFetch
+      .mockResolvedValueOnce(okResponse(html, { 'content-type': 'text/html; charset=utf-8' }))
+      .mockResolvedValueOnce(okResponse('{"openapi":"3.0.0"}'));
+    const body = await fetchSpecFromUrl('https://docs.example.com/api');
+    expect(body).toBe('{"openapi":"3.0.0"}');
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch.mock.calls[1][0]).toBe('https://docs.example.com/openapi.json');
+  });
+
+  it('returns an inline spec embedded in a <script type="application/json"> tag', async () => {
+    const spec = '{"openapi":"3.0.0","info":{"title":"T","version":"1"},"paths":{}}';
+    const html = `<script type="application/json">${spec}</script>`;
+    mockFetch.mockResolvedValueOnce(okResponse(html, { 'content-type': 'text/html' }));
+    const body = await fetchSpecFromUrl('https://docs.example.com/api');
+    expect(body).toBe(spec);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws URL_SPEC_NOT_FOUND when HTML has no usable spec link and common paths all 404', async () => {
+    const html = '<html><body>Welcome</body></html>';
+    mockFetch.mockResolvedValueOnce(okResponse(html, { 'content-type': 'text/html' }));
+    // All common-path attempts return 404
+    mockFetch.mockResolvedValue(new Response('Not found', { status: 404 }));
+    await expect(fetchSpecFromUrl('https://docs.example.com/api')).rejects.toMatchObject({
+      code: 'URL_SPEC_NOT_FOUND',
+    });
+  });
+
   it('blocks a redirect that points to a private IP', async () => {
     mockFetch.mockResolvedValueOnce(
       new Response(null, { status: 302, headers: { location: 'https://192.168.1.1/secret' } })
