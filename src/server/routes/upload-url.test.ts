@@ -36,7 +36,8 @@ describe('POST /api/upload-url', () => {
       .post('/api/upload-url')
       .send({ url: 'https://api.example.com/spec.yaml' });
     expect(res.status).toBe(200);
-    expect(res.body.apiName).toBe('Demo');
+    expect(res.body.parsed.apiName).toBe('Demo');
+    expect(typeof res.body.raw).toBe('string');
   });
 
   it('returns 400 when url is missing', async () => {

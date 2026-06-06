@@ -24,6 +24,13 @@ async function fetchWithRedirects(url: string, signal: AbortSignal, hops = 0): P
     throw new UrlFetchError('URL_FETCH_FAILED', `Too many redirects (max ${MAX_REDIRECTS}).`);
   }
 
+  try {
+    await assertPublicUrl(url);
+  } catch (err) {
+    if (err instanceof SsrfError) throw new UrlFetchError('URL_PRIVATE_IP_BLOCKED', err.message);
+    throw err;
+  }
+
   const res = await fetch(url, {
     redirect: 'manual',
     signal,
@@ -34,12 +41,6 @@ async function fetchWithRedirects(url: string, signal: AbortSignal, hops = 0): P
     const location = res.headers.get('location');
     if (!location) throw new UrlFetchError('URL_FETCH_FAILED', 'Redirect with no Location header.');
     const next = new URL(location, url).href;
-    try {
-      await assertPublicUrl(next);
-    } catch (err) {
-      if (err instanceof SsrfError) throw new UrlFetchError('URL_PRIVATE_IP_BLOCKED', err.message);
-      throw err;
-    }
     return fetchWithRedirects(next, signal, hops + 1);
   }
 
@@ -63,13 +64,6 @@ export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
     throw new UrlFetchError('URL_INVALID', 'Only https:// URLs are allowed.');
   }
 
-  try {
-    await assertPublicUrl(rawUrl);
-  } catch (err) {
-    if (err instanceof SsrfError) throw new UrlFetchError('URL_PRIVATE_IP_BLOCKED', err.message);
-    throw err;
-  }
-
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -79,7 +73,9 @@ export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
   } catch (err) {
     if (err instanceof UrlFetchError) throw err;
     const isAbort = err instanceof Error && err.name === 'AbortError';
-    throw new UrlFetchError(isAbort ? 'URL_TIMEOUT' : 'URL_FETCH_FAILED', isAbort ? 'Request timed out after 5s.' : 'Failed to fetch the URL.');
+    const code = isAbort ? 'URL_TIMEOUT' : 'URL_FETCH_FAILED';
+    const message = isAbort ? 'Request timed out after 5s.' : 'Failed to fetch the URL.';
+    throw new UrlFetchError(code, message);
   } finally {
     clearTimeout(timer);
   }
@@ -109,12 +105,5 @@ export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
     }
     chunks.push(value);
   }
-  return new TextDecoder().decode(
-    chunks.reduce((acc, chunk) => {
-      const merged = new Uint8Array(acc.byteLength + chunk.byteLength);
-      merged.set(acc);
-      merged.set(chunk, acc.byteLength);
-      return merged;
-    }, new Uint8Array(0))
-  );
+  return Buffer.concat(chunks).toString('utf8');
 }

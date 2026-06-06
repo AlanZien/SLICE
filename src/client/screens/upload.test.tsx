@@ -81,7 +81,7 @@ describe('<UploadScreen>', () => {
   });
 
   it('calls uploadSpecFromUrl and onParsed when URL is submitted', async () => {
-    mockFetchOnce({ status: 200, body: VALID_PARSED });
+    mockFetchOnce({ status: 200, body: { parsed: VALID_PARSED, raw: '{"openapi":"3.0.3"}' } });
     const onParsed = vi.fn();
     render(<UploadScreen onParsed={onParsed} />);
     await userEvent.click(screen.getByRole('button', { name: /paste a url/i }));

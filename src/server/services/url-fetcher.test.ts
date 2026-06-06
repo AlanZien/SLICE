@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { fetchSpecFromUrl, UrlFetchError } from './url-fetcher';
+import { fetchSpecFromUrl } from './url-fetcher';
 import { SsrfError } from './ssrf-guard';
 
 // Stub fetch globally for all tests

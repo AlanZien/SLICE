@@ -63,8 +63,8 @@ export async function uploadSpecFromUrl(url: string): Promise<{ spec: ParsedSpec
     body: JSON.stringify({ url }),
   });
   if (!res.ok) await throwApiError(res, 'URL_FETCH_FAILED');
-  const spec = (await res.json()) as ParsedSpec;
-  return { spec, rawSpec: JSON.stringify(spec) };
+  const { parsed, raw } = (await res.json()) as { parsed: ParsedSpec; raw: string };
+  return { spec: parsed, rawSpec: raw };
 }
 
 export interface GenerateResult {

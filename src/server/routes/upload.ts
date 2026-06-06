@@ -1,4 +1,4 @@
-import { type RequestHandler, Router } from 'express';
+import { type RequestHandler, type Response, Router } from 'express';
 import multer, { type Multer } from 'multer';
 import { parseSpecIsolated, ParseBusyError } from '../services/parse-isolated';
 import { fetchSpecFromUrl, UrlFetchError, type UrlErrorCode } from '../services/url-fetcher';
@@ -26,6 +26,18 @@ const STATUS_BY_CODE: Record<ParseErrorCode | 'NO_FILE', number> = {
   PARSE_TOO_COMPLEX: 422, // syntactically fine but we refuse to process it (anti-DoS, D004)
   NO_FILE: 400,
 };
+
+function sendParseError(res: Response, err: unknown, fallbackMessage: string): void {
+  if (err instanceof ParseBusyError) {
+    res.status(429).json({ code: 'PARSE_BUSY', message: err.message });
+    return;
+  }
+  if (err instanceof ParseError) {
+    res.status(STATUS_BY_CODE[err.code] ?? 400).json({ code: err.code, message: err.message });
+    return;
+  }
+  res.status(400).json({ code: 'INVALID_SPEC', message: fallbackMessage });
+}
 
 function buildUploader(): Multer {
   return multer({
@@ -59,19 +71,7 @@ const handler: RequestHandler = async (req, res) => {
     const parsed = await parseSpecIsolated(raw, { sizeBytes: file.size });
     res.status(200).json(parsed);
   } catch (err) {
-    if (err instanceof ParseBusyError) {
-      res.status(429).json({ code: 'PARSE_BUSY', message: err.message });
-      return;
-    }
-    if (err instanceof ParseError) {
-      res.status(STATUS_BY_CODE[err.code]).json({ code: err.code, message: err.message });
-      return;
-    }
-    // Unknown error — surface as INVALID_SPEC, never leak the stack.
-    res.status(400).json({
-      code: 'INVALID_SPEC',
-      message: 'Could not process the uploaded file.',
-    });
+    sendParseError(res, err, 'Could not process the uploaded file.');
   }
 };
 
@@ -130,21 +130,13 @@ const urlHandler: RequestHandler = async (req, res) => {
   try {
     const raw = await fetchSpecFromUrl(url);
     const parsed = await parseSpecIsolated(raw, { sizeBytes: Buffer.byteLength(raw) });
-    res.status(200).json(parsed);
+    res.status(200).json({ parsed, raw });
   } catch (err) {
     if (err instanceof UrlFetchError) {
       res.status(URL_STATUS[err.code]).json({ code: err.code, message: err.message });
       return;
     }
-    if (err instanceof ParseBusyError) {
-      res.status(429).json({ code: 'PARSE_BUSY', message: err.message });
-      return;
-    }
-    if (err instanceof ParseError) {
-      res.status(STATUS_BY_CODE[err.code] ?? 400).json({ code: err.code, message: err.message });
-      return;
-    }
-    res.status(400).json({ code: 'INVALID_SPEC', message: 'Could not process the spec at this URL.' });
+    sendParseError(res, err, 'Could not process the spec at this URL.');
   }
 };
 
