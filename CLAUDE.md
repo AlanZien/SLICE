@@ -29,7 +29,9 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 - **1d** — affichage config + mesure corpus (**0 rejet OAuth** ; Stripe & co passent).
 - Pattern promu (`01-conventions.md`) : données externes → `JSON.stringify` dans le code généré.
 
-**Prochaine étape** : à choisir (cf. BACKLOG par impact prod) — **OAuth login navigateur (`authorization_code`)** pour les SaaS grand public, ou **matrice de features OpenAPI** (levier A), ou **rapport fail-loud** (levier C), ou la dette test/codegen (factoriser bancs runtime + auditer l'échappement de la description des tools).
+**Correctifs pré-lancement livrés (PR #37, mergé 2026-06-06)** : store hébergé persistant (JSON sur disque, `SLICE_STORE_PATH`) + snippet Claude Desktop au format `mcp-remote` via npx. 488 tests verts.
+
+**Prochaine étape** : upload par URL (SSRF-safe) + rapport fail-loud, puis mise en ligne sur VPS Coolify.
 
 **Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — aussi en CI via `corpus.yml` à la demande).
 
