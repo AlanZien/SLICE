@@ -180,3 +180,12 @@ Détail : `.workflow/phases/upload-url/REVIEW.md`.
 - **Bug détecté en EVALUATE (invisible aux tests)** : `rawSpec = JSON.stringify(ParsedSpec)` au lieu du texte OpenAPI original. La génération aurait échoué silencieusement pour toute spec chargée par URL. Corrigé : le serveur renvoie `{ parsed, raw }`.
 - **Pattern architectural à surveiller** : endpoint de transformation → client a besoin de l'original ET du résultat. À promouvoir si 3e occurrence.
 - 507 tests verts. Pas de nouveau pattern promu dans `.claude/rules/`.
+
+## 2026-06-06 — Rapport fail-loud ✓ mergé (PR #39)
+
+Détail : `.workflow/phases/fail-loud/REVIEW.md`.
+
+- Screen 3 affiche `N/N endpoints in MCP` + détail des approximations (schema_fallback, non_json_body, cookie_param) pour les endpoints sélectionnés. Calcul client-side, zéro changement backend.
+- Détection dans `spec-normalizer.ts` via `computeApproximations` : 3 kinds, 16 tests (11 normalizer + 5 UI).
+- Advisor a attrapé un cas manquant (T11 : propriétés body flattenées avec oneOf). Corrigé en REFINE avant implémentation.
+- 523 tests verts. Pas de nouveau pattern promu.
