@@ -122,14 +122,21 @@ describe('fetchSpecFromUrl', () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
-  it('throws URL_SPEC_NOT_FOUND when HTML has no usable spec link and common paths all 404', async () => {
+  it('returns the HTML body as last resort when no spec found in links or common paths', async () => {
     const html = '<html><body>Welcome</body></html>';
     mockFetch.mockResolvedValueOnce(okResponse(html, { 'content-type': 'text/html' }));
-    // All common-path attempts return 404
     mockFetch.mockResolvedValue(new Response('Not found', { status: 404 }));
-    await expect(fetchSpecFromUrl('https://docs.example.com/api')).rejects.toMatchObject({
-      code: 'URL_SPEC_NOT_FOUND',
-    });
+    const body = await fetchSpecFromUrl('https://docs.example.com/api');
+    expect(body).toBe(html);
+  });
+
+  it('returns the body when Content-Type is text/html but body is valid JSON (misconfigured server)', async () => {
+    const spec = '{"openapi":"3.0.0","info":{"title":"T","version":"1"},"paths":{}}';
+    mockFetch.mockResolvedValueOnce(okResponse(spec, { 'content-type': 'text/html' }));
+    // inline extractInlineSpec will miss it (no <script> tag), no links, common paths all 404
+    mockFetch.mockResolvedValue(new Response('Not found', { status: 404 }));
+    const body = await fetchSpecFromUrl('https://api.example.com/spec');
+    expect(body).toBe(spec);
   });
 
   it('blocks a redirect that points to a private IP', async () => {
