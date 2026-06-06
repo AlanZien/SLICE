@@ -239,3 +239,188 @@ describe('normalizeSpec', () => {
     expect(current?.deprecated).toBeFalsy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// Approximation detection (fail-loud)
+// ---------------------------------------------------------------------------
+
+function makeSpec(pathItem: Record<string, unknown>) {
+  return {
+    openapi: '3.0.3',
+    info: { title: 'Test', version: '1.0' },
+    paths: { '/x': pathItem },
+  };
+}
+
+function endpoint(spec: unknown) {
+  const parsed = normalizeSpec(spec);
+  return parsed.groups.flatMap((g) => g.endpoints)[0];
+}
+
+describe('approximation detection', () => {
+  // T1 — non_json_body: multipart body → no JSON content → flagged
+  it('T1: flags non_json_body when requestBody has no application/json content', () => {
+    const spec = makeSpec({
+      post: {
+        summary: 'upload',
+        requestBody: {
+          content: { 'multipart/form-data': { schema: { type: 'object' } } },
+        },
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('non_json_body');
+  });
+
+  // T2 — no non_json_body when JSON body present
+  it('T2: does not flag non_json_body when requestBody has application/json', () => {
+    const spec = makeSpec({
+      post: {
+        summary: 'create',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: { type: 'object', properties: { name: { type: 'string' } } },
+            },
+          },
+        },
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations ?? []).not.toContain('non_json_body');
+  });
+
+  // T3 — cookie_param
+  it('T3: flags cookie_param when a param is in: cookie', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'session',
+        parameters: [{ name: 'session_id', in: 'cookie', schema: { type: 'string' } }],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('cookie_param');
+  });
+
+  // T4 — schema_fallback: oneOf on query param
+  it('T4: flags schema_fallback when a query param has oneOf', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'search',
+        parameters: [
+          { name: 'filter', in: 'query', schema: { oneOf: [{ type: 'string' }, { type: 'integer' }] } },
+        ],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('schema_fallback');
+  });
+
+  // T5 — schema_fallback: anyOf
+  it('T5: flags schema_fallback when a query param has anyOf', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'list',
+        parameters: [
+          { name: 'q', in: 'query', schema: { anyOf: [{ type: 'string' }, { type: 'null' }] } },
+        ],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('schema_fallback');
+  });
+
+  // T6 — schema_fallback: allOf
+  it('T6: flags schema_fallback when a query param has allOf', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'get',
+        parameters: [
+          { name: 'opts', in: 'query', schema: { allOf: [{ type: 'object' }] } },
+        ],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('schema_fallback');
+  });
+
+  // T7 — schema_fallback: unrecognized type
+  it('T7: flags schema_fallback when a param has an unrecognized type', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'get',
+        parameters: [{ name: 'data', in: 'query', schema: { type: 'xml' } }],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('schema_fallback');
+  });
+
+  // T8 — fully supported: query + recognized types
+  it('T8: no approximations for a fully supported endpoint', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'list',
+        parameters: [
+          { name: 'page', in: 'query', schema: { type: 'integer' } },
+          { name: 'limit', in: 'query', schema: { type: 'integer' } },
+        ],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations ?? []).toHaveLength(0);
+  });
+
+  // T9 — fully supported: path-only, no schema
+  it('T9: no approximations for a path-only endpoint with no schema', () => {
+    const spec = makeSpec({
+      get: {
+        summary: 'get by id',
+        parameters: [{ name: 'id', in: 'path', required: true }],
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations ?? []).toHaveLength(0);
+  });
+
+  // T10 — cumul: non_json_body + cookie_param
+  it('T10: accumulates multiple approximation kinds', () => {
+    const spec = makeSpec({
+      post: {
+        summary: 'upload with session',
+        parameters: [{ name: 'session', in: 'cookie', schema: { type: 'string' } }],
+        requestBody: {
+          content: { 'multipart/form-data': { schema: { type: 'object' } } },
+        },
+        responses: { '200': {} },
+      },
+    });
+    const approx = endpoint(spec)?.approximations ?? [];
+    expect(approx).toContain('non_json_body');
+    expect(approx).toContain('cookie_param');
+  });
+
+  // T11 — schema_fallback on a flattened body property
+  it('T11: flags schema_fallback when a JSON body property has oneOf', () => {
+    const spec = makeSpec({
+      post: {
+        summary: 'create',
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  value: { oneOf: [{ type: 'string' }, { type: 'integer' }] },
+                },
+              },
+            },
+          },
+        },
+        responses: { '200': {} },
+      },
+    });
+    expect(endpoint(spec)?.approximations).toContain('schema_fallback');
+  });
+});
