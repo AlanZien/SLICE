@@ -1,6 +1,7 @@
 import { type RequestHandler, Router } from 'express';
 import multer, { type Multer } from 'multer';
 import { parseSpecIsolated, ParseBusyError } from '../services/parse-isolated';
+import { fetchSpecFromUrl, UrlFetchError, type UrlErrorCode } from '../services/url-fetcher';
 import { MAX_SPEC_BYTES, ParseError, type ParseErrorCode } from '@shared/types';
 
 
@@ -109,5 +110,46 @@ export function createUploadRouter(): Router {
     },
     handler
   );
+  return router;
+}
+
+const URL_STATUS: Record<UrlErrorCode, number> = {
+  URL_INVALID: 400,
+  URL_PRIVATE_IP_BLOCKED: 400,
+  URL_FETCH_FAILED: 400,
+  URL_TIMEOUT: 504,
+  URL_TOO_LARGE: 413,
+};
+
+const urlHandler: RequestHandler = async (req, res) => {
+  const url = typeof req.body?.url === 'string' ? req.body.url.trim() : '';
+  if (!url) {
+    res.status(400).json({ code: 'URL_INVALID', message: 'A url field is required.' });
+    return;
+  }
+  try {
+    const raw = await fetchSpecFromUrl(url);
+    const parsed = await parseSpecIsolated(raw, { sizeBytes: Buffer.byteLength(raw) });
+    res.status(200).json(parsed);
+  } catch (err) {
+    if (err instanceof UrlFetchError) {
+      res.status(URL_STATUS[err.code]).json({ code: err.code, message: err.message });
+      return;
+    }
+    if (err instanceof ParseBusyError) {
+      res.status(429).json({ code: 'PARSE_BUSY', message: err.message });
+      return;
+    }
+    if (err instanceof ParseError) {
+      res.status(STATUS_BY_CODE[err.code] ?? 400).json({ code: err.code, message: err.message });
+      return;
+    }
+    res.status(400).json({ code: 'INVALID_SPEC', message: 'Could not process the spec at this URL.' });
+  }
+};
+
+export function createUploadUrlRouter(): Router {
+  const router = Router();
+  router.post('/', urlHandler);
   return router;
 }

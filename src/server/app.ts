@@ -3,7 +3,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createUploadRouter } from './routes/upload';
+import { createUploadRouter, createUploadUrlRouter } from './routes/upload';
 import { createGenerateRouter } from './routes/generate';
 import { createHostRouter } from './routes/host';
 import { createHostedMcpRouter } from './routes/hosted-mcp';
@@ -57,6 +57,8 @@ export function createApp(options: CreateAppOptions = {}): Express {
 
   // POST /api/upload — phase 02 (multer applies its own 10 MB limit before json parser)
   app.use('/api/upload', createUploadRouter());
+  // POST /api/upload-url — fetch a spec from a public HTTPS URL (SSRF-safe)
+  app.use('/api/upload-url', createUploadUrlRouter());
 
   // POST /api/generate — phase 08. Mounts its own 15 MB JSON parser; the
   // 10 MB app-level one is bypassed by the path-specific router order.
