@@ -693,3 +693,29 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 |---|----------|----------|-------|
 | 1 | Écran config sur une spec OAuth2 → affiche « Automatic connection (OAuth 2.0) », le token endpoint et la note env vars | ⏳ | visuel |
 | 2 | Bout-en-bout : uploader une vraie spec OAuth2 client_credentials → générer → self-host → l'agent l'utilise | ⏳ | E2E live |
+
+## Phase upload-url : upload par URL (2026-06-06)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | SSRF : URL http:// → rejetée 400 URL_INVALID | ✓ | `url-fetcher.test.ts` |
+| 2 | SSRF : URL pointant vers IP privée → rejetée 400 URL_PRIVATE_IP_BLOCKED | ✓ | `url-fetcher.test.ts` |
+| 3 | SSRF via redirect : redirect vers IP privée → bloquée | ✓ | `url-fetcher.test.ts` |
+| 4 | Plus de 3 redirects → URL_FETCH_FAILED | ✓ | `url-fetcher.test.ts` |
+| 5 | Content-Length > 10 MB → URL_TOO_LARGE 413 | ✓ | `url-fetcher.test.ts` |
+| 6 | Timeout 5s → URL_TIMEOUT 504 | ✓ | `upload-url.test.ts` |
+| 7 | URL manquante dans body → 400 URL_INVALID | ✓ | `upload-url.test.ts` |
+| 8 | URL valide → 200 + `{ parsed, raw }` + rawSpec = texte OpenAPI original | ✓ | `upload-url.test.ts` |
+| 9 | Suite complète verte (507) + typecheck | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Cliquer « Paste a URL » → affiche le champ URL + bouton Fetch | ⏳ | visuel |
+| 2 | Coller l'URL d'une vraie spec publique (ex. Petstore) → Fetch → passe à l'écran 2 | ⏳ | E2E live |
+| 3 | URL http:// → message d'erreur « Only https:// URLs are allowed. » | ⏳ | visuel |
+| 4 | URL introuvable / serveur KO → message d'erreur clair | ⏳ | visuel |
+| 5 | Générer un MCP depuis une spec chargée par URL → ZIP valide | ⏳ | E2E live |

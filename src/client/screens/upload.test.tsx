@@ -54,7 +54,7 @@ describe('<UploadScreen>', () => {
   it('renders the hero copy and dropzone hint', () => {
     render(<UploadScreen onParsed={() => {}} />);
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
-    expect(screen.getByText(/drop|pick a file/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /drop a file/i })).toBeInTheDocument();
   });
 
   it('uploads the file and calls onParsed with the spec on success', async () => {
@@ -69,6 +69,27 @@ describe('<UploadScreen>', () => {
     });
     expect(globalThis.fetch).toHaveBeenCalledWith(
       '/api/upload',
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+
+  it('shows a URL input field when the URL tab is selected', async () => {
+    render(<UploadScreen onParsed={() => {}} />);
+    const urlTab = screen.getByRole('button', { name: /paste a url/i });
+    await userEvent.click(urlTab);
+    expect(screen.getByPlaceholderText(/https:\/\//i)).toBeInTheDocument();
+  });
+
+  it('calls uploadSpecFromUrl and onParsed when URL is submitted', async () => {
+    mockFetchOnce({ status: 200, body: { parsed: VALID_PARSED, raw: '{"openapi":"3.0.3"}' } });
+    const onParsed = vi.fn();
+    render(<UploadScreen onParsed={onParsed} />);
+    await userEvent.click(screen.getByRole('button', { name: /paste a url/i }));
+    await userEvent.type(screen.getByPlaceholderText(/https:\/\//i), 'https://api.example.com/spec.yaml');
+    await userEvent.click(screen.getByRole('button', { name: /fetch/i }));
+    await waitFor(() => expect(onParsed).toHaveBeenCalledWith(VALID_PARSED, expect.any(String)));
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      '/api/upload-url',
       expect.objectContaining({ method: 'POST' })
     );
   });

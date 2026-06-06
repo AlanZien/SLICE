@@ -56,6 +56,17 @@ export async function uploadSpec(file: File): Promise<ParsedSpec> {
   return (await res.json()) as ParsedSpec;
 }
 
+export async function uploadSpecFromUrl(url: string): Promise<{ spec: ParsedSpec; rawSpec: string }> {
+  const res = await fetch('/api/upload-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  if (!res.ok) await throwApiError(res, 'URL_FETCH_FAILED');
+  const { parsed, raw } = (await res.json()) as { parsed: ParsedSpec; raw: string };
+  return { spec: parsed, rawSpec: raw };
+}
+
 export interface GenerateResult {
   blob: Blob;
   filename: string;
