@@ -119,6 +119,7 @@ const URL_STATUS: Record<UrlErrorCode, number> = {
   URL_FETCH_FAILED: 400,
   URL_TIMEOUT: 504,
   URL_TOO_LARGE: 413,
+  URL_SPEC_NOT_FOUND: 400,
 };
 
 const urlHandler: RequestHandler = async (req, res) => {

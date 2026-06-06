@@ -1,12 +1,14 @@
 import { MAX_SPEC_BYTES } from '@shared/types';
 import { assertPublicUrl, SsrfError } from './ssrf-guard';
+import { extractSpecUrls, commonSpecPaths, extractInlineSpec } from './html-spec-finder';
 
 export type UrlErrorCode =
   | 'URL_INVALID'
   | 'URL_FETCH_FAILED'
   | 'URL_PRIVATE_IP_BLOCKED'
   | 'URL_TIMEOUT'
-  | 'URL_TOO_LARGE';
+  | 'URL_TOO_LARGE'
+  | 'URL_SPEC_NOT_FOUND';
 
 export class UrlFetchError extends Error {
   constructor(public readonly code: UrlErrorCode, message: string) {
@@ -17,6 +19,7 @@ export class UrlFetchError extends Error {
 
 const FETCH_TIMEOUT_MS = 5_000;
 const MAX_REDIRECTS = 3;
+const MAX_CANDIDATES = 10;
 const USER_AGENT = 'SLICE/1.0';
 
 async function fetchWithRedirects(url: string, signal: AbortSignal, hops = 0): Promise<Response> {
@@ -47,29 +50,18 @@ async function fetchWithRedirects(url: string, signal: AbortSignal, hops = 0): P
   return res;
 }
 
-/**
- * Fetch a spec from a public HTTPS URL. SSRF-safe: validates the URL,
- * blocks private IPs, follows up to 3 redirects (each re-checked), and
- * enforces a 5s timeout and 10 MB body limit.
- */
-export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
-  let url: URL;
-  try {
-    url = new URL(rawUrl);
-  } catch {
-    throw new UrlFetchError('URL_INVALID', 'Invalid URL.');
-  }
+interface FetchRawResult {
+  body: string;
+  contentType: string;
+}
 
-  if (url.protocol !== 'https:') {
-    throw new UrlFetchError('URL_INVALID', 'Only https:// URLs are allowed.');
-  }
-
+async function fetchRaw(url: string): Promise<FetchRawResult> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   let res: Response;
   try {
-    res = await fetchWithRedirects(rawUrl, controller.signal);
+    res = await fetchWithRedirects(url, controller.signal);
   } catch (err) {
     if (err instanceof UrlFetchError) throw err;
     const isAbort = err instanceof Error && err.name === 'AbortError';
@@ -92,18 +84,83 @@ export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
   const chunks: Uint8Array[] = [];
   let total = 0;
   const reader = res.body?.getReader();
+  let body: string;
   if (!reader) {
-    return await res.text();
-  }
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    total += value.byteLength;
-    if (total > MAX_SPEC_BYTES) {
-      await reader.cancel();
-      throw new UrlFetchError('URL_TOO_LARGE', 'Response exceeds the 10 MB limit.');
+    body = await res.text();
+  } else {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > MAX_SPEC_BYTES) {
+        await reader.cancel();
+        throw new UrlFetchError('URL_TOO_LARGE', 'Response exceeds the 10 MB limit.');
+      }
+      chunks.push(value);
     }
-    chunks.push(value);
+    body = Buffer.concat(chunks).toString('utf8');
   }
-  return Buffer.concat(chunks).toString('utf8');
+
+  return { body, contentType: res.headers.get('content-type') ?? '' };
+}
+
+async function resolveSpecFromHtml(html: string, pageUrl: string): Promise<string> {
+  const inline = extractInlineSpec(html);
+  if (inline) return inline;
+
+  const linked = extractSpecUrls(html, pageUrl);
+  const common = commonSpecPaths(pageUrl);
+  const seen = new Set<string>();
+  const candidates: string[] = [];
+  for (const url of [...linked, ...common]) {
+    if (!seen.has(url)) {
+      seen.add(url);
+      candidates.push(url);
+    }
+    if (candidates.length >= MAX_CANDIDATES) break;
+  }
+
+  for (const candidateUrl of candidates) {
+    try {
+      const { body, contentType } = await fetchRaw(candidateUrl);
+      if (!contentType.includes('text/html')) return body;
+    } catch {
+      // try next candidate
+    }
+  }
+
+  throw new UrlFetchError(
+    'URL_SPEC_NOT_FOUND',
+    'No API spec found at this URL. Try linking directly to a .json or .yaml file.',
+  );
+}
+
+/**
+ * Fetch a spec from a public HTTPS URL. SSRF-safe: validates the URL,
+ * blocks private IPs, follows up to 3 redirects (each re-checked), and
+ * enforces a 5s timeout and 10 MB body limit.
+ *
+ * When the URL returns an HTML page, automatically searches for an embedded
+ * or linked OpenAPI/Swagger spec (linked via <a>/<link>, inline in <script>,
+ * or at common paths like /openapi.json).
+ */
+export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
+  let url: URL;
+  try {
+    url = new URL(rawUrl);
+  } catch {
+    throw new UrlFetchError('URL_INVALID', 'Invalid URL.');
+  }
+
+  if (url.protocol !== 'https:') {
+    throw new UrlFetchError('URL_INVALID', 'Only https:// URLs are allowed.');
+  }
+
+  const { body, contentType } = await fetchRaw(rawUrl);
+
+  if (contentType.includes('text/html')) {
+    return resolveSpecFromHtml(body, rawUrl);
+  }
+
+  return body;
 }
