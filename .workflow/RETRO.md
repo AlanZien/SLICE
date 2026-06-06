@@ -171,3 +171,12 @@ Détail : `.workflow/phases/oauth/REVIEW.md`.
 ---
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.
+
+## 2026-06-06 — Upload par URL (SSRF-safe) ✓ mergé (PR #38)
+
+Détail : `.workflow/phases/upload-url/REVIEW.md`.
+
+- Écran 1 : deuxième mode d'import (URL HTTPS) en plus du file drop. Fetch SSRF-safe avec guard sur chaque hop de redirect (incluant l'URL initiale), timeout 5s, cap streaming 10 MB.
+- **Bug détecté en EVALUATE (invisible aux tests)** : `rawSpec = JSON.stringify(ParsedSpec)` au lieu du texte OpenAPI original. La génération aurait échoué silencieusement pour toute spec chargée par URL. Corrigé : le serveur renvoie `{ parsed, raw }`.
+- **Pattern architectural à surveiller** : endpoint de transformation → client a besoin de l'original ET du résultat. À promouvoir si 3e occurrence.
+- 507 tests verts. Pas de nouveau pattern promu dans `.claude/rules/`.
