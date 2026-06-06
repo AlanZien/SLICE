@@ -37,6 +37,39 @@ const SUPPORTED_METHODS: ReadonlyArray<string> = [
   'delete',
 ];
 
+function computeApproximations(
+  op: any,
+  pathLevelParams: any[],
+  params: EndpointParam[],
+  bodyParams: EndpointParam[],
+): ApproximationKind[] {
+  const result: ApproximationKind[] = [];
+
+  if (op.requestBody != null && bodyParams.length === 0) {
+    result.push('non_json_body');
+  }
+
+  if (params.some((p) => p.in === 'cookie')) {
+    result.push('cookie_param');
+  }
+
+  const rawParams = [...pathLevelParams, ...(Array.isArray(op.parameters) ? op.parameters : [])];
+  const rawBodySchema = op.requestBody?.content?.['application/json']?.schema;
+  const bodyPropSchemas =
+    rawBodySchema?.type === 'object' && rawBodySchema?.properties
+      ? Object.values(rawBodySchema.properties as Record<string, any>)
+      : [];
+  if (
+    rawParams.some((p: any) => p?.in !== 'cookie' && hasComplexSchema(p?.schema)) ||
+    (bodyParams.length > 0 &&
+      (hasComplexSchema(rawBodySchema) || bodyPropSchemas.some(hasComplexSchema)))
+  ) {
+    result.push('schema_fallback');
+  }
+
+  return result;
+}
+
 export function normalizeSpec(doc: any): ParsedSpec {
   const { groups, excludedCount } = collectGroups(doc);
   const baseUrl = doc?.servers?.[0]?.url ?? '';
@@ -115,29 +148,12 @@ function collectGroups(doc: any): { groups: EndpointGroup[]; excludedCount: numb
       const bodyParams = flattenRequestBody(op.requestBody, existingNames);
       params.push(...bodyParams);
 
-      const approximations: ApproximationKind[] = [];
-
-      if (op.requestBody != null && bodyParams.length === 0) {
-        approximations.push('non_json_body');
-      }
-
-      if (params.some((p) => p.in === 'cookie')) {
-        approximations.push('cookie_param');
-      }
-
-      const rawParams = [...pathLevelParams, ...(Array.isArray(op.parameters) ? op.parameters : [])];
-      const rawBodySchema = op.requestBody?.content?.['application/json']?.schema;
-      const bodyPropSchemas =
-        rawBodySchema?.type === 'object' && rawBodySchema?.properties
-          ? Object.values(rawBodySchema.properties as Record<string, any>)
-          : [];
-      if (
-        rawParams.some((p: any) => p?.in !== 'cookie' && hasComplexSchema(p?.schema)) ||
-        (bodyParams.length > 0 &&
-          (hasComplexSchema(rawBodySchema) || bodyPropSchemas.some(hasComplexSchema)))
-      ) {
-        approximations.push('schema_fallback');
-      }
+      const approximations = computeApproximations(
+        op,
+        pathLevelParams,
+        params,
+        bodyParams,
+      );
 
       const endpoint: Endpoint = {
         id: `${upperMethod} ${pathKey}`,

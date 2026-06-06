@@ -113,27 +113,18 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
 
   const detectedAuthType = defaults.upstreamAuth.type;
 
-  // Pre-compute everything the right preview needs from (spec, selectedIds).
-  const { sampleTools, extraToolsCount, savedPercent } = useMemo(() => {
+  // Pre-compute everything that depends on (spec, selectedIds) in a single memo.
+  const { sampleTools, extraToolsCount, savedPercent, report } = useMemo(() => {
     const allEndpoints = spec.groups.flatMap((g) => g.endpoints);
     const selectedSet = new Set(selectedIds);
     const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
+
     const sample = chosen.slice(0, SAMPLE_TOOL_COUNT).map((e) => ({
       id: toolIdFor(e),
       method: e.method,
     }));
     const economy = computeEconomy(spec, selectedIds);
-    return {
-      sampleTools: sample,
-      extraToolsCount: Math.max(0, chosen.length - SAMPLE_TOOL_COUNT),
-      savedPercent: economy.percent,
-    };
-  }, [spec, selectedIds]);
 
-  const report = useMemo((): GenerationReportData => {
-    const allEndpoints = spec.groups.flatMap((g) => g.endpoints);
-    const selectedSet = new Set(selectedIds);
-    const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
     let full = 0, schemaFallback = 0, nonJsonBody = 0, cookieParam = 0;
     for (const e of chosen) {
       const kinds = (e.approximations ?? []) as ApproximationKind[];
@@ -142,7 +133,13 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
       if (kinds.includes('non_json_body')) nonJsonBody++;
       if (kinds.includes('cookie_param')) cookieParam++;
     }
-    return { total: chosen.length, full, schemaFallback, nonJsonBody, cookieParam };
+
+    return {
+      sampleTools: sample,
+      extraToolsCount: Math.max(0, chosen.length - SAMPLE_TOOL_COUNT),
+      savedPercent: economy.percent,
+      report: { total: chosen.length, full, schemaFallback, nonJsonBody, cookieParam } satisfies GenerationReportData,
+    };
   }, [spec, selectedIds]);
 
   const handleAuthSelect = (next: UpstreamAuthType) => {
