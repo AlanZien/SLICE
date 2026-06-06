@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { mkdirSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHostedStore, createFileHostedStore } from './hosted-store';
@@ -65,7 +65,7 @@ describe('createFileHostedStore', () => {
 
   it('starts fresh when file is corrupted', () => {
     mkdirSync(dir, { recursive: true });
-    require('node:fs').writeFileSync(filePath, 'NOT JSON', 'utf-8');
+    writeFileSync(filePath, 'NOT JSON', 'utf-8');
     const store = createFileHostedStore(filePath);
     expect(store.get('anything')).toBeUndefined();
   });

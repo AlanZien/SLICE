@@ -33,18 +33,16 @@ export function createHostedStore(): HostedStore {
 export function createFileHostedStore(filePath: string): HostedStore {
   mkdirSync(dirname(filePath), { recursive: true });
 
-  const configs = new Map<string, HostedMcpConfig>();
+  let configs = new Map<string, HostedMcpConfig>();
   try {
     const data = JSON.parse(readFileSync(filePath, 'utf-8')) as Record<string, HostedMcpConfig>;
-    for (const [id, cfg] of Object.entries(data)) configs.set(id, cfg);
+    configs = new Map(Object.entries(data));
   } catch {
     // File absent or corrupt — start fresh
   }
 
   function persist(): void {
-    const data: Record<string, HostedMcpConfig> = {};
-    for (const [id, cfg] of configs) data[id] = cfg;
-    writeFileSync(filePath, JSON.stringify(data), 'utf-8');
+    writeFileSync(filePath, JSON.stringify(Object.fromEntries(configs)), 'utf-8');
   }
 
   return {
