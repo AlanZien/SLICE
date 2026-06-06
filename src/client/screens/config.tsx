@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import type {
+  ApproximationKind,
   DeploymentMode,
   Endpoint,
   ParsedSpec,
@@ -55,6 +56,41 @@ function toolIdFor(endpoint: Endpoint): string {
   return `tools.${endpoint.method.toLowerCase()}_${path || 'root'}`;
 }
 
+interface GenerationReportData {
+  total: number;
+  full: number;
+  schemaFallback: number;
+  nonJsonBody: number;
+  cookieParam: number;
+}
+
+function GenerationReport({ report }: { report: GenerationReportData }) {
+  const { total, full, schemaFallback, nonJsonBody, cookieParam } = report;
+  const hasApprox = schemaFallback > 0 || nonJsonBody > 0 || cookieParam > 0;
+  return (
+    <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 font-mono text-xs text-muted-foreground space-y-1">
+      <div className="flex items-center gap-2">
+        <span className="text-foreground font-medium">{total} / {total} endpoints in MCP</span>
+        {!hasApprox && <span className="text-emerald-500">· All fully supported</span>}
+      </div>
+      {hasApprox && (
+        <ul className="space-y-0.5 pl-1">
+          <li>✓ {full} fully supported</li>
+          {schemaFallback > 0 && (
+            <li>⚠ {schemaFallback} with approximated schema (oneOf / anyOf → string)</li>
+          )}
+          {nonJsonBody > 0 && (
+            <li>⬜ {nonJsonBody} with no body support (non-JSON request body)</li>
+          )}
+          {cookieParam > 0 && (
+            <li>🔒 {cookieParam} with cookie params (not transmitted at runtime)</li>
+          )}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export interface ConfigScreenProps {
   spec: ParsedSpec;
   selectedIds: string[];
@@ -77,20 +113,32 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
 
   const detectedAuthType = defaults.upstreamAuth.type;
 
-  // Pre-compute everything the right preview needs from (spec, selectedIds).
-  const { sampleTools, extraToolsCount, savedPercent } = useMemo(() => {
+  // Pre-compute everything that depends on (spec, selectedIds) in a single memo.
+  const { sampleTools, extraToolsCount, savedPercent, report } = useMemo(() => {
     const allEndpoints = spec.groups.flatMap((g) => g.endpoints);
     const selectedSet = new Set(selectedIds);
     const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
+
     const sample = chosen.slice(0, SAMPLE_TOOL_COUNT).map((e) => ({
       id: toolIdFor(e),
       method: e.method,
     }));
     const economy = computeEconomy(spec, selectedIds);
+
+    let full = 0, schemaFallback = 0, nonJsonBody = 0, cookieParam = 0;
+    for (const e of chosen) {
+      const kinds = (e.approximations ?? []) as ApproximationKind[];
+      if (kinds.length === 0) { full++; continue; }
+      if (kinds.includes('schema_fallback')) schemaFallback++;
+      if (kinds.includes('non_json_body')) nonJsonBody++;
+      if (kinds.includes('cookie_param')) cookieParam++;
+    }
+
     return {
       sampleTools: sample,
       extraToolsCount: Math.max(0, chosen.length - SAMPLE_TOOL_COUNT),
       savedPercent: economy.percent,
+      report: { total: chosen.length, full, schemaFallback, nonJsonBody, cookieParam } satisfies GenerationReportData,
     };
   }, [spec, selectedIds]);
 
@@ -281,6 +329,8 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
                 />
               </div>
             </AdvancedOptions>
+
+            <GenerationReport report={report} />
           </div>
         </section>
 

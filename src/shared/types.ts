@@ -58,6 +58,12 @@ export interface EndpointParam {
   wireName?: string;
 }
 
+/**
+ * Degradation detected during normalisation for a given endpoint.
+ * Absent or empty array = fully supported.
+ */
+export type ApproximationKind = 'non_json_body' | 'cookie_param' | 'schema_fallback';
+
 export interface Endpoint {
   /** Stable id derived from method + path (used as React key + selection ref). */
   id: string;
@@ -74,6 +80,8 @@ export interface Endpoint {
   deprecated?: boolean;
   /** Estimated tokens for selection counter (phase 05 will calibrate). */
   tokens?: number;
+  /** Silent degradations detected during normalisation. Absent or empty = fully supported. */
+  approximations?: ApproximationKind[];
 }
 
 export interface EndpointGroup {

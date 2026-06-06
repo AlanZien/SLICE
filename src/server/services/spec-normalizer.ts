@@ -4,6 +4,7 @@
  * method exclusions and parameter flattening (SPEC §1.2 + cas limites).
  */
 import type {
+  ApproximationKind,
   DefaultConfig,
   Endpoint,
   EndpointGroup,
@@ -18,6 +19,16 @@ import { toZodShape } from './zod-schema-builder';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+const RECOGNIZED_SCHEMA_TYPES = new Set([
+  'string', 'integer', 'number', 'boolean', 'array', 'object',
+]);
+
+function hasComplexSchema(schema: any): boolean {
+  if (!schema || typeof schema !== 'object') return false;
+  if (schema.oneOf != null || schema.anyOf != null || schema.allOf != null) return true;
+  return typeof schema.type === 'string' && !RECOGNIZED_SCHEMA_TYPES.has(schema.type);
+}
+
 const SUPPORTED_METHODS: ReadonlyArray<string> = [
   'get',
   'post',
@@ -25,6 +36,39 @@ const SUPPORTED_METHODS: ReadonlyArray<string> = [
   'patch',
   'delete',
 ];
+
+function computeApproximations(
+  op: any,
+  pathLevelParams: any[],
+  params: EndpointParam[],
+  bodyParams: EndpointParam[],
+): ApproximationKind[] {
+  const result: ApproximationKind[] = [];
+
+  if (op.requestBody != null && bodyParams.length === 0) {
+    result.push('non_json_body');
+  }
+
+  if (params.some((p) => p.in === 'cookie')) {
+    result.push('cookie_param');
+  }
+
+  const rawParams = [...pathLevelParams, ...(Array.isArray(op.parameters) ? op.parameters : [])];
+  const rawBodySchema = op.requestBody?.content?.['application/json']?.schema;
+  const bodyPropSchemas =
+    rawBodySchema?.type === 'object' && rawBodySchema?.properties
+      ? Object.values(rawBodySchema.properties as Record<string, any>)
+      : [];
+  if (
+    rawParams.some((p: any) => p?.in !== 'cookie' && hasComplexSchema(p?.schema)) ||
+    (bodyParams.length > 0 &&
+      (hasComplexSchema(rawBodySchema) || bodyPropSchemas.some(hasComplexSchema)))
+  ) {
+    result.push('schema_fallback');
+  }
+
+  return result;
+}
 
 export function normalizeSpec(doc: any): ParsedSpec {
   const { groups, excludedCount } = collectGroups(doc);
@@ -101,7 +145,15 @@ function collectGroups(doc: any): { groups: EndpointGroup[]; excludedCount: numb
       // request body at call time). Field names that collide with an existing
       // param are disambiguated; the real wire name is kept in `wireName`.
       const existingNames = new Set(params.map((p) => p.name));
-      params.push(...flattenRequestBody(op.requestBody, existingNames));
+      const bodyParams = flattenRequestBody(op.requestBody, existingNames);
+      params.push(...bodyParams);
+
+      const approximations = computeApproximations(
+        op,
+        pathLevelParams,
+        params,
+        bodyParams,
+      );
 
       const endpoint: Endpoint = {
         id: `${upperMethod} ${pathKey}`,
@@ -111,6 +163,7 @@ function collectGroups(doc: any): { groups: EndpointGroup[]; excludedCount: numb
         description: typeof op.description === 'string' ? op.description : undefined,
         params,
         ...(op.deprecated === true ? { deprecated: true } : {}),
+        ...(approximations.length > 0 ? { approximations } : {}),
       };
 
       const bucket = byTag.get(tag) ?? [];

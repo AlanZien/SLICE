@@ -719,3 +719,30 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | 3 | URL http:// → message d'erreur « Only https:// URLs are allowed. » | ⏳ | visuel |
 | 4 | URL introuvable / serveur KO → message d'erreur clair | ⏳ | visuel |
 | 5 | Générer un MCP depuis une spec chargée par URL → ZIP valide | ⏳ | E2E live |
+
+## Phase fail-loud : rapport de génération (2026-06-06)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| T1 | requestBody multipart → `non_json_body` détecté | ✓ | spec-normalizer.test.ts |
+| T2 | requestBody JSON → pas de `non_json_body` | ✓ | spec-normalizer.test.ts |
+| T3 | param `in: cookie` → `cookie_param` détecté | ✓ | spec-normalizer.test.ts |
+| T4-T6 | oneOf / anyOf / allOf sur param query → `schema_fallback` | ✓ | spec-normalizer.test.ts |
+| T7 | type inconnu (`xml`) → `schema_fallback` | ✓ | spec-normalizer.test.ts |
+| T8-T9 | endpoint propre → aucune approximation | ✓ | spec-normalizer.test.ts |
+| T10 | cumul non_json_body + cookie_param | ✓ | spec-normalizer.test.ts |
+| T11 | oneOf sur propriété body flattenée → `schema_fallback` | ✓ | spec-normalizer.test.ts |
+| F1-F5 | GenerationReport : compteur, détail, counts, filtre selection | ✓ | config.test.tsx |
+| — | Suite complète 523 tests verts + typecheck | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Uploader une spec simple (Petstore) → screen 3 → `N/N endpoints in MCP · All fully supported` visible | ⏳ | visuel |
+| 2 | Uploader une spec avec multipart body → sélectionner l'endpoint → ligne ⬜ apparaît | ⏳ | visuel |
+| 3 | Uploader une spec avec oneOf (ex. Stripe) → sélectionner → ligne ⚠ apparaît | ⏳ | visuel |
+| 4 | Déselectionner l'endpoint approximé → rapport repasse à "All fully supported" | ⏳ | comportement live |
+| 5 | Générer le MCP avec approximations → ça fonctionne (rapport n'est qu'informatif) | ⏳ | E2E |
