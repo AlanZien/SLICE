@@ -89,6 +89,12 @@ Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qua
 - [ ] **Parité runtime ↔ kit généré** : aligner le comportement (le runtime forwarde les headers, le template `http-client.ts.hbs` non) + source unique pour la regex/charset du token relayé (dupliquée runtime ↔ `auth-context.ts.hbs`). (issu de Pivot-4 EVALUATE)
 - [ ] **`in:'cookie'` géré ou rejeté** explicitement dans `callUpstream` (aujourd'hui dropé silencieusement) + `allowPrivateHosts` en politique d'env unique au lieu de 5 signatures. (issu de Pivot-4 EVALUATE altitude)
 
+## HTML spec-finder — suites (issu de LEARN html-spec-finder, 2026-06-06)
+
+- [ ] **`commonSpecPaths` relatif au chemin de la page** : aujourd'hui sonde toujours à l'origin (`/openapi.json`). Pour `/api/v2/docs`, sonder aussi `/api/v2/openapi.json`. Couvre les APIs versionnées. (issu de EVALUATE altitude)
+- [ ] **Regex HTML → HTML parser** : regex fragile sur `<!-- <a href="..."> -->` ou attributs échappés. Tolérable en prod (portails API publics bien formés) mais à surveiller. Si edge cases remontés : ajouter `parse5` ou `cheerio`. (issu de EVALUATE altitude)
+- [ ] **Parallélisation candidates** : aujourd'hui séquentielle (simplicité). Si latency signalée en prod sur pages sans lien (→ tente 10 chemins × 5s timeout), passer à `Promise.any()` avec early-return sur premier succès non-HTML. (issu de EVALUATE efficacité)
+
 ## Idees a clarifier
 
 - [ ] {{Idee floue qui demande un brainstorm avant de devenir une feature concrete}}

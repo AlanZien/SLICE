@@ -172,6 +172,15 @@ Détail : `.workflow/phases/oauth/REVIEW.md`.
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.
 
+## 2026-06-06 — HTML spec auto-discovery ✓ mergé (PR #40)
+
+Détail : `.workflow/phases/html-spec-finder/REVIEW.md`.
+
+- Quand l'URL retourne du HTML, `fetchSpecFromUrl` tente maintenant une cascade : spec inline `<script type="application/json">` → liens `<a>`/`<link>` spec-like → 10 chemins communs (/openapi.json, /v3/api-docs…). SSRF guard sur chaque candidat.
+- **EVALUATE a amélioré la sécurité** : re-throw de `URL_PRIVATE_IP_BLOCKED` dans la boucle candidats (vs avaler silencieusement). Un lien SSRF embarqué dans une page HTML aurait pu être tenté sans remontée d'erreur.
+- **`matchAll()` adopté** (global regex + `.lastIndex` éliminés) — sans état partagé, sans risque d'interleave async.
+- 540 tests verts. Pas de nouveau pattern promu (seuil 3 non atteint).
+
 ## 2026-06-06 — Upload par URL (SSRF-safe) ✓ mergé (PR #38)
 
 Détail : `.workflow/phases/upload-url/REVIEW.md`.
