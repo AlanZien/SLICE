@@ -1,10 +1,6 @@
-/**
- * In-memory store of hosted MCP configs (the "fiches"), keyed by an
- * unguessable id. The id (≥128 bits, CSPRNG) doubles as the access control
- * for the hosted MCP (`/m/:id`) — there is no secret stored here, only the
- * curated API shape. A durable KV/DB backend replaces this Map in hardening.
- */
 import { randomBytes } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import type { HostedMcpConfig } from './hosted-mcp-factory';
 
 export interface HostedStore {
@@ -33,5 +29,36 @@ export function createHostedStore(): HostedStore {
   };
 }
 
-/** Process-wide store (single-instance MVP, cf. D003). */
-export const hostedStore = createHostedStore();
+/** File-backed store — survives restarts. Writes are synchronous (low-frequency). */
+export function createFileHostedStore(filePath: string): HostedStore {
+  mkdirSync(dirname(filePath), { recursive: true });
+
+  let configs = new Map<string, HostedMcpConfig>();
+  try {
+    const data = JSON.parse(readFileSync(filePath, 'utf-8')) as Record<string, HostedMcpConfig>;
+    configs = new Map(Object.entries(data));
+  } catch {
+    // File absent or corrupt — start fresh
+  }
+
+  function persist(): void {
+    writeFileSync(filePath, JSON.stringify(Object.fromEntries(configs)), 'utf-8');
+  }
+
+  return {
+    put(config) {
+      const id = newId();
+      configs.set(id, config);
+      persist();
+      return id;
+    },
+    get(id) {
+      return configs.get(id);
+    },
+  };
+}
+
+/** Process-wide store — file-backed on VPS, path via SLICE_STORE_PATH env. */
+export const hostedStore = createFileHostedStore(
+  process.env.SLICE_STORE_PATH ?? './data/hosted.json'
+);
