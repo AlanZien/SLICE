@@ -142,3 +142,78 @@ describe('<ConfigScreen> (phase 06)', () => {
     expect(onBack).toHaveBeenCalledOnce();
   });
 });
+
+// ---------------------------------------------------------------------------
+// GenerationReport (fail-loud)
+// ---------------------------------------------------------------------------
+
+function makeEndpoint(id: string, approximations?: string[]) {
+  return {
+    id,
+    method: 'GET' as const,
+    path: `/${id}`,
+    label: id,
+    params: [],
+    ...(approximations && approximations.length > 0 ? { approximations } : {}),
+  };
+}
+
+function specWithEndpoints(endpoints: ReturnType<typeof makeEndpoint>[]): ParsedSpec {
+  return {
+    ...SPEC,
+    groups: [{ tag: 'All', endpoints: endpoints as ParsedSpec['groups'][0]['endpoints'] }],
+  };
+}
+
+describe('<GenerationReport>', () => {
+  // F1 — tous full → compteur visible, pas de lignes de détail
+  it('F1: shows counter with "All fully supported" when all endpoints are full', () => {
+    const spec = specWithEndpoints([makeEndpoint('a'), makeEndpoint('b')]);
+    render(<ConfigScreen spec={spec} selectedIds={['a', 'b']} onBack={() => {}} onGenerate={() => {}} />);
+    expect(screen.getByText(/2 \/ 2 endpoints in MCP/i)).toBeInTheDocument();
+    expect(screen.getByText(/all fully supported/i)).toBeInTheDocument();
+    expect(screen.queryByText(/approximated schema/i)).not.toBeInTheDocument();
+  });
+
+  // F2 — schema_fallback sélectionné → ligne ⚠ visible
+  it('F2: shows schema_fallback detail line when a selected endpoint has schema_fallback', () => {
+    const spec = specWithEndpoints([
+      makeEndpoint('a'),
+      makeEndpoint('b', ['schema_fallback']),
+    ]);
+    render(<ConfigScreen spec={spec} selectedIds={['a', 'b']} onBack={() => {}} onGenerate={() => {}} />);
+    expect(screen.getByText(/approximated schema/i)).toBeInTheDocument();
+    expect(screen.queryByText(/all fully supported/i)).not.toBeInTheDocument();
+  });
+
+  // F3 — counts corrects
+  it('F3: counts are correct for mixed approximations', () => {
+    const spec = specWithEndpoints([
+      makeEndpoint('a'),
+      makeEndpoint('b', ['schema_fallback']),
+      makeEndpoint('c', ['non_json_body']),
+    ]);
+    render(<ConfigScreen spec={spec} selectedIds={['a', 'b', 'c']} onBack={() => {}} onGenerate={() => {}} />);
+    expect(screen.getByText(/1 fully supported/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 with approximated schema/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 with no body support/i)).toBeInTheDocument();
+  });
+
+  // F4 — partial non sélectionné n'impacte pas le rapport
+  it('F4: partial endpoint not in selectedIds does not affect report', () => {
+    const spec = specWithEndpoints([
+      makeEndpoint('a'),
+      makeEndpoint('b', ['schema_fallback']),
+    ]);
+    render(<ConfigScreen spec={spec} selectedIds={['a']} onBack={() => {}} onGenerate={() => {}} />);
+    expect(screen.getByText(/all fully supported/i)).toBeInTheDocument();
+    expect(screen.queryByText(/approximated schema/i)).not.toBeInTheDocument();
+  });
+
+  // F5 — compteur N/N correct
+  it('F5: counter shows correct selected count', () => {
+    const spec = specWithEndpoints([makeEndpoint('a'), makeEndpoint('b'), makeEndpoint('c')]);
+    render(<ConfigScreen spec={spec} selectedIds={['a', 'b', 'c']} onBack={() => {}} onGenerate={() => {}} />);
+    expect(screen.getByText(/3 \/ 3 endpoints in MCP/i)).toBeInTheDocument();
+  });
+});
