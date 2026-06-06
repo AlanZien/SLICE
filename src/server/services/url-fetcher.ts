@@ -7,8 +7,7 @@ export type UrlErrorCode =
   | 'URL_FETCH_FAILED'
   | 'URL_PRIVATE_IP_BLOCKED'
   | 'URL_TIMEOUT'
-  | 'URL_TOO_LARGE'
-  | 'URL_SPEC_NOT_FOUND';
+  | 'URL_TOO_LARGE';
 
 export class UrlFetchError extends Error {
   constructor(public readonly code: UrlErrorCode, message: string) {
@@ -127,10 +126,10 @@ async function resolveSpecFromHtml(html: string, pageUrl: string): Promise<strin
     }
   }
 
-  throw new UrlFetchError(
-    'URL_SPEC_NOT_FOUND',
-    'No API spec found at this URL. Try linking directly to a .json or .yaml file.',
-  );
+  // Last resort: the body itself may be a valid spec served with the wrong
+  // Content-Type (e.g. S3/nginx misconfigured as text/html). Hand it to the
+  // parser — it will reject it with INVALID_SPEC if it truly isn't a spec.
+  return html;
 }
 
 /**
