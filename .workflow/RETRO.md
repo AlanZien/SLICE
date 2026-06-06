@@ -172,6 +172,12 @@ Détail : `.workflow/phases/oauth/REVIEW.md`.
 Alimente par le workflow FORGE (phase LEARN).
 Les patterns recurrents sont promus dans .claude/rules/ pour influencer les futures sessions.
 
+## 2026-06-06 — HTML body fallback + Content-Type mal configuré ✓ mergé (PR #41)
+
+- Quand la cascade HTML discovery échoue, le body original est retourné au parser en dernier recours (couvre Content-Type: text/html sur une spec JSON/YAML valide mal servie).
+- `URL_SPEC_NOT_FOUND` supprimé (code mort). 550 tests verts.
+- **Apprentissage terrain** : testé sur 5 URLs publiques connues (Petstore3, open-meteo, Frankfurter, PokéAPI, catfact) → 0/5 succès via HTML discovery. Les portails Swagger UI modernes sont des SPA React — le `url: "..."` est dans un bundle JS externe, pas dans l'HTML. La feature reste utile pour APIs FastAPI/Spring internes (spec à chemin standard), pas pour les grands portails publics.
+
 ## 2026-06-06 — HTML spec auto-discovery ✓ mergé (PR #40)
 
 Détail : `.workflow/phases/html-spec-finder/REVIEW.md`.
