@@ -1,6 +1,3 @@
-const HREF_RE = /<(?:a|link)[^>]+href=["']([^"'#?]+)["'][^>]*>/gi;
-const SCRIPT_RE = /<script[^>]+type=["']application\/(json|yaml)["'][^>]*>([\s\S]*?)<\/script>/gi;
-
 const COMMON_PATHS = [
   '/openapi.json',
   '/openapi.yaml',
@@ -16,20 +13,18 @@ const COMMON_PATHS = [
 
 function isSpecLike(href: string): boolean {
   const h = href.toLowerCase();
-  const ext = h.endsWith('.json') || h.endsWith('.yaml') || h.endsWith('.yml');
-  const kw =
-    h.includes('openapi') ||
-    h.includes('swagger') ||
-    h.includes('spec') ||
-    h.includes('api-docs');
-  return ext && kw;
+  // Extension-less well-known patterns (e.g. /api-docs, /swagger, /openapi)
+  if (/\/(openapi|swagger)$/.test(h) || /\/(v\d+\/)?api-docs$/.test(h)) return true;
+  // Extension-bearing: must have both a spec keyword and a json/yaml extension
+  const hasExt = /\.(json|yaml|yml)$/.test(h);
+  const hasKeyword = /openapi|swagger|spec|api-docs/.test(h);
+  return hasExt && hasKeyword;
 }
 
 export function extractSpecUrls(html: string, pageUrl: string): string[] {
   const results: string[] = [];
-  let match: RegExpExecArray | null;
-  HREF_RE.lastIndex = 0;
-  while ((match = HREF_RE.exec(html)) !== null) {
+  const hrefRe = /<(?:a|link)[^>]+href=["']([^"'#?]+)["'][^>]*>/gi;
+  for (const match of html.matchAll(hrefRe)) {
     const href = match[1];
     if (!isSpecLike(href)) continue;
     try {
@@ -47,12 +42,11 @@ export function commonSpecPaths(pageUrl: string): string[] {
 }
 
 export function extractInlineSpec(html: string): string | null {
-  let match: RegExpExecArray | null;
-  SCRIPT_RE.lastIndex = 0;
-  while ((match = SCRIPT_RE.exec(html)) !== null) {
+  const scriptRe = /<script[^>]+type=["']application\/(json|yaml)["'][^>]*>([\s\S]*?)<\/script>/gi;
+  for (const match of html.matchAll(scriptRe)) {
     const content = match[2].trim();
     if (content.includes('"openapi"') || content.includes('"swagger"') ||
-        content.includes("openapi:") || content.includes("swagger:")) {
+        content.includes('openapi:') || content.includes('swagger:')) {
       return content;
     }
   }

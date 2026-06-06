@@ -104,28 +104,26 @@ async function fetchRaw(url: string): Promise<FetchRawResult> {
   return { body, contentType: res.headers.get('content-type') ?? '' };
 }
 
+function isHtmlLike(contentType: string): boolean {
+  const type = contentType.split(';')[0].toLowerCase().trim();
+  return type === 'text/html' || type === 'application/xhtml+xml';
+}
+
 async function resolveSpecFromHtml(html: string, pageUrl: string): Promise<string> {
   const inline = extractInlineSpec(html);
   if (inline) return inline;
 
-  const linked = extractSpecUrls(html, pageUrl);
-  const common = commonSpecPaths(pageUrl);
-  const seen = new Set<string>();
-  const candidates: string[] = [];
-  for (const url of [...linked, ...common]) {
-    if (!seen.has(url)) {
-      seen.add(url);
-      candidates.push(url);
-    }
-    if (candidates.length >= MAX_CANDIDATES) break;
-  }
+  const candidates = [
+    ...new Set([...extractSpecUrls(html, pageUrl), ...commonSpecPaths(pageUrl)]),
+  ].slice(0, MAX_CANDIDATES);
 
   for (const candidateUrl of candidates) {
     try {
       const { body, contentType } = await fetchRaw(candidateUrl);
-      if (!contentType.includes('text/html')) return body;
-    } catch {
-      // try next candidate
+      if (!isHtmlLike(contentType)) return body;
+    } catch (err) {
+      if (err instanceof UrlFetchError && err.code === 'URL_PRIVATE_IP_BLOCKED') throw err;
+      // network error or 404 — try next candidate
     }
   }
 
@@ -158,7 +156,7 @@ export async function fetchSpecFromUrl(rawUrl: string): Promise<string> {
 
   const { body, contentType } = await fetchRaw(rawUrl);
 
-  if (contentType.includes('text/html')) {
+  if (isHtmlLike(contentType)) {
     return resolveSpecFromHtml(body, rawUrl);
   }
 
