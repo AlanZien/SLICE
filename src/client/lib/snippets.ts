@@ -72,15 +72,13 @@ export function buildAiriaSnippet(config: SliceConfig): string {
 // disappears from the nominal flow (RC5.8). The token is a placeholder the
 // user swaps for the token of their target API.
 
-/** Build the Claude Desktop block for a remotely-hosted MCP. */
+/** Build the Claude Desktop block for a remotely-hosted MCP (mcp-remote via npx). */
 export function buildHostedClaudeSnippet(url: string, config: SliceConfig): string {
   const block = {
     mcpServers: {
       [config.mcpName]: {
-        url,
-        headers: {
-          Authorization: `Bearer ${TOKEN_PLACEHOLDER}`,
-        },
+        command: 'npx',
+        args: ['-y', 'mcp-remote', url, '--header', `Authorization:Bearer ${TOKEN_PLACEHOLDER}`],
       },
     },
   };
