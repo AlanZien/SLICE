@@ -82,14 +82,17 @@ const HOSTED_URL = 'https://slice.test/m/abc123';
 
 describe('hosted (URL-mode) snippets — RC5.3', () => {
   describe('buildHostedClaudeSnippet', () => {
-    it('emits a remote mcpServers block with the real url + Authorization header', () => {
+    it('emits a mcp-remote npx block with url and Authorization header', () => {
       const out = buildHostedClaudeSnippet(HOSTED_URL, BASE);
       const parsed = JSON.parse(out);
       const entry = parsed.mcpServers['shopify-admin'];
-      expect(entry.url).toBe(HOSTED_URL);
-      expect(entry.headers.Authorization).toBe(`Bearer ${TOKEN_PLACEHOLDER}`);
-      // No stdio command in URL mode (RC5.8).
-      expect(entry.command).toBeUndefined();
+      expect(entry.command).toBe('npx');
+      expect(entry.args).toContain('mcp-remote');
+      expect(entry.args).toContain(HOSTED_URL);
+      expect(entry.args).toContain(`Authorization:Bearer ${TOKEN_PLACEHOLDER}`);
+      // mcp-remote format has no url/headers keys
+      expect(entry.url).toBeUndefined();
+      expect(entry.headers).toBeUndefined();
     });
   });
 
