@@ -71,12 +71,10 @@ describe('<ConfigScreen> (phase 06)', () => {
     expect(screen.queryByRole('button', { name: /on a remote/i })).not.toBeInTheDocument();
   });
 
-  // RC1.3 — action disabled until a hosting target is picked, label adapts.
-  it('keeps the action disabled until a hosting target is picked and adapts its label', async () => {
+  // RC1.3 — cloud pre-selected by default, label adapts when switching.
+  it('pre-selects SLICE Cloud and adapts label when switching to self-host', async () => {
     renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
-    expect(
-      screen.getByRole('button', { name: /deploy to slice cloud|download the kit/i })
-    ).toBeDisabled();
+    expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeEnabled();
 
     await userEvent.click(screen.getByRole('button', { name: /on my server/i }));
     expect(screen.getByRole('button', { name: /download the kit/i })).toBeEnabled();

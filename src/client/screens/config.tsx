@@ -70,12 +70,12 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
   };
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
         {/* LEFT — form */}
-        <section className="flex-1 overflow-y-auto px-8 py-6">
-          <div className="mx-auto flex max-w-xl flex-col gap-7">
-            <header className="flex flex-col gap-1.5">
+        <section className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="mx-auto flex max-w-xl flex-col gap-4">
+            <header className="flex flex-col gap-1">
               <h2 className="h2 text-foreground">
                 Give it a name and tell us where it'll live.
               </h2>
@@ -84,7 +84,7 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
               </p>
             </header>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <Field
                 label="MCP server name"
                 value={config.mcpName}
@@ -102,7 +102,7 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
                     className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-2.5"
                   >
                     <span className="font-mono text-sm text-foreground min-w-0 flex-1 truncate">{detectedBaseUrl}</span>
-                    <span className="shrink-0 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-emerald-500">
+                    <span className="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-primary">
                       auto-detected
                     </span>
                     <button
@@ -135,35 +135,26 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
                   <div
                     role="status"
                     aria-label="Upstream authentication detected from the spec"
-                    className="flex flex-col gap-1 rounded-md border border-border bg-card/40 px-3 py-2.5"
+                    className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-2.5"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {detectedAuthType === 'apiKey'
-                          ? 'API Key'
-                          : detectedAuthType === 'oauth2'
-                            ? 'Automatic connection (OAuth 2.0)'
-                            : 'Bearer'}
-                      </span>
-                      <span className="ml-auto rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-emerald-500">
-                        auto-detected
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {detectedAuthType === 'apiKey'
+                        ? 'API Key'
+                        : detectedAuthType === 'oauth2'
+                          ? 'Automatic connection (OAuth 2.0)'
+                          : 'Bearer'}
+                    </span>
                     <span className="font-mono text-[11px] text-muted-foreground">
+                      {'· '}
                       {detectedAuthType === 'apiKey' && config.upstreamAuth.type === 'apiKey'
                         ? `header · ${config.upstreamAuth.headerName}`
                         : detectedAuthType === 'oauth2' && config.upstreamAuth.type === 'oauth2'
                           ? `token endpoint · ${config.upstreamAuth.tokenUrl}`
                           : 'Authorization: Bearer …'}
                     </span>
-                    {detectedAuthType === 'oauth2' && (
-                      <span className="font-mono text-[11px] text-muted-foreground">
-                        The server signs in by itself. Self-host: set
-                        {' '}
-                        <span className="text-foreground">UPSTREAM_OAUTH_CLIENT_ID</span> /{' '}
-                        <span className="text-foreground">UPSTREAM_OAUTH_CLIENT_SECRET</span> in its env.
-                      </span>
-                    )}
+                    <span className="ml-auto shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-primary">
+                      auto-detected
+                    </span>
                   </div>
                 ) : (
                   // Spec declared nothing — let the user fill it in.
@@ -215,12 +206,11 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <p className="eyebrow">the only real question</p>
-              <h3 className="h2 text-foreground" style={{ fontSize: 22 }}>
+            <div className="mt-3 flex flex-col gap-2">
+              <h3 className="h2 text-foreground" style={{ fontSize: 18 }}>
                 Where should we host it?
               </h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <DestCard
                   value="cloud"
                   active={config.hosting === 'cloud'}
@@ -247,19 +237,7 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
         </section>
 
         {/* RIGHT — live preview pane */}
-        <aside className="flex w-[380px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-border bg-card/30 p-6">
-          <div className="flex items-center gap-2">
-            <p className="eyebrow">Live preview</p>
-            <span className="grow" />
-            <span className="font-mono inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-              <span
-                aria-hidden
-                className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"
-              />
-              sync
-            </span>
-          </div>
-
+        <aside className="flex w-[380px] shrink-0 flex-col gap-3 overflow-y-auto border-l border-border bg-card/30 p-4">
           {/* Overview — même résumé que l'écran 2 */}
           {(() => {
             const safePercent = Number.isFinite(savedPercent) ? Math.max(0, Math.min(100, savedPercent)) : 0;

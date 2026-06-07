@@ -32,7 +32,7 @@ export function DestCard<V extends string>({
       aria-pressed={active}
       onClick={() => onSelect(value)}
       className={cn(
-        'relative flex flex-col gap-3 rounded-lg border p-4 text-left transition-colors',
+        'relative flex flex-col gap-2 rounded-lg border p-3 text-left transition-colors',
         active
           ? 'border-foreground bg-[var(--slice-highlight)]'
           : 'border-border bg-card/40 hover:border-primary',
@@ -41,7 +41,7 @@ export function DestCard<V extends string>({
     >
       <div className="flex items-center justify-between">
         {recommended ? (
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-500">
+          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] uppercase tracking-wide text-primary">
             Recommended
           </span>
         ) : <span />}

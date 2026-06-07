@@ -33,13 +33,15 @@ describe('Stepper', () => {
     expect(screen.queryByText('Configure')).not.toBeInTheDocument();
   });
 
-  it('renders done step indicators with a checkmark glyph', () => {
+  it('renders done step indicators with a checkmark glyph, current step with its number', () => {
     render(<Stepper current={4} />);
     const items = screen.getAllByRole('listitem');
     expect(items[0]).toHaveTextContent('✓');
     expect(items[1]).toHaveTextContent('✓');
     expect(items[2]).toHaveTextContent('✓');
-    expect(items[3]).toHaveTextContent('✓');
+    expect(items[3]).toHaveAttribute('data-state', 'now');
+    expect(items[3]).toHaveTextContent('4');
+    expect(items[3]).toHaveTextContent('Done');
   });
 
   it('renders done steps as clickable buttons when onNavigate is provided', async () => {
