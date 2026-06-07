@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Stepper, STEPS } from './stepper';
 
 describe('Stepper', () => {
@@ -39,5 +40,18 @@ describe('Stepper', () => {
     expect(items[1]).toHaveTextContent('✓');
     expect(items[2]).toHaveTextContent('✓');
     expect(items[3]).toHaveTextContent('4');
+  });
+
+  it('renders done steps as clickable buttons when onNavigate is provided', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(<Stepper current={3} onNavigate={onNavigate} />);
+    await user.click(screen.getByRole('button', { name: /back to upload/i }));
+    expect(onNavigate).toHaveBeenCalledWith(1);
+  });
+
+  it('does not render clickable buttons without onNavigate', () => {
+    render(<Stepper current={3} />);
+    expect(screen.queryByRole('button', { name: /back to/i })).not.toBeInTheDocument();
   });
 });

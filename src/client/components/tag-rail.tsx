@@ -12,14 +12,8 @@ export interface TagRailProps {
   activeTag: string | null;
   /** Pass `null` to switch to "All". */
   onSelectTag: (tag: string | null) => void;
-  /** Saved context percentage (0–100). */
-  savedPercent: number;
   selectedCount: number;
   totalCount: number;
-  /** Estimated tokens for the current selection. */
-  sliceTokens: number;
-  /** Estimated tokens for the full spec. */
-  fullTokens: number;
   className?: string;
 }
 
@@ -27,14 +21,10 @@ export function TagRail({
   tags,
   activeTag,
   onSelectTag,
-  savedPercent,
   selectedCount,
   totalCount,
-  sliceTokens,
-  fullTokens,
   className,
 }: TagRailProps) {
-  const safePercent = Number.isFinite(savedPercent) ? Math.max(0, Math.min(100, savedPercent)) : 0;
   return (
     <aside
       className={cn(
@@ -68,30 +58,11 @@ export function TagRail({
         ))}
       </nav>
 
-      <footer className="flex shrink-0 flex-col gap-1.5 border-t border-border/60 bg-background/40 px-3 py-2.5">
-        <p className="eyebrow">Context saved</p>
-        <p className="h2 leading-none text-foreground">
-          −{safePercent}
-          <span className="font-mono ml-1 text-sm text-muted-foreground">%</span>
-        </p>
-        <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
-          <div
-            className="h-full bg-primary transition-[width]"
-            style={{ width: `${safePercent}%` }}
-            aria-hidden
-          />
-        </div>
-        {/* Bump from 10px muted to 12px foreground so the counts stop
-            blending into the background dots. Labels stay muted so the
-            numbers carry the visual weight. */}
-        <div className="font-mono mt-1 flex justify-between text-xs">
-          <span className="text-muted-foreground">selected</span>
-          <span className="text-foreground">{`${selectedCount} / ${totalCount}`}</span>
-        </div>
-        <div className="font-mono flex justify-between text-xs">
-          <span className="text-muted-foreground">tokens</span>
-          <span className="text-foreground">{`${sliceTokens} / ${fullTokens}`}</span>
-        </div>
+      <footer className="flex shrink-0 items-center justify-between border-t border-border/60 bg-background/40 px-3 py-2.5">
+        <span className="eyebrow">Selected</span>
+        <span className="font-mono tabular-nums text-xs text-foreground">
+          {selectedCount}<span className="text-muted-foreground"> / {totalCount}</span>
+        </span>
       </footer>
     </aside>
   );

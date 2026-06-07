@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { Endpoint } from '@shared/types';
 import { EndpointPreview } from './endpoint-preview';
 
@@ -15,56 +16,53 @@ const EP: Endpoint = {
   ],
 };
 
+const DEFAULTS = {
+  estimatedTokens: 123,
+  savedPercent: 71,
+  selectedCount: 5,
+  totalCount: 20,
+  sliceTokens: 1000,
+  fullTokens: 5000,
+};
+
 describe('<EndpointPreview>', () => {
-  it('renders the method, path, label and description', () => {
-    render(<EndpointPreview endpoint={EP} estimatedTokens={120} />);
+  it('defaults to the Endpoint tab and renders method, path, label', () => {
+    render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
     expect(screen.getByText('GET')).toBeInTheDocument();
     expect(screen.getByText('/products/{id}')).toBeInTheDocument();
     expect(screen.getByText('Get a product')).toBeInTheDocument();
-    expect(screen.getByText(/fetch a single product/i)).toBeInTheDocument();
   });
 
   it('lists every parameter with its requirement', () => {
-    render(<EndpointPreview endpoint={EP} estimatedTokens={120} />);
+    render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
     expect(screen.getByText('id')).toBeInTheDocument();
     expect(screen.getByText(/required/i)).toBeInTheDocument();
     expect(screen.getByText('fields')).toBeInTheDocument();
     expect(screen.getByText(/optional/i)).toBeInTheDocument();
   });
 
-  it('shows "no parameters" when the endpoint has none', () => {
-    const bare: Endpoint = { ...EP, params: [] };
-    render(<EndpointPreview endpoint={bare} estimatedTokens={50} />);
-    expect(screen.getByText(/no parameters/i)).toBeInTheDocument();
-  });
-
   it('shows the estimated token cost', () => {
-    render(<EndpointPreview endpoint={EP} estimatedTokens={123} />);
+    render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
     expect(screen.getByText(/~\s*123 tokens/i)).toBeInTheDocument();
   });
 
-  it('shows an "Agent call" sample snippet using the tool name + required params', () => {
-    render(<EndpointPreview endpoint={EP} estimatedTokens={120} />);
-    expect(screen.getByText(/agent call/i)).toBeInTheDocument();
+  it('shows an "Agent call" sample snippet', () => {
+    render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
     const snippet = document.querySelector('pre')?.textContent ?? '';
     expect(snippet).toMatch(/await mcp\.tools\["get_products\.id"\]/);
     expect(snippet).toContain('id: "123"');
   });
 
-  it('shows {} for an endpoint with no required params in the agent call', () => {
-    const bare: Endpoint = { ...EP, params: [] };
-    render(<EndpointPreview endpoint={bare} estimatedTokens={50} />);
-    const snippet = document.querySelector('pre')?.textContent ?? '';
-    expect(snippet).toMatch(/\(\{\}\)/);
-  });
-
-  it('renders an empty state when no endpoint is focused', () => {
-    render(<EndpointPreview endpoint={null} estimatedTokens={0} />);
+  it('renders an empty state on Endpoint tab when no endpoint is focused', () => {
+    render(<EndpointPreview endpoint={null} {...DEFAULTS} />);
     expect(screen.getByText(/select an endpoint/i)).toBeInTheDocument();
   });
 
-  it('does not render any action button (selection lives in the list checkbox)', () => {
-    render(<EndpointPreview endpoint={EP} estimatedTokens={120} />);
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  it('switches to Overview tab and shows global metrics', async () => {
+    const user = userEvent.setup();
+    render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
+    await user.click(screen.getByRole('button', { name: /overview/i }));
+    expect(screen.getByText(/context saved/i)).toBeInTheDocument();
+    expect(screen.getByText((_, el) => el?.textContent?.replace(/\s+/g, ' ').trim() === '5 / 20')).toBeInTheDocument();
   });
 });

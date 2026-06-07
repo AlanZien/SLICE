@@ -4,62 +4,36 @@ import type { Theme } from '../hooks/use-theme';
 
 export interface TopbarProps {
   current: 1 | 2 | 3 | 4;
-  apiSlug: string | null;
+  apiName: string | null;
   theme?: Theme;
   onReset: () => void;
   onToggleTheme: () => void;
-}
-
-function crumbFor(current: TopbarProps['current'], apiSlug: string | null): string {
-  switch (current) {
-    case 1:
-      return '/new';
-    case 2:
-      return apiSlug ? `/${apiSlug}` : '/select';
-    case 3:
-      return '/configure';
-    case 4:
-      return '/done';
-  }
+  onNavigate?: (step: number) => void;
 }
 
 export function Topbar({
   current,
-  apiSlug,
+  apiName,
   theme = 'dark',
   onReset,
   onToggleTheme,
+  onNavigate,
 }: TopbarProps) {
   return (
-    <header className="relative z-10 flex h-12 items-center gap-4 border-b border-border bg-background px-5">
+    <header className="relative z-10 flex h-16 items-center gap-4 border-b border-border bg-background px-5">
       <span className="wordmark">SLICE</span>
 
-      <span
-        aria-label="Breadcrumb"
-        className="font-mono max-w-[320px] overflow-hidden truncate text-[11.5px] text-[var(--slice-ink-soft)]"
-      >
-        <span aria-hidden="true" className="mx-1 text-[var(--slice-ink-faint)]">
-          /
+      {apiName && (
+        <span className="max-w-[280px] overflow-hidden truncate text-sm font-medium text-foreground/70">
+          <span aria-hidden="true" className="mr-2 text-[var(--slice-ink-faint)]">/</span>
+          {apiName}
         </span>
-        {crumbFor(current, apiSlug).replace(/^\//, '')}
-      </span>
+      )}
 
-      <Stepper current={current} />
+      <Stepper current={current} onNavigate={onNavigate} className="absolute left-1/2 -translate-x-1/2" />
 
       <div className="ml-auto flex items-center gap-3">
-        <span
-          className="font-mono inline-flex items-center gap-1 text-[11px] text-muted-foreground"
-          aria-label="Raccourci recherche"
-        >
-          <kbd className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded border border-border bg-secondary px-1 text-[10px]">
-            ⌘
-          </kbd>
-          <kbd className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded border border-border bg-secondary px-1 text-[10px]">
-            K
-          </kbd>
-        </span>
-
-        <button
+<button
           type="button"
           aria-label="Toggle theme"
           onClick={onToggleTheme}

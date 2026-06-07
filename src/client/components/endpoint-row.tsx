@@ -52,13 +52,9 @@ export function EndpointRow({
         className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-primary"
       />
       <MethodBadge method={endpoint.method} />
-      <span className="font-mono w-[220px] shrink-0 truncate text-[11px] text-muted-foreground" title={endpoint.path}>
+      <span className="font-mono flex-1 truncate text-[11px] text-muted-foreground" title={endpoint.path}>
         {endpoint.path}
       </span>
-      {/* Per-row token cost is intentionally not rendered: the preview
-          pane on the right surfaces it for the focused endpoint. Showing
-          it on every row was visual duplication. */}
-      <span className="flex-1 truncate text-sm text-foreground">{endpoint.label}</span>
     </div>
   );
 }

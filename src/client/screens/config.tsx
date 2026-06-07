@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import type {
   ApproximationKind,
   DeploymentMode,
@@ -94,7 +93,6 @@ function GenerationReport({ report }: { report: GenerationReportData }) {
 export interface ConfigScreenProps {
   spec: ParsedSpec;
   selectedIds: string[];
-  onBack: () => void;
   onGenerate: (config: SliceConfig) => void;
 }
 
@@ -105,7 +103,7 @@ const FALLBACK_DEFAULT = (spec: ParsedSpec) => ({
   mcpServerToken: '',
 });
 
-export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigScreenProps) {
+export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProps) {
   // Parser should always inject a defaultConfig in phase 06+, but stay
   // defensive in case an older payload reaches the screen.
   const defaults = spec.defaultConfig ?? FALLBACK_DEFAULT(spec);
@@ -365,15 +363,7 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
       </div>
 
       {/* Footer */}
-      <footer className="sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border bg-background/95 px-6 py-3 backdrop-blur">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Back"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--slice-highlight)] hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
+      <footer className="sticky bottom-0 z-10 flex items-center justify-end gap-4 border-t border-border bg-background/95 px-6 py-3 backdrop-blur">
         <button
           type="button"
           disabled={!isValid}

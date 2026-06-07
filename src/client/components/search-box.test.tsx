@@ -4,11 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { SearchBox } from './search-box';
 
 describe('<SearchBox>', () => {
-  it('renders the placeholder and the ⌘K hint', () => {
+  it('renders the placeholder', () => {
     render(<SearchBox value="" onChange={() => {}} />);
     expect(screen.getByPlaceholderText(/search endpoints/i)).toBeInTheDocument();
-    expect(screen.getByText(/⌘/)).toBeInTheDocument();
-    expect(screen.getByText(/K/)).toBeInTheDocument();
   });
 
   it('calls onChange when the user types', async () => {

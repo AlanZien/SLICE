@@ -19,10 +19,11 @@ function stateFor(stepKey: number, current: number): StepState {
 
 export interface StepperProps {
   current: number;
+  onNavigate?: (step: number) => void;
   className?: string;
 }
 
-export function Stepper({ current, className }: StepperProps) {
+export function Stepper({ current, onNavigate, className }: StepperProps) {
   return (
     <nav
       aria-label="Steps"
@@ -36,6 +37,15 @@ export function Stepper({ current, className }: StepperProps) {
       <ol className="contents">
         {STEPS.map((step, index) => {
           const state = stateFor(step.k, current);
+          const badgeClasses = [
+            'font-display inline-flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-semibold',
+            state === 'now' && 'bg-foreground text-background',
+            state === 'done' && 'text-foreground/80',
+            state === 'upcoming' && 'text-muted-foreground',
+          ]
+            .filter(Boolean)
+            .join(' ');
+
           return (
             <Fragment key={step.k}>
               {index > 0 && (
@@ -52,19 +62,23 @@ export function Stepper({ current, className }: StepperProps) {
                   state === 'upcoming' ? 'text-muted-foreground' : 'text-foreground',
                 ].join(' ')}
               >
-                <span
-                  className={[
-                    'font-display inline-flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-semibold',
-                    state === 'now' && 'bg-foreground text-background',
-                    state === 'done' && 'text-foreground/80',
-                    state === 'upcoming' && 'text-muted-foreground',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  aria-hidden="true"
-                >
-                  {state === 'done' ? '✓' : step.k}
-                </span>
+                {state === 'done' && onNavigate ? (
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(step.k)}
+                    aria-label={`Back to ${step.name}`}
+                    className={[
+                      badgeClasses,
+                      'border border-border hover:border-foreground/40 hover:bg-[var(--slice-highlight)] hover:text-foreground transition-colors cursor-pointer',
+                    ].join(' ')}
+                  >
+                    ✓
+                  </button>
+                ) : (
+                  <span className={badgeClasses} aria-hidden="true">
+                    {state === 'done' ? '✓' : step.k}
+                  </span>
+                )}
                 {state === 'now' && (
                   <span className="font-medium text-foreground">{step.name}</span>
                 )}

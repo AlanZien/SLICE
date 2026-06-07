@@ -25,7 +25,7 @@ interface SuccessState {
 function AppInner() {
   const { theme, toggle } = useTheme();
   const [screen, setScreen] = useState<ScreenIndex>(1);
-  const [apiSlug, setApiSlug] = useState<string | null>(null);
+  const [apiName, setApiName] = useState<string | null>(null);
   const [parsedSpec, setParsedSpec] = useState<ParsedSpec | null>(null);
   const [rawSpec, setRawSpec] = useState<string>('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -35,17 +35,23 @@ function AppInner() {
 
   const handleReset = () => {
     setScreen(1);
-    setApiSlug(null);
+    setApiName(null);
     setParsedSpec(null);
     setRawSpec('');
     setSelectedIds([]);
     setSuccess(null);
   };
 
+  const handleNavigate = (step: number) => {
+    if (step === 1) { handleReset(); return; }
+    if (step === 2 && parsedSpec) { setScreen(2); return; }
+    if (step === 3 && parsedSpec && selectedIds.length > 0) { setScreen(3); }
+  };
+
   const handleParsed = (spec: ParsedSpec, raw: string) => {
     setParsedSpec(spec);
     setRawSpec(raw);
-    setApiSlug(spec.defaultConfig?.mcpName ?? null);
+    setApiName(spec.apiName ?? null);
     setScreen(2);
   };
 
@@ -97,23 +103,23 @@ function AppInner() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex h-screen flex-col overflow-hidden">
       <Topbar
         current={screen}
-        apiSlug={apiSlug}
+        apiName={apiName}
         theme={theme}
         onReset={handleReset}
         onToggleTheme={toggle}
+        onNavigate={handleNavigate}
       />
 
-      <main className="flex flex-1 flex-col px-6">
+      <main className="flex flex-1 flex-col overflow-hidden px-6">
         {screen === 1 && <UploadScreen onParsed={handleParsed} />}
 
         {screen === 2 && parsedSpec && (
           <SelectionScreen
             spec={parsedSpec}
             onContinue={handleSelectionDone}
-            onBack={handleReset}
           />
         )}
 
@@ -121,7 +127,6 @@ function AppInner() {
           <ConfigScreen
             spec={parsedSpec}
             selectedIds={selectedIds}
-            onBack={() => setScreen(2)}
             onGenerate={handleGenerate}
           />
         )}
@@ -138,21 +143,7 @@ function AppInner() {
           />
         )}
 
-        {/* Dev-only shortcuts to preview stepper states. Stripped from prod. */}
-        {import.meta.env.DEV && (
-          <div className="font-mono fixed bottom-2 left-2 flex gap-1 text-[10px] text-muted-foreground opacity-50">
-            {[1, 2, 3, 4].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setScreen(n as ScreenIndex)}
-                className="rounded border border-border px-2 py-0.5 hover:bg-[var(--slice-highlight)]"
-              >
-                {n}
-              </button>
-            ))}
-          </div>
-        )}
+
       </main>
     </div>
   );

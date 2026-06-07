@@ -41,13 +41,6 @@ export function SearchBox({
         placeholder={placeholder}
         className="font-mono h-full flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
       />
-      <kbd
-        aria-hidden
-        className="font-mono inline-flex h-5 items-center gap-0.5 rounded border border-border bg-secondary px-1 text-[10px] text-muted-foreground"
-      >
-        <span>⌘</span>
-        <span>K</span>
-      </kbd>
     </div>
   );
 }

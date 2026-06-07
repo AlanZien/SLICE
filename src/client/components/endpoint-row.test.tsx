@@ -21,9 +21,8 @@ describe('<EndpointRow>', () => {
     onFocus: () => {},
   };
 
-  it('renders label, method and path', () => {
+  it('renders method and path (label is shown in the preview pane)', () => {
     render(<EndpointRow {...baseProps} />);
-    expect(screen.getByText('List things')).toBeInTheDocument();
     expect(screen.getByText('GET')).toBeInTheDocument();
     expect(screen.getByText('/things')).toBeInTheDocument();
   });
@@ -52,7 +51,7 @@ describe('<EndpointRow>', () => {
     const onFocus = vi.fn();
     const onToggle = vi.fn();
     render(<EndpointRow {...baseProps} onFocus={onFocus} onToggle={onToggle} />);
-    await userEvent.click(screen.getByText('List things'));
+    await userEvent.click(screen.getByText('/things'));
     expect(onFocus).toHaveBeenCalledWith('GET /things');
     expect(onToggle).not.toHaveBeenCalled();
   });
