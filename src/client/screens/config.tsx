@@ -1,94 +1,23 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Pencil } from 'lucide-react';
 import type {
-  ApproximationKind,
-  DeploymentMode,
-  Endpoint,
   ParsedSpec,
   SliceConfig,
   UpstreamAuthType,
 } from '@shared/types';
-import { computeEconomy } from '@shared/token-estimator';
-import { AdvancedOptions } from '@/components/advanced-options';
+import { computeEconomy, estimateSpecTokens } from '@shared/token-estimator';
 import { AuthOption } from '@/components/auth-option';
+import { ConnectionTabs } from '@/components/connection-tabs';
 import { DestCard } from '@/components/dest-card';
 import { Field } from '@/components/field';
-import { McpPackageCard } from '@/components/mcp-package-card';
 import { PostGenSteps } from '@/components/post-gen-steps';
-import { ToggleRow } from '@/components/toggle-row';
 import { ZipStructurePreview } from '@/components/zip-structure-preview';
 import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
 
-const SAMPLE_TOOL_COUNT = 6;
+const PREVIEW_URL = 'https://slice.run/m/xxxxxxxx';
 
-function transportLabelFor(mode: DeploymentMode): string {
-  switch (mode) {
-    case 'local':
-      return 'stdio';
-    case 'remote':
-      return 'http';
-    case 'both':
-      return 'stdio + http';
-  }
-}
 
-function authLabelFor(type: UpstreamAuthType): string {
-  switch (type) {
-    case 'none':
-      return 'no auth';
-    case 'apiKey':
-      return 'api key';
-    case 'bearer':
-      return 'bearer';
-    case 'oauth2':
-      return 'OAuth 2.0';
-  }
-}
-
-function toolIdFor(endpoint: Endpoint): string {
-  const path = endpoint.path
-    .replace(/^\/+/, '')
-    .replace(/\{(\w+)\}/g, '$1')
-    .replace(/[^a-zA-Z0-9_/]/g, '_')
-    .replace(/\/+/g, '.')
-    .replace(/\.+$/, '');
-  return `tools.${endpoint.method.toLowerCase()}_${path || 'root'}`;
-}
-
-interface GenerationReportData {
-  total: number;
-  full: number;
-  schemaFallback: number;
-  nonJsonBody: number;
-  cookieParam: number;
-}
-
-function GenerationReport({ report }: { report: GenerationReportData }) {
-  const { total, full, schemaFallback, nonJsonBody, cookieParam } = report;
-  const hasApprox = schemaFallback > 0 || nonJsonBody > 0 || cookieParam > 0;
-  return (
-    <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 font-mono text-xs text-muted-foreground space-y-1">
-      <div className="flex items-center gap-2">
-        <span className="text-foreground font-medium">{total} / {total} endpoints in MCP</span>
-        {!hasApprox && <span className="text-emerald-500">· All fully supported</span>}
-      </div>
-      {hasApprox && (
-        <ul className="space-y-0.5 pl-1">
-          <li>✓ {full} fully supported</li>
-          {schemaFallback > 0 && (
-            <li>⚠ {schemaFallback} with approximated schema (oneOf / anyOf → string)</li>
-          )}
-          {nonJsonBody > 0 && (
-            <li>⬜ {nonJsonBody} with no body support (non-JSON request body)</li>
-          )}
-          {cookieParam > 0 && (
-            <li>🔒 {cookieParam} with cookie params (not transmitted at runtime)</li>
-          )}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 export interface ConfigScreenProps {
   spec: ParsedSpec;
@@ -110,33 +39,17 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
   const { config, errors, isValid, setField, setUpstreamAuth } = useConfig(defaults);
 
   const detectedAuthType = defaults.upstreamAuth.type;
+  const detectedBaseUrl = defaults.baseUrl;
+  const [baseUrlLocked, setBaseUrlLocked] = useState(!!detectedBaseUrl);
 
-  // Pre-compute everything that depends on (spec, selectedIds) in a single memo.
-  const { sampleTools, extraToolsCount, savedPercent, report } = useMemo(() => {
+  const { savedPercent, sliceTokens, fullTokens, totalCount } = useMemo(() => {
     const allEndpoints = spec.groups.flatMap((g) => g.endpoints);
-    const selectedSet = new Set(selectedIds);
-    const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
-
-    const sample = chosen.slice(0, SAMPLE_TOOL_COUNT).map((e) => ({
-      id: toolIdFor(e),
-      method: e.method,
-    }));
     const economy = computeEconomy(spec, selectedIds);
-
-    let full = 0, schemaFallback = 0, nonJsonBody = 0, cookieParam = 0;
-    for (const e of chosen) {
-      const kinds = (e.approximations ?? []) as ApproximationKind[];
-      if (kinds.length === 0) { full++; continue; }
-      if (kinds.includes('schema_fallback')) schemaFallback++;
-      if (kinds.includes('non_json_body')) nonJsonBody++;
-      if (kinds.includes('cookie_param')) cookieParam++;
-    }
-
     return {
-      sampleTools: sample,
-      extraToolsCount: Math.max(0, chosen.length - SAMPLE_TOOL_COUNT),
       savedPercent: economy.percent,
-      report: { total: chosen.length, full, schemaFallback, nonJsonBody, cookieParam } satisfies GenerationReportData,
+      sliceTokens: economy.selected,
+      fullTokens: estimateSpecTokens(spec),
+      totalCount: allEndpoints.length,
     };
   }, [spec, selectedIds]);
 
@@ -163,7 +76,6 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
         <section className="flex-1 overflow-y-auto px-8 py-6">
           <div className="mx-auto flex max-w-xl flex-col gap-7">
             <header className="flex flex-col gap-1.5">
-              <p className="eyebrow">Step 3 of 3 · configuration</p>
               <h2 className="h2 text-foreground">
                 Give it a name and tell us where it'll live.
               </h2>
@@ -181,13 +93,37 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
                 mono
                 prefix="@"
               />
-              <Field
-                label="Upstream API base URL"
-                value={config.baseUrl}
-                error={errors.baseUrl}
-                onChange={(v) => setField('baseUrl', v)}
-                mono
-              />
+              {detectedBaseUrl && baseUrlLocked ? (
+                <div className="flex flex-col gap-2">
+                  <label className="eyebrow">Upstream API base URL</label>
+                  <div
+                    role="status"
+                    aria-label="Base URL detected from the spec"
+                    className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-2.5"
+                  >
+                    <span className="font-mono text-sm text-foreground min-w-0 flex-1 truncate">{detectedBaseUrl}</span>
+                    <span className="shrink-0 rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-emerald-500">
+                      auto-detected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setBaseUrlLocked(false)}
+                      aria-label="Edit base URL"
+                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Pencil size={12} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Field
+                  label="Upstream API base URL"
+                  value={config.baseUrl}
+                  error={errors.baseUrl}
+                  onChange={(v) => setField('baseUrl', v)}
+                  mono
+                />
+              )}
 
               <div className="flex flex-col gap-2">
                 <label className="eyebrow">Upstream authentication</label>
@@ -307,28 +243,6 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
               </div>
             </div>
 
-            <AdvancedOptions summary="parameter detail, retries">
-              <div className="flex flex-col gap-1">
-                <ToggleRow
-                  title="Detailed parameter descriptions"
-                  hint="better for the agent, +12% context"
-                  on={config.includeParamDescriptions}
-                  onToggle={() =>
-                    setField('includeParamDescriptions', !config.includeParamDescriptions)
-                  }
-                />
-                <ToggleRow
-                  title="Retry on 5xx"
-                  hint="3 attempts, exponential backoff"
-                  on={config.retryOnServerError}
-                  onToggle={() =>
-                    setField('retryOnServerError', !config.retryOnServerError)
-                  }
-                />
-              </div>
-            </AdvancedOptions>
-
-            <GenerationReport report={report} />
           </div>
         </section>
 
@@ -346,19 +260,56 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
             </span>
           </div>
 
-          <McpPackageCard
-            name={config.mcpName}
-            endpointCount={selectedIds.length}
-            savedPercent={savedPercent}
-            transportLabel={transportLabelFor(config.mode)}
-            authLabel={authLabelFor(config.upstreamAuth.type)}
-            sampleTools={sampleTools}
-            extraToolsCount={extraToolsCount}
-          />
+          {/* Overview — même résumé que l'écran 2 */}
+          {(() => {
+            const safePercent = Number.isFinite(savedPercent) ? Math.max(0, Math.min(100, savedPercent)) : 0;
+            return (
+              <div className="flex flex-col gap-4">
+                <section className="flex flex-col gap-2">
+                  <p className="eyebrow">Context saved</p>
+                  <p className="h2 leading-none text-foreground">
+                    −{safePercent}<span className="font-mono text-sm text-muted-foreground">%</span>
+                  </p>
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
+                    <div className="h-full bg-primary transition-[width]" style={{ width: `${safePercent}%` }} aria-hidden />
+                  </div>
+                </section>
+                <div className="h-px bg-border/60" aria-hidden />
+                <section className="flex flex-col gap-2.5">
+                  <div className="flex items-baseline justify-between">
+                    <span className="eyebrow">Selected</span>
+                    <span className="font-mono tabular-nums text-xs text-foreground">
+                      {selectedIds.length}<span className="text-muted-foreground"> / {totalCount}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="eyebrow">Tokens</span>
+                    <span className="font-mono tabular-nums text-xs text-foreground">
+                      {sliceTokens.toLocaleString()}<span className="text-muted-foreground"> / {fullTokens.toLocaleString()}</span>
+                    </span>
+                  </div>
+                </section>
+              </div>
+            );
+          })()}
 
-          <ZipStructurePreview packageName={config.mcpName} mode={config.mode} />
-
-          <PostGenSteps />
+          {config.hosting === 'cloud' ? (
+            <>
+              <div className="h-px bg-border/60" aria-hidden />
+              <div className="flex flex-col gap-2">
+                <p className="eyebrow">Snippet preview</p>
+                <p className="font-mono text-[11px] text-muted-foreground">
+                  Real URL replaces <span className="text-foreground">xxxxxxxx</span> after deploy.
+                </p>
+                <ConnectionTabs config={config} hostedUrl={PREVIEW_URL} />
+              </div>
+            </>
+          ) : (
+            <>
+              <PostGenSteps />
+              <ZipStructurePreview packageName={config.mcpName} mode={config.mode} />
+            </>
+          )}
         </aside>
       </div>
 

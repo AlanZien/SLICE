@@ -39,7 +39,7 @@ describe('Stepper', () => {
     expect(items[0]).toHaveTextContent('✓');
     expect(items[1]).toHaveTextContent('✓');
     expect(items[2]).toHaveTextContent('✓');
-    expect(items[3]).toHaveTextContent('4');
+    expect(items[3]).toHaveTextContent('✓');
   });
 
   it('renders done steps as clickable buttons when onNavigate is provided', async () => {

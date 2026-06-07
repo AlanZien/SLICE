@@ -11,9 +11,9 @@
  * passed in as a prop, NOT recomputed here. That keeps the screen stable
  * even if the user goes back and tweaks the selection later.
  */
+import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
 import type { SliceConfig } from '@shared/types';
-import { CheckAnim } from '../components/check-anim';
-import { CodeSnippet } from '../components/code-snippet';
 import { ConnectionTabs } from '../components/connection-tabs';
 import { useDownload } from '../hooks/use-download';
 
@@ -44,9 +44,8 @@ export function SuccessScreen({
   const { redownload } = useDownload(zipBlob ?? null, `${config.mcpName}.zip`);
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
+    <div className="mx-auto w-full max-w-3xl overflow-y-auto px-6 py-12">
       <div className="flex flex-col items-center gap-6 text-center">
-        <CheckAnim />
         <h1 className="font-serif text-4xl italic">
           {hosted ? 'Your MCP is live' : 'Your MCP is ready'}
         </h1>
@@ -71,7 +70,7 @@ export function SuccessScreen({
       {hosted ? (
         <section className="mt-10 flex flex-col gap-3">
           <p className="eyebrow">Your live endpoint</p>
-          <CodeSnippet code={hostedUrl} label="URL" />
+          <UrlRow url={hostedUrl} />
           <p className="text-sm text-muted-foreground">
             Paste the snippet below into your agent, then replace{' '}
             <code className="rounded bg-muted px-1.5 py-0.5 text-xs">COLLE_TON_TOKEN_ICI</code> with
@@ -116,6 +115,28 @@ export function SuccessScreen({
           Back to selection
         </button>
       </div>
+    </div>
+  );
+}
+
+function UrlRow({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  async function handleCopy() {
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/40 px-4 py-3">
+      <span className="font-mono min-w-0 flex-1 truncate text-sm text-foreground">{url}</span>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label="Copy"
+        className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors"
+      >
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+      </button>
     </div>
   );
 }

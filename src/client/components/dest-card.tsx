@@ -39,18 +39,20 @@ export function DestCard<V extends string>({
         className
       )}
     >
-      {recommended && (
-        <span className="absolute -top-2 right-3 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-500">
-          Recommended
-        </span>
-      )}
-      <span
-        aria-hidden
-        className={cn(
-          'inline-block h-2.5 w-2.5 self-end rounded-full border',
-          active ? 'border-foreground bg-foreground' : 'border-border'
-        )}
-      />
+      <div className="flex items-center justify-between">
+        {recommended ? (
+          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] uppercase tracking-wide text-emerald-500">
+            Recommended
+          </span>
+        ) : <span />}
+        <span
+          aria-hidden
+          className={cn(
+            'inline-block h-2.5 w-2.5 rounded-full border',
+            active ? 'border-foreground bg-foreground' : 'border-border'
+          )}
+        />
+      </div>
       <div className="flex flex-col gap-1">
         <span className="text-base font-medium text-foreground">{title}</span>
         <span className="font-mono text-[11px] leading-relaxed text-muted-foreground">{blurb}</span>

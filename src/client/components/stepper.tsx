@@ -36,11 +36,13 @@ export function Stepper({ current, onNavigate, className }: StepperProps) {
     >
       <ol className="contents">
         {STEPS.map((step, index) => {
-          const state = stateFor(step.k, current);
+          const rawState = stateFor(step.k, current);
+          // Step 4 on screen 4 = everything complete → treat as done
+          const state: StepState = rawState === 'now' && current === 4 ? 'done' : rawState;
           const badgeClasses = [
             'font-display inline-flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-semibold',
             state === 'now' && 'bg-foreground text-background',
-            state === 'done' && 'text-foreground/80',
+            state === 'done' && 'text-emerald-500',
             state === 'upcoming' && 'text-muted-foreground',
           ]
             .filter(Boolean)
@@ -69,7 +71,7 @@ export function Stepper({ current, onNavigate, className }: StepperProps) {
                     aria-label={`Back to ${step.name}`}
                     className={[
                       badgeClasses,
-                      'border border-border hover:border-foreground/40 hover:bg-[var(--slice-highlight)] hover:text-foreground transition-colors cursor-pointer',
+                      'border border-emerald-500/40 hover:border-emerald-500 hover:bg-emerald-500/10 transition-colors cursor-pointer',
                     ].join(' ')}
                   >
                     ✓
@@ -79,8 +81,10 @@ export function Stepper({ current, onNavigate, className }: StepperProps) {
                     {state === 'done' ? '✓' : step.k}
                   </span>
                 )}
-                {state === 'now' && (
-                  <span className="font-medium text-foreground">{step.name}</span>
+                {(state === 'now' || (current === 4 && step.k === 4)) && (
+                  <span className={current === 4 ? 'font-medium text-emerald-500' : 'font-medium text-foreground'}>
+                    {step.name}
+                  </span>
                 )}
               </li>
             </Fragment>
