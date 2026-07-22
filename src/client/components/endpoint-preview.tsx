@@ -86,26 +86,30 @@ export function EndpointPreview({
       {tab === 'overview' && (
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
           <section className="flex flex-col gap-2">
-            <p className="eyebrow">Context saved</p>
+            <p className="eyebrow">Agent scope</p>
             <p className="h2 leading-none text-foreground">
-              −{safePercent}<span className="font-mono text-sm text-muted-foreground">%</span>
+              {selectedCount}
+              <span className="font-mono text-sm text-muted-foreground"> / {totalCount} endpoints</span>
             </p>
             <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
               <div
                 className="h-full bg-primary transition-[width]"
-                style={{ width: `${safePercent}%` }}
+                style={{ width: `${totalCount > 0 ? Math.round((selectedCount / totalCount) * 100) : 0}%` }}
                 aria-hidden
               />
             </div>
+            <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
+              Unchecked endpoints don't exist in your server — your agent can't call them.
+            </p>
           </section>
 
           <div className="h-px bg-border/60" aria-hidden />
 
           <section className="flex flex-col gap-2.5">
             <div className="flex items-baseline justify-between">
-              <span className="eyebrow">Selected</span>
+              <span className="eyebrow">Context saved</span>
               <span className="font-mono tabular-nums text-xs text-foreground">
-                {selectedCount}<span className="text-muted-foreground"> / {totalCount}</span>
+                −{safePercent}<span className="text-muted-foreground">%</span>
               </span>
             </div>
             <div className="flex items-baseline justify-between">
