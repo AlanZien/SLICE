@@ -31,7 +31,11 @@ Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une 
 
 **Correctifs pré-lancement livrés (PR #37, mergé 2026-06-06)** : store hébergé persistant (JSON sur disque, `SLICE_STORE_PATH`) + snippet Claude Desktop au format `mcp-remote` via npx. 488 tests verts.
 
-**Prochaine étape** : upload par URL (SSRF-safe) + rapport fail-loud, puis mise en ligne sur VPS Coolify.
+**Upload par URL (PR #38) et rapport fail-loud (PR #39) livrés (2026-06-06)** : coller une URL https de spec (SSRF-safe, `url-fetcher.ts`) ; approximations détectées par le normalizer (`schema_fallback`/`non_json_body`/`cookie_param`) et affichées à l'écran 3 (`GenerationReport`).
+
+**Repositionnement produit (2026-07-22, PR #42/#43/#44)** : « l'hébergement est le produit » — voir la section datée de `.workflow/POSITIONING.md`. Pitch « Any API, in any agent, in 3 clicks » ; curation revendue **moindre privilège côté serveur** ; compteur de contexte rétrogradé en bonus (« Agent scope » en principal) ; self-host rétrogradé en option discrète (kit conservé) ; **expiration des URLs hébergées gratuites** (`SLICE_HOSTED_TTL_HOURS`, défaut 72 h, 0 = désactivé — self-host) : 410 + purge sur `/m/:id`, `expiresAt` dans `/api/host`, CTA mailto « Get a permanent plan » à l'écran 4. Pas de billing tant que la demande n'est pas validée par de vrais contacts. Au passage : restauration du `GenerationReport` supprimé par accident par la refonte ui-polish. 548 tests verts.
+
+**Prochaine étape** : mise en ligne sur VPS Coolify (env : `SLICE_STORE_PATH`, `SLICE_HOSTED_TTL_HOURS`, `NODE_ENV=production`).
 
 **Outils** : `scripts/try-hosted.ts` (tester un MCP hébergé en CLI) ; `scripts/corpus-check.ts [N]` (stress N specs réelles — aussi en CI via `corpus.yml` à la demande).
 
