@@ -1,25 +1,7 @@
 import { useState } from 'react';
 import type { Endpoint } from '@shared/types';
 import { MethodBadge } from './method-badge';
-import { toolNameFor } from '@/lib/tool-name';
 import { cn } from '@/lib/utils';
-
-function sampleValue(p: Endpoint['params'][number]): string {
-  if (p.name.toLowerCase().includes('id')) return JSON.stringify('123');
-  if (p.type === 'integer' || p.type === 'number') return '10';
-  if (p.type === 'boolean') return 'true';
-  return JSON.stringify('…');
-}
-
-function renderAgentCall(endpoint: Endpoint): string {
-  const required = endpoint.params.filter((p) => p.required).slice(0, 4);
-  const argLines = required.length === 0
-    ? '{}'
-    : `{
-${required.map((p) => `  ${p.name}: ${sampleValue(p)},`).join('\n')}
-}`;
-  return `await mcp.tools["${toolNameFor(endpoint)}"](${argLines})`;
-}
 
 export interface EndpointPreviewProps {
   endpoint: Endpoint | null;
@@ -161,15 +143,6 @@ export function EndpointPreview({
           <section className="flex flex-col gap-1">
             <p className="eyebrow">Context cost</p>
             <p className="font-mono text-lg text-foreground">~ {estimatedTokens} tokens</p>
-          </section>
-
-          <div className="my-1 h-px bg-border/60" aria-hidden />
-
-          <section className="flex flex-col gap-1.5">
-            <p className="eyebrow">Agent call</p>
-            <pre className="font-mono overflow-x-auto rounded bg-background/60 p-2.5 text-[10.5px] leading-snug text-foreground">
-{renderAgentCall(endpoint)}
-            </pre>
           </section>
         </div>
       )}
