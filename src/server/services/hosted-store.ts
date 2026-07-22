@@ -43,11 +43,17 @@ export function createFileHostedStore(filePath: string): HostedStore {
   mkdirSync(dirname(filePath), { recursive: true });
 
   let configs = new Map<string, HostedMcpConfig>();
+  let needsMigrationPersist = false;
   try {
     const data = JSON.parse(readFileSync(filePath, 'utf-8')) as Record<string, HostedMcpConfig>;
     // Legacy records predate the expiry feature — stamp them at load so they
     // enter a normal TTL cycle instead of breaking or dying instantly.
-    configs = new Map(Object.entries(data).map(([id, cfg]) => [id, stamped(cfg)]));
+    configs = new Map(
+      Object.entries(data).map(([id, cfg]) => {
+        if (!cfg.createdAt) needsMigrationPersist = true;
+        return [id, stamped(cfg)];
+      })
+    );
   } catch {
     // File absent or corrupt — start fresh
   }
@@ -55,6 +61,10 @@ export function createFileHostedStore(filePath: string): HostedStore {
   function persist(): void {
     writeFileSync(filePath, JSON.stringify(Object.fromEntries(configs)), 'utf-8');
   }
+
+  // Write the stamped dates back once, so a legacy record's TTL window starts
+  // now — not anew at every restart.
+  if (needsMigrationPersist) persist();
 
   return {
     put(config) {
