@@ -46,10 +46,10 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-12 px-6 py-12 text-center">
       <header className="space-y-5">
-        <h1 className="h1">Curated MCP servers for AI agents</h1>
+        <h1 className="h1">Any API, in any agent, in 3 clicks</h1>
         <p className="font-mono text-sm text-muted-foreground">
-          Your API description becomes a faithful MCP server. We never rewrite anything
-          you didn't write yourself.
+          Upload your API description, choose what your agent may use, and get a
+          hosted MCP URL ready for Claude, n8n or Airia. No code.
         </p>
       </header>
 
@@ -100,7 +100,8 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
       </div>
 
       <footer className="font-mono text-xs text-muted-foreground">
-        JSON or YAML, up to 10&nbsp;MB · https:// only · No data stored.
+        JSON or YAML, up to 10&nbsp;MB · https:// only · No data stored ·
+        We never rewrite anything you didn't write yourself.
       </footer>
     </section>
   );

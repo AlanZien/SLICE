@@ -259,27 +259,40 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
               <h3 className="h2 text-foreground" style={{ fontSize: 18 }}>
                 Where should we host it?
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <DestCard
-                  value="cloud"
-                  active={config.hosting === 'cloud'}
-                  onSelect={(v) => setField('hosting', v)}
-                  title="SLICE Cloud"
-                  blurb="We host it for you — you get a ready URL to paste into your agent."
-                  apps={['Claude', 'n8n', 'Airia']}
-                  transport="hosted"
-                  recommended
+              <DestCard
+                value="cloud"
+                active={config.hosting === 'cloud'}
+                onSelect={(v) => setField('hosting', v)}
+                title="SLICE Cloud"
+                blurb="We host it and relay your token — never stored. You get a URL to paste into your agent."
+                apps={['Claude', 'n8n', 'Airia']}
+                transport="hosted"
+                recommended
+              />
+              <button
+                type="button"
+                aria-pressed={config.hosting === 'self'}
+                onClick={() => setField('hosting', 'self')}
+                className={cn(
+                  'flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-left transition-colors',
+                  config.hosting === 'self'
+                    ? 'border-foreground bg-[var(--slice-highlight)]'
+                    : 'border-border bg-card/40 hover:border-primary'
+                )}
+              >
+                <span className="font-mono text-[11px] leading-relaxed text-muted-foreground">
+                  Prefer to run it yourself?{' '}
+                  <span className="text-foreground">Download a ready-to-run kit</span>{' '}
+                  (Docker, Coolify, VPS).
+                </span>
+                <span
+                  aria-hidden
+                  className={cn(
+                    'inline-block h-2.5 w-2.5 shrink-0 rounded-full border',
+                    config.hosting === 'self' ? 'border-foreground bg-foreground' : 'border-border'
+                  )}
                 />
-                <DestCard
-                  value="self"
-                  active={config.hosting === 'self'}
-                  onSelect={(v) => setField('hosting', v)}
-                  title="On my server"
-                  blurb="Download a ready-to-run kit and deploy it wherever you want."
-                  apps={['Coolify', 'Railway', 'VPS']}
-                  transport="self-host"
-                />
-              </div>
+              </button>
             </div>
 
             <GenerationReport report={report} />
@@ -295,20 +308,28 @@ export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProp
             return (
               <div className="flex flex-col gap-4">
                 <section className="flex flex-col gap-2">
-                  <p className="eyebrow">Context saved</p>
+                  <p className="eyebrow">Agent scope</p>
                   <p className="h2 leading-none text-foreground">
-                    −{safePercent}<span className="font-mono text-sm text-muted-foreground">%</span>
+                    {selectedIds.length}
+                    <span className="font-mono text-sm text-muted-foreground"> / {totalCount} endpoints</span>
                   </p>
                   <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
-                    <div className="h-full bg-primary transition-[width]" style={{ width: `${safePercent}%` }} aria-hidden />
+                    <div
+                      className="h-full bg-primary transition-[width]"
+                      style={{ width: `${totalCount > 0 ? Math.round((selectedIds.length / totalCount) * 100) : 0}%` }}
+                      aria-hidden
+                    />
                   </div>
+                  <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
+                    Unchecked endpoints don't exist in your server — your agent can't call them.
+                  </p>
                 </section>
                 <div className="h-px bg-border/60" aria-hidden />
                 <section className="flex flex-col gap-2.5">
                   <div className="flex items-baseline justify-between">
-                    <span className="eyebrow">Selected</span>
+                    <span className="eyebrow">Context saved</span>
                     <span className="font-mono tabular-nums text-xs text-foreground">
-                      {selectedIds.length}<span className="text-muted-foreground"> / {totalCount}</span>
+                      −{safePercent}<span className="text-muted-foreground">%</span>
                     </span>
                   </div>
                   <div className="flex items-baseline justify-between">

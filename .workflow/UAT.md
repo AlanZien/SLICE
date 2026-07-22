@@ -768,3 +768,24 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | 2 | Écran 3 mode cloud : preview du snippet avec URL placeholder | ⏳ | visuel |
 | 3 | Écran 4 : URL sur une ligne, écran scrollable, pas d'animation superflue | ⏳ | visuel |
 | 4 | Copier un snippet → l'icône passe de Copy à Check | ⏳ | visuel |
+
+## Phase repositioning-copy : pitch hébergement-first + moindre privilège (2026-07-22)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Écran 2 overview : « Agent scope » + n / total endpoints en principal, « Context saved » en secondaire | ✓ | endpoint-preview.test.tsx |
+| 2 | Écran 3 : card SLICE Cloud + rangée self-host discrète, bascule CTA Deploy/Download conservée | ✓ | config.test.tsx |
+| 3 | GenerationReport (fail-loud) restauré après la refonte ui-polish qui l'avait supprimé | ✓ | config.test.tsx F1-F5 |
+| — | Suite complète 539 tests verts + typecheck | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Écran 1 : hero « Any API, in any agent, in 3 clicks » + sous-titre URL hébergée | ⏳ | visuel |
+| 2 | Écran 2 : onglet Overview → « Agent scope » en gros, microcopy moindre privilège lisible | ⏳ | visuel |
+| 3 | Écran 3 : SLICE Cloud pleine largeur Recommended, lien discret self-host cliquable → CTA « Download the kit » | ⏳ | visuel |
+| 4 | Flux ZIP self-host complet toujours fonctionnel | ⏳ | E2E |
+| 5 | Écran 3 : rapport « N/N endpoints in MCP · All fully supported » de retour | ⏳ | visuel |
