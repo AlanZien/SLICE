@@ -57,7 +57,7 @@ export function EndpointRow({
         {endpoint.path}
       </span>
       <span
-        className="font-mono w-[39ch] max-w-[45%] shrink-0 truncate text-left text-[11px] text-muted-foreground/60"
+        className="font-mono w-[39ch] max-w-[45%] shrink-0 truncate text-left text-[11px] text-muted-foreground/75"
         title={`MCP tool: ${toolNameFor(endpoint)}`}
       >
         {displayToolName(toolNameFor(endpoint))}
