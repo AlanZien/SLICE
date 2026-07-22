@@ -65,8 +65,8 @@ describe('<ConfigScreen> (phase 06)', () => {
   // RC1.2 — the transport question is replaced by the hosting question.
   it('shows the two hosting cards and drops the old transport cards', () => {
     renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
-    expect(screen.getByRole('button', { name: /we host it for you/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /on my server/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /we host it and relay/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /prefer to run it yourself/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /on my machine/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /on a remote/i })).not.toBeInTheDocument();
   });
@@ -76,10 +76,10 @@ describe('<ConfigScreen> (phase 06)', () => {
     renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
     expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeEnabled();
 
-    await userEvent.click(screen.getByRole('button', { name: /on my server/i }));
+    await userEvent.click(screen.getByRole('button', { name: /prefer to run it yourself/i }));
     expect(screen.getByRole('button', { name: /download the kit/i })).toBeEnabled();
 
-    await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
+    await userEvent.click(screen.getByRole('button', { name: /we host it and relay/i }));
     expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeEnabled();
   });
 
@@ -91,7 +91,7 @@ describe('<ConfigScreen> (phase 06)', () => {
 
   it('disables the action when the form is invalid even after choosing hosting', async () => {
     renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
-    await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
+    await userEvent.click(screen.getByRole('button', { name: /we host it and relay/i }));
     const name = screen.getByDisplayValue('shopify');
     await userEvent.clear(name);
     await userEvent.type(name, 'Bad Name');
@@ -101,7 +101,7 @@ describe('<ConfigScreen> (phase 06)', () => {
   it('calls onGenerate with the final config incl. hosting when the action is clicked', async () => {
     const onGenerate = vi.fn();
     renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate });
-    await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
+    await userEvent.click(screen.getByRole('button', { name: /we host it and relay/i }));
     await userEvent.click(screen.getByRole('button', { name: /deploy to slice cloud/i }));
     expect(onGenerate).toHaveBeenCalledOnce();
     const arg = onGenerate.mock.calls[0][0];

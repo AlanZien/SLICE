@@ -62,7 +62,8 @@ describe('<EndpointPreview>', () => {
     const user = userEvent.setup();
     render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
     await user.click(screen.getByRole('button', { name: /overview/i }));
+    expect(screen.getByText(/agent scope/i)).toBeInTheDocument();
     expect(screen.getByText(/context saved/i)).toBeInTheDocument();
-    expect(screen.getByText((_, el) => el?.textContent?.replace(/\s+/g, ' ').trim() === '5 / 20')).toBeInTheDocument();
+    expect(screen.getByText((_, el) => el?.textContent?.replace(/\s+/g, ' ').trim() === '5 / 20 endpoints')).toBeInTheDocument();
   });
 });
