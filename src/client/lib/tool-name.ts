@@ -15,3 +15,14 @@ export function toolNameFor(endpoint: Endpoint): string {
     .replace(/:/g, '');
   return `${endpoint.method.toLowerCase()}_${path || 'root'}`;
 }
+
+/**
+ * Display form of a tool name for tight spots (endpoint rows): long names are
+ * truncated from the HEAD so the tail — the part that tells two siblings
+ * apart (`…external_accounts.id` vs `…external_accounts`) — stays visible.
+ * The full name belongs in a `title` tooltip next to this.
+ */
+export function displayToolName(name: string, maxChars = 38): string {
+  if (name.length <= maxChars) return name;
+  return `…${name.slice(name.length - maxChars)}`;
+}

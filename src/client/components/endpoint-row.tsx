@@ -1,6 +1,6 @@
 import type { Endpoint } from '@shared/types';
 import { MethodBadge } from './method-badge';
-import { toolNameFor } from '@/lib/tool-name';
+import { displayToolName, toolNameFor } from '@/lib/tool-name';
 import { cn } from '@/lib/utils';
 
 export interface EndpointRowProps {
@@ -57,10 +57,10 @@ export function EndpointRow({
         {endpoint.path}
       </span>
       <span
-        className="font-mono max-w-[45%] shrink-0 truncate text-[11px] text-muted-foreground/60"
+        className="font-mono shrink-0 whitespace-nowrap text-[11px] text-muted-foreground/60"
         title={`MCP tool: ${toolNameFor(endpoint)}`}
       >
-        {toolNameFor(endpoint)}
+        {displayToolName(toolNameFor(endpoint))}
       </span>
     </div>
   );
