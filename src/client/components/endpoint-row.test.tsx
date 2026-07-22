@@ -32,6 +32,16 @@ describe('<EndpointRow>', () => {
     expect(screen.queryByText(/~\s*\d+\s*tk/i)).not.toBeInTheDocument();
   });
 
+  it('shows the MCP tool name next to the endpoint', () => {
+    render(
+      <EndpointRow
+        {...baseProps}
+        endpoint={{ ...EP, id: 'GET /pet/findByStatus', method: 'GET', path: '/pet/findByStatus' }}
+      />
+    );
+    expect(screen.getByText('get_pet.findByStatus')).toBeInTheDocument();
+  });
+
   it('reflects the selected state on the checkbox', () => {
     const { rerender } = render(<EndpointRow {...baseProps} selected={false} />);
     expect(screen.getByRole('checkbox')).not.toBeChecked();
