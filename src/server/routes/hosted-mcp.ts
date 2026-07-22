@@ -15,15 +15,38 @@ import { hostedStore } from '../services/hosted-store';
 export interface HostedMcpRouterOptions {
   /** Forwarded to the engine — disables the SSRF guard (tests/dev only). */
   allowPrivateHosts?: boolean;
+  /** Free-tier TTL in hours; 0 disables expiry. Defaults to SLICE_HOSTED_TTL_HOURS or 72. */
+  ttlHours?: number;
+}
+
+/** Env-resolved default TTL (hours). `0` disables expiry (self-host deployments). */
+export function defaultTtlHours(): number {
+  const parsed = Number(process.env.SLICE_HOSTED_TTL_HOURS ?? '72');
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 72;
+}
+
+export function isExpired(createdAt: string | undefined, ttlHours: number, now = Date.now()): boolean {
+  if (ttlHours <= 0 || !createdAt) return false;
+  const created = Date.parse(createdAt);
+  if (!Number.isFinite(created)) return false;
+  return now - created > ttlHours * 3_600_000;
 }
 
 export function createHostedMcpRouter(options: HostedMcpRouterOptions = {}): Router {
   const router = Router();
+  const ttlHours = options.ttlHours ?? defaultTtlHours();
 
   router.all('/:id', async (req, res) => {
     const config = hostedStore.get(req.params.id);
     if (!config) {
       res.status(404).json({ error: 'Unknown MCP id.' });
+      return;
+    }
+    if (isExpired(config.createdAt, ttlHours)) {
+      hostedStore.delete(req.params.id);
+      res.status(410).json({
+        error: 'This MCP URL has expired. Generate it again on SLICE, or ask for a permanent plan.',
+      });
       return;
     }
 
