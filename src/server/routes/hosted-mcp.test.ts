@@ -5,6 +5,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createApp } from '../app';
+import { hostedStore } from '../services/hosted-store';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
@@ -90,6 +91,21 @@ describe('hosted runtime routes', () => {
     expect(received.every((r) => r.url === '/things')).toBe(true);
     expect(auths).toEqual(['Bearer TOKEN_A', 'Bearer TOKEN_B']);
   }, 20_000);
+
+  it('returns 410 and purges the entry when the hosted URL has expired', async () => {
+    const url = await host();
+    const id = url.split('/m/')[1];
+    // Age the record beyond the default 72h TTL.
+    hostedStore.get(id)!.createdAt = new Date(Date.now() - 100 * 3600 * 1000).toISOString();
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }),
+    });
+    expect(res.status).toBe(410);
+    expect(hostedStore.get(id)).toBeUndefined();
+  });
 
   it('returns 404 for an unknown id', async () => {
     const res = await fetch(`${baseUrl}/m/nope-unknown-id`, {
