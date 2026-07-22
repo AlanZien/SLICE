@@ -20,6 +20,11 @@ export interface CreateAppOptions {
    * upstream can be reached. Never enable this on a deployed instance.
    */
   allowPrivateHosts?: boolean;
+  /**
+   * Free-tier TTL (hours) for hosted MCP URLs; 0 disables expiry entirely
+   * (self-host deployments). Defaults to SLICE_HOSTED_TTL_HOURS or 72.
+   */
+  hostedTtlHours?: number;
 }
 
 export function createApp(options: CreateAppOptions = {}): Express {
@@ -68,7 +73,7 @@ export function createApp(options: CreateAppOptions = {}): Express {
   // /m/:id is the hosted MCP runtime (not under /api/, so not rate-limited
   // like the upload/generate endpoints — agents call it freely).
   app.use('/api/host', createHostRouter({ allowPrivateHosts }));
-  app.use('/m', createHostedMcpRouter({ allowPrivateHosts }));
+  app.use('/m', createHostedMcpRouter({ allowPrivateHosts, ttlHours: options.hostedTtlHours }));
 
   if (nodeEnv === 'production') {
     const clientDist = options.clientDist ?? path.resolve(__dirname, '../../client');
