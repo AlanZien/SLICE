@@ -126,6 +126,60 @@ describe('hosted runtime routes', () => {
     }
   }, 20_000);
 
+  it('POST /api/host returns expiresAt aligned with the TTL (null when TTL is 0)', async () => {
+    const res = await fetch(`${baseUrl}/api/host`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        parsedSpec: {},
+        rawSpec: SPEC,
+        selectedIds: ['GET /things'],
+        config: {
+          mcpName: 'demo',
+          baseUrl: upstreamUrl,
+          upstreamAuth: { type: 'bearer' },
+          hosting: 'cloud',
+          mode: 'remote',
+          includeParamDescriptions: false,
+          retryOnServerError: false,
+        },
+      }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { id: string; expiresAt: string | null };
+    // Default TTL is 72h — expiresAt must be exactly createdAt + 72h.
+    const createdAt = hostedStore.get(body.id)!.createdAt!;
+    expect(body.expiresAt).toBe(new Date(Date.parse(createdAt) + 72 * 3_600_000).toISOString());
+
+    // TTL 0 (self-host) → no expiry advertised.
+    const ttl0 = createApp({ nodeEnv: 'test', hostedTtlHours: 0 }).listen(0);
+    await new Promise<void>((r) => ttl0.once('listening', r));
+    try {
+      const res0 = await fetch(`http://127.0.0.1:${(ttl0.address() as AddressInfo).port}/api/host`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          parsedSpec: {},
+          rawSpec: SPEC,
+          selectedIds: ['GET /things'],
+          config: {
+            mcpName: 'demo',
+            baseUrl: upstreamUrl,
+            upstreamAuth: { type: 'bearer' },
+            hosting: 'cloud',
+            mode: 'remote',
+            includeParamDescriptions: false,
+            retryOnServerError: false,
+          },
+        }),
+      });
+      const body0 = (await res0.json()) as { expiresAt: string | null };
+      expect(body0.expiresAt).toBeNull();
+    } finally {
+      await new Promise<void>((r) => ttl0.close(() => r()));
+    }
+  });
+
   it('returns 404 for an unknown id', async () => {
     const res = await fetch(`${baseUrl}/m/nope-unknown-id`, {
       method: 'POST',
