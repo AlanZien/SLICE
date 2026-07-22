@@ -24,5 +24,7 @@ export function toolNameFor(endpoint: Endpoint): string {
  */
 export function displayToolName(name: string, maxChars = 38): string {
   if (name.length <= maxChars) return name;
-  return `…${name.slice(name.length - maxChars)}`;
+  // Strip the separator left dangling at the cut so the ellipsis is followed
+  // by a clean segment (`…accounts.id`, not `….accounts.id`).
+  return `…${name.slice(name.length - maxChars).replace(/^[._]+/, '')}`;
 }
