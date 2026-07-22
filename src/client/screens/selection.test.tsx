@@ -84,6 +84,18 @@ describe('<SelectionScreen> 3-col layout (phase 04bis)', () => {
     ]);
   });
 
+  it('unchecking "Select all" deselects only the visible endpoints', async () => {
+    const onContinue = vi.fn();
+    render(<SelectionScreen spec={SPEC} onContinue={onContinue} />);
+    // Default tag is Products. GET /orders (other tag) is pre-selected and
+    // must SURVIVE a select-all toggle scoped to Products.
+    const master = screen.getByRole('checkbox', { name: /select all/i });
+    await userEvent.click(master); // some → all visible selected
+    await userEvent.click(master); // all → none visible selected
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }));
+    expect(onContinue.mock.calls[0][0]).toEqual(['GET /orders']);
+  });
+
   it('filters by reads/writes via the FilterChips', async () => {
     render(<SelectionScreen spec={SPEC} onContinue={() => {}} />);
     await userEvent.click(screen.getByRole('button', { name: /^writes$/i }));
