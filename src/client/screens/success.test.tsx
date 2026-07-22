@@ -94,7 +94,7 @@ describe('<SuccessScreen />', () => {
 
     it('drives the connection tabs in hosted mode (token placeholder visible)', () => {
       setupHosted();
-      expect(screen.getAllByText(/COLLE_TON_TOKEN_ICI/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/PASTE_YOUR_TOKEN_HERE/).length).toBeGreaterThan(0);
     });
   });
 

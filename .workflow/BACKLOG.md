@@ -102,3 +102,14 @@ Le MVP fait du filtrage léger (3 règles dures, cf. phase 04 tâche 12). La qua
 ---
 Alimente librement par l'utilisateur (ajout d'idees, reorganisation).
 Cochee automatiquement par FORGE en phase DELIVER quand une feature est livree.
+
+## Auth descendante OAuth — « fenêtre de connexion » MCP (PRIORITÉ HAUTE post-lancement) — issu de session 2026-07-22
+
+Constat : l'écran d'ajout de connecteur de claude.ai / Cowork n'offre **aucun champ header/token**. Aujourd'hui un MCP SLICE d'une API à token n'est donc **pas utilisable dans Claude en ligne** (Desktop/n8n/Airia : OK via config manuelle). Les connecteurs « sérieux » (Notion officiel…) implémentent la partie **authorization de la spec MCP (OAuth 2.1)** : coller l'URL → fenêtre de login → token échangé en coulisses.
+
+Chantier : implémenter la spec d'authorization MCP dans le runtime hébergé (`/m/:id`).
+- [ ] Serveur d'autorisation minimal : coller l'URL SLICE dans claude.ai ouvre une **page SLICE** « collez la clé de votre API cible » (+ conseil : utilisez une clé **restreinte** aux permissions nécessaires — cohérent avec le pitch moindre privilège)
+- [ ] **Jamais stockée côté SLICE** : chiffrer la clé DANS l'access token remis au client (AES-GCM, clé serveur) ; déchiffrement par appel pour relai — le principe relai actuel, emballé dans l'UX OAuth
+- [ ] Refresh/expiry du token émis ; révocation = l'utilisateur supprime le connecteur
+- [ ] Compat : le chemin header `Authorization: Bearer` actuel reste (n8n/Airia/mcp-remote)
+- Impact : débloque claude.ai + Cowork pour toutes les APIs à token = le plus gros levier d'usage après la mise en ligne.
