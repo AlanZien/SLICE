@@ -1,17 +1,8 @@
 import { useState } from 'react';
 import type { Endpoint } from '@shared/types';
 import { MethodBadge } from './method-badge';
+import { toolNameFor } from '@/lib/tool-name';
 import { cn } from '@/lib/utils';
-
-function toolNameFor(endpoint: Endpoint): string {
-  const path = endpoint.path
-    .replace(/^\/+/, '')
-    .replace(/\{(\w+)\}/g, ':$1')
-    .replace(/[^a-zA-Z0-9_/:.-]/g, '_')
-    .replace(/\/+/g, '.')
-    .replace(/:/g, '');
-  return `${endpoint.method.toLowerCase()}_${path || 'root'}`;
-}
 
 function sampleValue(p: Endpoint['params'][number]): string {
   if (p.name.toLowerCase().includes('id')) return JSON.stringify('123');
