@@ -789,3 +789,26 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | 3 | Écran 3 : SLICE Cloud pleine largeur Recommended, lien discret self-host cliquable → CTA « Download the kit » | ⏳ | visuel |
 | 4 | Flux ZIP self-host complet toujours fonctionnel | ⏳ | E2E |
 | 5 | Écran 3 : rapport « N/N endpoints in MCP · All fully supported » de retour | ⏳ | visuel |
+
+## Phase hosted-expiry : expiration des URLs hébergées gratuites (2026-07-22)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `put()` estampille `createdAt` ; `createdAt` explicite préservé ; legacy stampé au load + persisté une fois | ✓ | hosted-store.test.ts |
+| 2 | `delete()` retire l'entrée (mémoire + fichier, persisté) | ✓ | hosted-store.test.ts |
+| 3 | `/m/:id` expiré (createdAt > 72 h) → 410 + entrée purgée | ✓ | hosted-mcp.test.ts |
+| 4 | `SLICE_HOSTED_TTL_HOURS=0` → jamais expiré (vrai client MCP E2E) | ✓ | hosted-mcp.test.ts |
+| 5 | `/api/host` renvoie `expiresAt` = createdAt + TTL ; `null` si TTL=0 | ✓ | hosted-mcp.test.ts |
+| 6 | Écran 4 : ligne « stays live until … » + lien mailto si `expiresAt`, masquée si null | ✓ | success.test.tsx |
+| — | Suite complète 548 tests verts + typecheck + `pnpm prod:smoke` | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Déployer un MCP cloud → écran 4 affiche la date d'expiration lisible + lien « Get a permanent plan » | ⏳ | visuel |
+| 2 | Cliquer le lien → ouvre le mail pré-rempli « SLICE — permanent hosting » | ⏳ | visuel |
+| 3 | Forcer un `createdAt` ancien dans `data/hosted.json` → appel de l'URL → erreur claire d'expiration | ⏳ | E2E manuel |
+| 4 | `scripts/try-hosted.ts` contre une URL fraîche → fonctionne comme avant | ⏳ | E2E manuel |
