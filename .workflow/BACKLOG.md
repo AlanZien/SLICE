@@ -113,3 +113,10 @@ Chantier : implémenter la spec d'authorization MCP dans le runtime hébergé (`
 - [ ] Refresh/expiry du token émis ; révocation = l'utilisateur supprime le connecteur
 - [ ] Compat : le chemin header `Authorization: Bearer` actuel reste (n8n/Airia/mcp-remote)
 - Impact : débloque claude.ai + Cowork pour toutes les APIs à token = le plus gros levier d'usage après la mise en ligne.
+
+### Déroulé technique validé en discussion (2026-07-22, pour l'implémentation)
+Aucune magie côté client — Claude (web/Code/Desktop) implémente déjà le flux OAuth de la spec MCP. À construire côté SLICE, 3 morceaux sur le runtime hébergé :
+1. **401 + métadonnées** : `/m/:id` sans token → 401 avec `WWW-Authenticate` pointant vers les metadata OAuth (`/.well-known/…`) + dynamic client registration.
+2. **Page `/authorize`** : page SLICE « Collez la clé de votre API cible » (+ conseil clé restreinte) → redirect vers le callback fourni par Claude avec un code à usage unique (PKCE).
+3. **Endpoint `/token`** : échange code → access token contenant la clé **chiffrée** (AES-GCM, clé serveur). Le runtime déchiffre par appel et relaie — rien en base.
+Claude Code/Desktop utilisent un callback localhost, claude.ai son callback web — géré par le client, rien à faire.
