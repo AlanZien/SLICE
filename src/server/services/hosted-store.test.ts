@@ -17,7 +17,8 @@ describe('hosted store', () => {
     const store = createHostedStore();
     const id = store.put(config);
     expect(id).toMatch(/^[A-Za-z0-9_-]{22,}$/);
-    expect(store.get(id)).toEqual(config);
+    // toMatchObject: the store also stamps `createdAt` (expiry feature).
+    expect(store.get(id)).toMatchObject(config);
   });
 
   it('returns undefined for an unknown id', () => {
@@ -50,7 +51,7 @@ describe('createFileHostedStore', () => {
   it('persists across instances (simulates restart)', () => {
     const id = createFileHostedStore(filePath).put(config);
     const reloaded = createFileHostedStore(filePath);
-    expect(reloaded.get(id)).toEqual(config);
+    expect(reloaded.get(id)).toMatchObject(config);
   });
 
   it('returns undefined for unknown id', () => {
