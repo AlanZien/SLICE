@@ -179,3 +179,33 @@ Quand Claude 5 / GPT-6 généreront des MCPs de qualité prod (12-18 mois) :
 - [ ] Mesurer en continu la qualité du code MCP généré par les LLMs frontière (signal de bascule plateforme vs générateur)
 - [ ] Valider la grille tarifaire (Free/Pro/Team/Enterprise) avec 10 prospects avant phase SLICE Hosted
 - [ ] Tester le pricing du hosting : 9 €/MCP/mois unitaire vs forfaits 10/50 MCPs — quel modèle convertit mieux ?
+
+## Repositionnement 2026-07-22 — « l'hébergement est le produit »
+
+Déclencheur : les clients d'agents absorbent le filtrage d'outils (cases à cocher par tool dans Claude, tool search qui charge les définitions à la demande). L'argument « économie de contexte » est périssable ; il est **rétrogradé de vitrine à bonus**. Précédent ignoré jusqu'ici : les GPT Actions d'OpenAI (« colle ta spec OpenAPI → outils dans le client ») existent depuis 2023.
+
+### Pitch
+**« Any API, in any agent, in 3 clicks. No code. »** — l'angle est l'**existence** (ton API n'a pas de MCP → en voici un, hébergé), plus le « régime minceur » d'une grosse API.
+
+### Trois piliers, dans l'ordre
+1. **URL hébergée prête à coller, auth relayée jamais stockée** — c'est l'infrastructure qu'aucun client d'agent ne fournira (par définition hors du client).
+2. **Moindre privilège côté serveur** — l'endpoint décoché **n'existe pas** dans le serveur généré : aucune UI cliente, aucun agent, aucune erreur de config ne peut l'appeler. Décocher dans Claude = masquer un bouton ; SLICE = frontière de sécurité. La curation reste dans le produit, revendue sécurité/gouvernance, plus économie de tokens.
+3. **Portabilité multi-agents** — Claude / n8n / Airia avec snippets prêts ; le filtrage côté client n'existe pas dans n8n/Airia, et doit être refait par client/utilisateur là où il existe.
+
+### Persona
+- **Monétisation : le builder d'automatisations** (consultant IA, agences n8n/Airia) — branche des APIs de façon répétée, justifie un abonnement multi-MCPs hébergés.
+- **Acquisition : le non-tech** — UX 3 écrans, vocabulaire humain (inchangé).
+
+### Modèle économique (précise la section 2026-05-28)
+- Génération + téléchargement ZIP : **gratuits pour toujours** (banalisé, moteur d'acquisition/vitrine, coût marginal nul).
+- **Payant = ce qui vit dans le temps** : hébergement 24/7, fraîcheur (re-parse auto au changement de spec), observabilité, auth managée (authorization_code), MCP multi-API.
+- **Mécanique de conversion sans billing** : URL hébergée gratuite qui **expire après 72 h** (assez pour valider dans son agent) + CTA « Get a permanent plan » (mailto). Pas de Stripe tant que la demande n'est pas validée par de vrais contacts (cf. « valider avec 10 prospects »).
+
+### Conséquences UI (livrées avec ce repositionnement)
+- Hero écran 1 : « Any API, in any agent, in 3 clicks ».
+- Panneaux écrans 2-3 : « Agent scope » (n / total endpoints) en principal, « Context saved −N% » en secondaire, microcopy moindre privilège.
+- Écran 3 : card SLICE Cloud seule en avant ; self-host rétrogradé en rangée discrète (« Prefer to run it yourself? ») — le kit ZIP reste, porte de sortie honnête.
+- Écran 4 (phase hosted-expiry) : ligne d'expiration 72 h + mailto plan permanent.
+
+### Vitrine assumée
+SLICE sert aussi d'actif de crédibilité pour l'activité de conseil — même à revenu produit modeste, le produit en ligne qui marche est l'argument commercial. Lucidité : si Anthropic sort un « OpenAPI → MCP » natif, la couche génération meurt côté Claude ; la défense reste hébergement multi-clients + gouvernance. Niche solide, pas un pari venture-scale.
