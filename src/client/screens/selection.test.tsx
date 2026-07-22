@@ -70,6 +70,20 @@ describe('<SelectionScreen> 3-col layout (phase 04bis)', () => {
     expect(within(preview).getByText('List orders')).toBeInTheDocument();
   });
 
+  it('"Select all" checks every visible endpoint at once', async () => {
+    const onContinue = vi.fn();
+    render(<SelectionScreen spec={SPEC} onContinue={onContinue} />);
+    // Tag "All" → the 3 endpoints are visible; only the 2 GETs are pre-selected.
+    await userEvent.click(screen.getByRole('button', { name: /^tag: all$/i }));
+    await userEvent.click(screen.getByRole('checkbox', { name: /select all/i }));
+    await userEvent.click(screen.getByRole('button', { name: /continue/i }));
+    expect(onContinue.mock.calls[0][0].sort()).toEqual([
+      'GET /orders',
+      'GET /products',
+      'POST /products',
+    ]);
+  });
+
   it('filters by reads/writes via the FilterChips', async () => {
     render(<SelectionScreen spec={SPEC} onContinue={() => {}} />);
     await userEvent.click(screen.getByRole('button', { name: /^writes$/i }));
