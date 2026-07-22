@@ -746,3 +746,25 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | 3 | Uploader une spec avec oneOf (ex. Stripe) → sélectionner → ligne ⚠ apparaît | ⏳ | visuel |
 | 4 | Déselectionner l'endpoint approximé → rapport repasse à "All fully supported" | ⏳ | comportement live |
 | 5 | Générer le MCP avec approximations → ça fonctionne (rapport n'est qu'informatif) | ⏳ | E2E |
+
+## Phase ui-polish-config-success : polish écrans config + succès (2026-06-06)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Base URL auto-détectée en lecture seule, éditable via icône crayon | ✓ | config.test.tsx |
+| 2 | Aside config : snippet preview (cloud) vs zip+steps (self-host) selon hosting | ✓ | config.test.tsx |
+| 3 | Boutons copy : icône Copy→Check + aria-label feedback | ✓ | code-snippet.test.tsx |
+| 4 | Stepper : étapes terminées en vert, tout vert à l'étape 4 | ✓ | stepper.test.tsx |
+| 5 | use-theme : localStorage mocké, option url jsdom | ✓ | use-theme.test.ts |
+| — | Suite complète verte + typecheck | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Écran 3 : Base URL affichée en lecture seule, crayon la déverrouille | ⏳ | visuel |
+| 2 | Écran 3 mode cloud : preview du snippet avec URL placeholder | ⏳ | visuel |
+| 3 | Écran 4 : URL sur une ligne, écran scrollable, pas d'animation superflue | ⏳ | visuel |
+| 4 | Copier un snippet → l'icône passe de Copy à Check | ⏳ | visuel |
