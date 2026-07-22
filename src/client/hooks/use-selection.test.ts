@@ -114,12 +114,14 @@ describe('useSelection', () => {
   it('bulkUncheck(visible) removes only the endpoints in scope (select-all toggle)', () => {
     const { result } = renderHook(() => useSelection(SPEC));
     act(() => result.current.bulkCheck(() => true));
-    const total = result.current.count;
-    expect(total).toBeGreaterThan(1);
-    // Scope the uncheck to GET endpoints only — writes must survive.
+    expect(result.current.count).toBe(5);
+    // Scope the uncheck to GET endpoints only — writes must SURVIVE.
     act(() => result.current.bulkUncheck((e) => e.method === 'GET'));
-    expect(result.current.count).toBeLessThan(total);
-    expect(result.current.selectedIds().every((id) => !id.startsWith('GET '))).toBe(true);
+    expect(result.current.selectedIds().sort()).toEqual([
+      'DELETE /things/{id}',
+      'POST /things',
+      'PUT /other',
+    ]);
   });
 
   it('exposes focused = null by default, setFocused updates it', () => {
