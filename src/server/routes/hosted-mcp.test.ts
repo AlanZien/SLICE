@@ -107,6 +107,25 @@ describe('hosted runtime routes', () => {
     expect(hostedStore.get(id)).toBeUndefined();
   });
 
+  it('never expires a hosted URL when TTL is 0 (self-host deployments)', async () => {
+    const ttl0 = createApp({ nodeEnv: 'test', hostedTtlHours: 0 }).listen(0);
+    await new Promise<void>((r) => ttl0.once('listening', r));
+    const ttl0Base = `http://127.0.0.1:${(ttl0.address() as AddressInfo).port}`;
+    try {
+      received = [];
+      const url = await host();
+      const id = url.split('/m/')[1];
+      hostedStore.get(id)!.createdAt = new Date(Date.now() - 100 * 3600 * 1000).toISOString();
+
+      // Store is process-wide — the TTL-0 app serves the same id and must not expire it.
+      await callListThings(`${ttl0Base}/m/${id}`, 'TOKEN_C');
+      expect(received.some((r) => r.auth === 'Bearer TOKEN_C')).toBe(true);
+      expect(hostedStore.get(id)).toBeDefined();
+    } finally {
+      await new Promise<void>((r) => ttl0.close(() => r()));
+    }
+  }, 20_000);
+
   it('returns 404 for an unknown id', async () => {
     const res = await fetch(`${baseUrl}/m/nope-unknown-id`, {
       method: 'POST',
