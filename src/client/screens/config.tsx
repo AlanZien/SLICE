@@ -1,60 +1,24 @@
-import { useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Pencil } from 'lucide-react';
 import type {
   ApproximationKind,
-  DeploymentMode,
-  Endpoint,
   ParsedSpec,
   SliceConfig,
   UpstreamAuthType,
 } from '@shared/types';
-import { computeEconomy } from '@shared/token-estimator';
-import { AdvancedOptions } from '@/components/advanced-options';
+import { computeEconomy, estimateSpecTokens } from '@shared/token-estimator';
 import { AuthOption } from '@/components/auth-option';
+import { ConnectionTabs } from '@/components/connection-tabs';
 import { DestCard } from '@/components/dest-card';
 import { Field } from '@/components/field';
-import { McpPackageCard } from '@/components/mcp-package-card';
 import { PostGenSteps } from '@/components/post-gen-steps';
-import { ToggleRow } from '@/components/toggle-row';
 import { ZipStructurePreview } from '@/components/zip-structure-preview';
 import { useConfig } from '@/hooks/use-config';
 import { cn } from '@/lib/utils';
 
-const SAMPLE_TOOL_COUNT = 6;
+const PREVIEW_URL = 'https://slice.run/m/xxxxxxxx';
 
-function transportLabelFor(mode: DeploymentMode): string {
-  switch (mode) {
-    case 'local':
-      return 'stdio';
-    case 'remote':
-      return 'http';
-    case 'both':
-      return 'stdio + http';
-  }
-}
 
-function authLabelFor(type: UpstreamAuthType): string {
-  switch (type) {
-    case 'none':
-      return 'no auth';
-    case 'apiKey':
-      return 'api key';
-    case 'bearer':
-      return 'bearer';
-    case 'oauth2':
-      return 'OAuth 2.0';
-  }
-}
-
-function toolIdFor(endpoint: Endpoint): string {
-  const path = endpoint.path
-    .replace(/^\/+/, '')
-    .replace(/\{(\w+)\}/g, '$1')
-    .replace(/[^a-zA-Z0-9_/]/g, '_')
-    .replace(/\/+/g, '.')
-    .replace(/\.+$/, '');
-  return `tools.${endpoint.method.toLowerCase()}_${path || 'root'}`;
-}
 
 interface GenerationReportData {
   total: number;
@@ -94,7 +58,6 @@ function GenerationReport({ report }: { report: GenerationReportData }) {
 export interface ConfigScreenProps {
   spec: ParsedSpec;
   selectedIds: string[];
-  onBack: () => void;
   onGenerate: (config: SliceConfig) => void;
 }
 
@@ -105,26 +68,22 @@ const FALLBACK_DEFAULT = (spec: ParsedSpec) => ({
   mcpServerToken: '',
 });
 
-export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigScreenProps) {
+export function ConfigScreen({ spec, selectedIds, onGenerate }: ConfigScreenProps) {
   // Parser should always inject a defaultConfig in phase 06+, but stay
   // defensive in case an older payload reaches the screen.
   const defaults = spec.defaultConfig ?? FALLBACK_DEFAULT(spec);
   const { config, errors, isValid, setField, setUpstreamAuth } = useConfig(defaults);
 
   const detectedAuthType = defaults.upstreamAuth.type;
+  const detectedBaseUrl = defaults.baseUrl;
+  const [baseUrlLocked, setBaseUrlLocked] = useState(!!detectedBaseUrl);
 
-  // Pre-compute everything that depends on (spec, selectedIds) in a single memo.
-  const { sampleTools, extraToolsCount, savedPercent, report } = useMemo(() => {
+  const { savedPercent, sliceTokens, fullTokens, totalCount, report } = useMemo(() => {
     const allEndpoints = spec.groups.flatMap((g) => g.endpoints);
-    const selectedSet = new Set(selectedIds);
-    const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
-
-    const sample = chosen.slice(0, SAMPLE_TOOL_COUNT).map((e) => ({
-      id: toolIdFor(e),
-      method: e.method,
-    }));
     const economy = computeEconomy(spec, selectedIds);
 
+    const selectedSet = new Set(selectedIds);
+    const chosen = allEndpoints.filter((e) => selectedSet.has(e.id));
     let full = 0, schemaFallback = 0, nonJsonBody = 0, cookieParam = 0;
     for (const e of chosen) {
       const kinds = (e.approximations ?? []) as ApproximationKind[];
@@ -135,9 +94,10 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
     }
 
     return {
-      sampleTools: sample,
-      extraToolsCount: Math.max(0, chosen.length - SAMPLE_TOOL_COUNT),
       savedPercent: economy.percent,
+      sliceTokens: economy.selected,
+      fullTokens: estimateSpecTokens(spec),
+      totalCount: allEndpoints.length,
       report: { total: chosen.length, full, schemaFallback, nonJsonBody, cookieParam } satisfies GenerationReportData,
     };
   }, [spec, selectedIds]);
@@ -159,13 +119,12 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
   };
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
         {/* LEFT — form */}
-        <section className="flex-1 overflow-y-auto px-8 py-6">
-          <div className="mx-auto flex max-w-xl flex-col gap-7">
-            <header className="flex flex-col gap-1.5">
-              <p className="eyebrow">Step 3 of 3 · configuration</p>
+        <section className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="mx-auto flex max-w-xl flex-col gap-4">
+            <header className="flex flex-col gap-1">
               <h2 className="h2 text-foreground">
                 Give it a name and tell us where it'll live.
               </h2>
@@ -174,7 +133,7 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
               </p>
             </header>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               <Field
                 label="MCP server name"
                 value={config.mcpName}
@@ -183,13 +142,37 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
                 mono
                 prefix="@"
               />
-              <Field
-                label="Upstream API base URL"
-                value={config.baseUrl}
-                error={errors.baseUrl}
-                onChange={(v) => setField('baseUrl', v)}
-                mono
-              />
+              {detectedBaseUrl && baseUrlLocked ? (
+                <div className="flex flex-col gap-2">
+                  <label className="eyebrow">Upstream API base URL</label>
+                  <div
+                    role="status"
+                    aria-label="Base URL detected from the spec"
+                    className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-2.5"
+                  >
+                    <span className="font-mono text-sm text-foreground min-w-0 flex-1 truncate">{detectedBaseUrl}</span>
+                    <span className="shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-primary">
+                      auto-detected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setBaseUrlLocked(false)}
+                      aria-label="Edit base URL"
+                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <Pencil size={12} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Field
+                  label="Upstream API base URL"
+                  value={config.baseUrl}
+                  error={errors.baseUrl}
+                  onChange={(v) => setField('baseUrl', v)}
+                  mono
+                />
+              )}
 
               <div className="flex flex-col gap-2">
                 <label className="eyebrow">Upstream authentication</label>
@@ -201,35 +184,26 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
                   <div
                     role="status"
                     aria-label="Upstream authentication detected from the spec"
-                    className="flex flex-col gap-1 rounded-md border border-border bg-card/40 px-3 py-2.5"
+                    className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-3 py-2.5"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {detectedAuthType === 'apiKey'
-                          ? 'API Key'
-                          : detectedAuthType === 'oauth2'
-                            ? 'Automatic connection (OAuth 2.0)'
-                            : 'Bearer'}
-                      </span>
-                      <span className="ml-auto rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-emerald-500">
-                        auto-detected
-                      </span>
-                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {detectedAuthType === 'apiKey'
+                        ? 'API Key'
+                        : detectedAuthType === 'oauth2'
+                          ? 'Automatic connection (OAuth 2.0)'
+                          : 'Bearer'}
+                    </span>
                     <span className="font-mono text-[11px] text-muted-foreground">
+                      {'· '}
                       {detectedAuthType === 'apiKey' && config.upstreamAuth.type === 'apiKey'
                         ? `header · ${config.upstreamAuth.headerName}`
                         : detectedAuthType === 'oauth2' && config.upstreamAuth.type === 'oauth2'
                           ? `token endpoint · ${config.upstreamAuth.tokenUrl}`
                           : 'Authorization: Bearer …'}
                     </span>
-                    {detectedAuthType === 'oauth2' && (
-                      <span className="font-mono text-[11px] text-muted-foreground">
-                        The server signs in by itself. Self-host: set
-                        {' '}
-                        <span className="text-foreground">UPSTREAM_OAUTH_CLIENT_ID</span> /{' '}
-                        <span className="text-foreground">UPSTREAM_OAUTH_CLIENT_SECRET</span> in its env.
-                      </span>
-                    )}
+                    <span className="ml-auto shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide text-primary">
+                      auto-detected
+                    </span>
                   </div>
                 ) : (
                   // Spec declared nothing — let the user fill it in.
@@ -281,12 +255,11 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
               </div>
             </div>
 
-            <div className="flex flex-col gap-3">
-              <p className="eyebrow">the only real question</p>
-              <h3 className="h2 text-foreground" style={{ fontSize: 22 }}>
+            <div className="mt-3 flex flex-col gap-2">
+              <h3 className="h2 text-foreground" style={{ fontSize: 18 }}>
                 Where should we host it?
               </h3>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <DestCard
                   value="cloud"
                   active={config.hosting === 'cloud'}
@@ -309,71 +282,68 @@ export function ConfigScreen({ spec, selectedIds, onBack, onGenerate }: ConfigSc
               </div>
             </div>
 
-            <AdvancedOptions summary="parameter detail, retries">
-              <div className="flex flex-col gap-1">
-                <ToggleRow
-                  title="Detailed parameter descriptions"
-                  hint="better for the agent, +12% context"
-                  on={config.includeParamDescriptions}
-                  onToggle={() =>
-                    setField('includeParamDescriptions', !config.includeParamDescriptions)
-                  }
-                />
-                <ToggleRow
-                  title="Retry on 5xx"
-                  hint="3 attempts, exponential backoff"
-                  on={config.retryOnServerError}
-                  onToggle={() =>
-                    setField('retryOnServerError', !config.retryOnServerError)
-                  }
-                />
-              </div>
-            </AdvancedOptions>
-
             <GenerationReport report={report} />
+
           </div>
         </section>
 
         {/* RIGHT — live preview pane */}
-        <aside className="flex w-[380px] shrink-0 flex-col gap-5 overflow-y-auto border-l border-border bg-card/30 p-6">
-          <div className="flex items-center gap-2">
-            <p className="eyebrow">Live preview</p>
-            <span className="grow" />
-            <span className="font-mono inline-flex items-center gap-1 text-[10px] text-muted-foreground">
-              <span
-                aria-hidden
-                className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"
-              />
-              sync
-            </span>
-          </div>
+        <aside className="flex w-[380px] shrink-0 flex-col gap-3 overflow-y-auto border-l border-border bg-card/30 p-4">
+          {/* Overview — même résumé que l'écran 2 */}
+          {(() => {
+            const safePercent = Number.isFinite(savedPercent) ? Math.max(0, Math.min(100, savedPercent)) : 0;
+            return (
+              <div className="flex flex-col gap-4">
+                <section className="flex flex-col gap-2">
+                  <p className="eyebrow">Context saved</p>
+                  <p className="h2 leading-none text-foreground">
+                    −{safePercent}<span className="font-mono text-sm text-muted-foreground">%</span>
+                  </p>
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-border/60">
+                    <div className="h-full bg-primary transition-[width]" style={{ width: `${safePercent}%` }} aria-hidden />
+                  </div>
+                </section>
+                <div className="h-px bg-border/60" aria-hidden />
+                <section className="flex flex-col gap-2.5">
+                  <div className="flex items-baseline justify-between">
+                    <span className="eyebrow">Selected</span>
+                    <span className="font-mono tabular-nums text-xs text-foreground">
+                      {selectedIds.length}<span className="text-muted-foreground"> / {totalCount}</span>
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="eyebrow">Tokens</span>
+                    <span className="font-mono tabular-nums text-xs text-foreground">
+                      {sliceTokens.toLocaleString()}<span className="text-muted-foreground"> / {fullTokens.toLocaleString()}</span>
+                    </span>
+                  </div>
+                </section>
+              </div>
+            );
+          })()}
 
-          <McpPackageCard
-            name={config.mcpName}
-            endpointCount={selectedIds.length}
-            savedPercent={savedPercent}
-            transportLabel={transportLabelFor(config.mode)}
-            authLabel={authLabelFor(config.upstreamAuth.type)}
-            sampleTools={sampleTools}
-            extraToolsCount={extraToolsCount}
-          />
-
-          <ZipStructurePreview packageName={config.mcpName} mode={config.mode} />
-
-          <PostGenSteps />
+          {config.hosting === 'cloud' ? (
+            <>
+              <div className="h-px bg-border/60" aria-hidden />
+              <div className="flex flex-col gap-2">
+                <p className="eyebrow">Snippet preview</p>
+                <p className="font-mono text-[11px] text-muted-foreground">
+                  Real URL replaces <span className="text-foreground">xxxxxxxx</span> after deploy.
+                </p>
+                <ConnectionTabs config={config} hostedUrl={PREVIEW_URL} />
+              </div>
+            </>
+          ) : (
+            <>
+              <PostGenSteps />
+              <ZipStructurePreview packageName={config.mcpName} mode={config.mode} />
+            </>
+          )}
         </aside>
       </div>
 
       {/* Footer */}
-      <footer className="sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border bg-background/95 px-6 py-3 backdrop-blur">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Back"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--slice-highlight)] hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
+      <footer className="sticky bottom-0 z-10 flex items-center justify-end gap-4 border-t border-border bg-background/95 px-6 py-3 backdrop-blur">
         <button
           type="button"
           disabled={!isValid}

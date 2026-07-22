@@ -5,52 +5,29 @@ import { Topbar } from './topbar';
 
 describe('Topbar', () => {
   it('renders the SLICE wordmark', () => {
-    render(<Topbar current={1} apiSlug={null} onReset={() => {}} onToggleTheme={() => {}} />);
+    render(<Topbar current={1} apiName={null} onReset={() => {}} onToggleTheme={() => {}} />);
     expect(screen.getByText('SLICE')).toBeInTheDocument();
   });
 
-  it('shows the breadcrumb "/new" on step 1', () => {
-    render(<Topbar current={1} apiSlug={null} onReset={() => {}} onToggleTheme={() => {}} />);
-    expect(screen.getByLabelText(/breadcrumb/i)).toHaveTextContent('/new');
+  it('shows the API name when provided', () => {
+    render(<Topbar current={2} apiName="Shopify Admin API" onReset={() => {}} onToggleTheme={() => {}} />);
+    expect(screen.getByText('Shopify Admin API')).toBeInTheDocument();
   });
 
-  it('shows the api slug breadcrumb on step 2', () => {
-    render(
-      <Topbar
-        current={2}
-        apiSlug="shopify-admin-api"
-        onReset={() => {}}
-        onToggleTheme={() => {}}
-      />
-    );
-    expect(screen.getByLabelText(/breadcrumb/i)).toHaveTextContent('/shopify-admin-api');
-  });
-
-  it('shows /configure on step 3 and /done on step 4', () => {
-    const { rerender } = render(
-      <Topbar current={3} apiSlug="x" onReset={() => {}} onToggleTheme={() => {}} />
-    );
-    expect(screen.getByLabelText(/breadcrumb/i)).toHaveTextContent('/configure');
-
-    rerender(<Topbar current={4} apiSlug="x" onReset={() => {}} onToggleTheme={() => {}} />);
-    expect(screen.getByLabelText(/breadcrumb/i)).toHaveTextContent('/done');
+  it('hides the API name on step 1 when null', () => {
+    render(<Topbar current={1} apiName={null} onReset={() => {}} onToggleTheme={() => {}} />);
+    expect(screen.queryByText(/shopify/i)).not.toBeInTheDocument();
   });
 
   it('renders the Stepper with the current step', () => {
-    render(<Topbar current={2} apiSlug="x" onReset={() => {}} onToggleTheme={() => {}} />);
+    render(<Topbar current={2} apiName="x" onReset={() => {}} onToggleTheme={() => {}} />);
     expect(screen.getByRole('navigation', { name: /steps/i })).toBeInTheDocument();
-  });
-
-  it('shows the ⌘K keyboard hint', () => {
-    render(<Topbar current={1} apiSlug={null} onReset={() => {}} onToggleTheme={() => {}} />);
-    expect(screen.getByText('⌘')).toBeInTheDocument();
-    expect(screen.getByText('K')).toBeInTheDocument();
   });
 
   it('calls onReset when the Reset button is clicked', async () => {
     const user = userEvent.setup();
     const onReset = vi.fn();
-    render(<Topbar current={2} apiSlug="x" onReset={onReset} onToggleTheme={() => {}} />);
+    render(<Topbar current={2} apiName="x" onReset={onReset} onToggleTheme={() => {}} />);
     await user.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledOnce();
   });
@@ -59,9 +36,19 @@ describe('Topbar', () => {
     const user = userEvent.setup();
     const onToggleTheme = vi.fn();
     render(
-      <Topbar current={1} apiSlug={null} onReset={() => {}} onToggleTheme={onToggleTheme} />
+      <Topbar current={1} apiName={null} onReset={() => {}} onToggleTheme={onToggleTheme} />
     );
     await user.click(screen.getByRole('button', { name: /toggle theme/i }));
     expect(onToggleTheme).toHaveBeenCalledOnce();
+  });
+
+  it('passes onNavigate to done steps in the Stepper', async () => {
+    const user = userEvent.setup();
+    const onNavigate = vi.fn();
+    render(
+      <Topbar current={3} apiName="x" onReset={() => {}} onToggleTheme={() => {}} onNavigate={onNavigate} />
+    );
+    await user.click(screen.getByRole('button', { name: /back to upload/i }));
+    expect(onNavigate).toHaveBeenCalledWith(1);
   });
 });

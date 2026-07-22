@@ -1,15 +1,27 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useTheme } from './use-theme';
 
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (k: string) => store[k] ?? null,
+    setItem: (k: string, v: string) => { store[k] = v; },
+    removeItem: (k: string) => { delete store[k]; },
+    clear: () => { store = {}; },
+  };
+})();
+
 describe('useTheme', () => {
   beforeEach(() => {
-    localStorage.clear();
+    vi.stubGlobal('localStorage', localStorageMock);
+    localStorageMock.clear();
     document.documentElement.classList.remove('dark');
   });
 
   afterEach(() => {
-    localStorage.clear();
+    localStorageMock.clear();
+    vi.unstubAllGlobals();
     document.documentElement.classList.remove('dark');
   });
 

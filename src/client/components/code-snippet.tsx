@@ -4,6 +4,7 @@
  * (long snippets push the button off-screen).
  */
 import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
 import { useToast } from './toast';
 
 export interface CodeSnippetProps {
@@ -36,9 +37,10 @@ export function CodeSnippet({ code, label }: CodeSnippetProps) {
         <button
           type="button"
           onClick={handleCopy}
-          className="rounded-md px-2 py-1 text-xs font-medium text-foreground hover:bg-muted"
+          aria-label={copied ? 'Copied' : 'Copy'}
+          className="rounded-md p-1 text-muted-foreground hover:text-foreground transition-colors"
         >
-          {copied ? 'Copied' : 'Copy'}
+          {copied ? <Check size={14} /> : <Copy size={14} />}
         </button>
       </div>
       <pre className="overflow-x-auto px-3 py-3 text-xs leading-relaxed">

@@ -1,16 +1,13 @@
-import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface StickyFooterProps {
   selectedCount: number;
-  onBack: () => void;
   onContinue: () => void;
   className?: string;
 }
 
 export function StickyFooter({
   selectedCount,
-  onBack,
   onContinue,
   className,
 }: StickyFooterProps) {
@@ -19,21 +16,10 @@ export function StickyFooter({
   return (
     <footer
       className={cn(
-        'sticky bottom-0 z-10 flex items-center justify-between gap-4 border-t border-border bg-background/95 px-6 py-3 backdrop-blur',
+        'sticky bottom-0 z-10 flex items-center justify-end gap-4 border-t border-border bg-background/95 px-6 py-3 backdrop-blur',
         className
       )}
     >
-      {/* Icon-only Back. The route back to upload is destructive (reset);
-          users hit Recommencer in the topbar 99% of the time. Keep the
-          affordance discoverable but not competing visually with Continue. */}
-      <button
-        type="button"
-        onClick={onBack}
-        aria-label="Back"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--slice-highlight)] hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-      </button>
       <button
         type="button"
         disabled={disabled}

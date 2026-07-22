@@ -9,20 +9,17 @@ const TAGS = [
   { name: 'Customers', picked: 0, total: 4 },
 ];
 
+const DEFAULT_PROPS = {
+  tags: TAGS,
+  activeTag: 'Products' as string | null,
+  onSelectTag: () => {},
+  selectedCount: 7,
+  totalCount: 18,
+};
+
 describe('<TagRail>', () => {
   it('renders an "All" item plus one item per tag', () => {
-    render(
-      <TagRail
-        tags={TAGS}
-        activeTag="Products"
-        onSelectTag={() => {}}
-        savedPercent={50}
-        selectedCount={7}
-        totalCount={18}
-        sliceTokens={500}
-        fullTokens={1000}
-      />
-    );
+    render(<TagRail {...DEFAULT_PROPS} />);
     expect(screen.getByText(/^all$/i)).toBeInTheDocument();
     for (const t of TAGS) {
       expect(screen.getByText(t.name)).toBeInTheDocument();
@@ -30,91 +27,33 @@ describe('<TagRail>', () => {
   });
 
   it('shows the active tag with aria-current="true"', () => {
-    render(
-      <TagRail
-        tags={TAGS}
-        activeTag="Orders"
-        onSelectTag={() => {}}
-        savedPercent={50}
-        selectedCount={7}
-        totalCount={18}
-        sliceTokens={500}
-        fullTokens={1000}
-      />
-    );
+    render(<TagRail {...DEFAULT_PROPS} activeTag="Orders" />);
     const orders = screen.getByRole('button', { name: /tag: orders/i });
     expect(orders).toHaveAttribute('aria-current', 'true');
   });
 
   it('calls onSelectTag with the tag name when an item is clicked', async () => {
     const onSelectTag = vi.fn();
-    render(
-      <TagRail
-        tags={TAGS}
-        activeTag="Products"
-        onSelectTag={onSelectTag}
-        savedPercent={50}
-        selectedCount={7}
-        totalCount={18}
-        sliceTokens={500}
-        fullTokens={1000}
-      />
-    );
+    render(<TagRail {...DEFAULT_PROPS} onSelectTag={onSelectTag} />);
     await userEvent.click(screen.getByRole('button', { name: /tag: orders/i }));
     expect(onSelectTag).toHaveBeenCalledWith('Orders');
   });
 
   it('calls onSelectTag with null when "All" is clicked', async () => {
     const onSelectTag = vi.fn();
-    render(
-      <TagRail
-        tags={TAGS}
-        activeTag="Products"
-        onSelectTag={onSelectTag}
-        savedPercent={50}
-        selectedCount={7}
-        totalCount={18}
-        sliceTokens={500}
-        fullTokens={1000}
-      />
-    );
+    render(<TagRail {...DEFAULT_PROPS} onSelectTag={onSelectTag} />);
     await userEvent.click(screen.getByRole('button', { name: /tag: all/i }));
     expect(onSelectTag).toHaveBeenCalledWith(null);
   });
 
-  it('renders the savings bignum and tokens summary in the footer', () => {
-    render(
-      <TagRail
-        tags={TAGS}
-        activeTag="Products"
-        onSelectTag={() => {}}
-        savedPercent={73}
-        selectedCount={7}
-        totalCount={18}
-        sliceTokens={500}
-        fullTokens={1850}
-      />
-    );
-    expect(screen.getByText(/−73|−\s*73|-73/)).toBeInTheDocument();
-    expect(screen.getByText(/7\s*\/\s*18/)).toBeInTheDocument();
-    expect(screen.getByText(/500/)).toBeInTheDocument();
-    expect(screen.getByText(/1850|1\s*850/)).toBeInTheDocument();
+  it('renders selected / total in the footer', () => {
+    render(<TagRail {...DEFAULT_PROPS} selectedCount={7} totalCount={18} />);
+    expect(screen.getByText(/7/)).toBeInTheDocument();
+    expect(screen.getByText(/18/)).toBeInTheDocument();
   });
 
   it('shows picked/total per tag (formatted)', () => {
-    render(
-      <TagRail
-        tags={TAGS}
-        activeTag="Products"
-        onSelectTag={() => {}}
-        savedPercent={0}
-        selectedCount={0}
-        totalCount={18}
-        sliceTokens={0}
-        fullTokens={0}
-      />
-    );
-    // Products: 5/8 → both numbers visible
+    render(<TagRail {...DEFAULT_PROPS} />);
     const productsItem = screen.getByRole('button', { name: /tag: products/i });
     expect(productsItem).toHaveTextContent('5');
     expect(productsItem).toHaveTextContent('8');

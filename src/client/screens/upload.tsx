@@ -44,9 +44,8 @@ export function UploadScreen({ onParsed }: UploadScreenProps) {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 px-6 py-16 text-center">
-      <header className="space-y-3">
-        <p className="eyebrow">Step 1 — Upload</p>
+    <section className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center gap-12 px-6 py-12 text-center">
+      <header className="space-y-5">
         <h1 className="h1">Curated MCP servers for AI agents</h1>
         <p className="font-mono text-sm text-muted-foreground">
           Your API description becomes a faithful MCP server. We never rewrite anything

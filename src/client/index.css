@@ -141,6 +141,11 @@
     box-sizing: border-box;
   }
 
+  * {
+    scrollbar-color: var(--slice-ink-mute) transparent;
+    scrollbar-width: thin;
+  }
+
   html, body {
     margin: 0;
     padding: 0;

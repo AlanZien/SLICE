@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ParsedSpec } from '@shared/types';
+import { ToastProvider } from '@/components/toast';
 import { ConfigScreen } from './config';
+
+function renderConfig(props: React.ComponentProps<typeof ConfigScreen>) {
+  return render(<ToastProvider><ConfigScreen {...props} /></ToastProvider>);
+}
 
 const SPEC: ParsedSpec = {
   apiName: 'Shopify',
@@ -33,54 +38,43 @@ const SPEC_NO_AUTH: ParsedSpec = {
 
 describe('<ConfigScreen> (phase 06)', () => {
   it('pins the upstream auth in read-only mode when detected from the spec', () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
     // Pinned state: status block + "auto-detected" badge, no clickable
     // None/Bearer alternatives.
     expect(screen.getByRole('status', { name: /upstream authentication/i })).toBeInTheDocument();
-    expect(screen.getByText(/auto-detected/i)).toBeInTheDocument();
+    // There are two auto-detected badges (auth + base URL).
+    expect(screen.getAllByText(/auto-detected/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole('button', { name: /^bearer$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^none$/i })).not.toBeInTheDocument();
   });
 
   it('exposes the 3 auth options when the spec did not declare any', () => {
-    render(
-      <ConfigScreen spec={SPEC_NO_AUTH} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
+    renderConfig({ spec: SPEC_NO_AUTH, selectedIds: ['GET /a'], onGenerate: () => {} });
     expect(screen.getByRole('button', { name: /none\s+public api/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /api key/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /bearer/i })).toBeInTheDocument();
   });
 
-  it('renders the form fields, the two hosting cards and the advanced toggle', () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
+  it('renders the form fields and the two hosting cards', () => {
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
     expect(screen.getByDisplayValue('shopify')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('https://api.shopify.com/v1')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /advanced options/i })).toBeInTheDocument();
+    // Base URL is auto-detected → shown as read-only text, not an input.
+    expect(screen.getByText('https://api.shopify.com/v1')).toBeInTheDocument();
   });
 
   // RC1.2 — the transport question is replaced by the hosting question.
   it('shows the two hosting cards and drops the old transport cards', () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
     expect(screen.getByRole('button', { name: /we host it for you/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /on my server/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /on my machine/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /on a remote/i })).not.toBeInTheDocument();
   });
 
-  // RC1.3 — action disabled until a hosting target is picked, label adapts.
-  it('keeps the action disabled until a hosting target is picked and adapts its label', async () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
-    expect(
-      screen.getByRole('button', { name: /deploy to slice cloud|download the kit/i })
-    ).toBeDisabled();
+  // RC1.3 — cloud pre-selected by default, label adapts when switching.
+  it('pre-selects SLICE Cloud and adapts label when switching to self-host', async () => {
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
+    expect(screen.getByRole('button', { name: /deploy to slice cloud/i })).toBeEnabled();
 
     await userEvent.click(screen.getByRole('button', { name: /on my server/i }));
     expect(screen.getByRole('button', { name: /download the kit/i })).toBeEnabled();
@@ -90,27 +84,13 @@ describe('<ConfigScreen> (phase 06)', () => {
   });
 
   // RC1.4 — the MCP server token field is gone from the UI.
-  it('no longer exposes the MCP server token field', async () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
-    await userEvent.click(screen.getByRole('button', { name: /advanced options/i }));
+  it('no longer exposes the MCP server token field', () => {
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
     expect(screen.queryByText(/mcp server token/i)).not.toBeInTheDocument();
   });
 
-  // RC1.5 — the detailed parameter descriptions toggle stays.
-  it('still offers the detailed parameter descriptions toggle', async () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
-    await userEvent.click(screen.getByRole('button', { name: /advanced options/i }));
-    expect(screen.getByText(/detailed parameter descriptions/i)).toBeInTheDocument();
-  });
-
   it('disables the action when the form is invalid even after choosing hosting', async () => {
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={() => {}} />
-    );
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate: () => {} });
     await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
     const name = screen.getByDisplayValue('shopify');
     await userEvent.clear(name);
@@ -120,9 +100,7 @@ describe('<ConfigScreen> (phase 06)', () => {
 
   it('calls onGenerate with the final config incl. hosting when the action is clicked', async () => {
     const onGenerate = vi.fn();
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={() => {}} onGenerate={onGenerate} />
-    );
+    renderConfig({ spec: SPEC, selectedIds: ['GET /a'], onGenerate });
     await userEvent.click(screen.getByRole('button', { name: /we host it for you/i }));
     await userEvent.click(screen.getByRole('button', { name: /deploy to slice cloud/i }));
     expect(onGenerate).toHaveBeenCalledOnce();
@@ -131,15 +109,6 @@ describe('<ConfigScreen> (phase 06)', () => {
     expect(arg.hosting).toBe('cloud');
     expect(arg.mode).toBe('remote');
     expect(arg.upstreamAuth.type).toBe('apiKey');
-  });
-
-  it('Back triggers the onBack callback', async () => {
-    const onBack = vi.fn();
-    render(
-      <ConfigScreen spec={SPEC} selectedIds={['GET /a']} onBack={onBack} onGenerate={() => {}} />
-    );
-    await userEvent.click(screen.getByRole('button', { name: /^back/i }));
-    expect(onBack).toHaveBeenCalledOnce();
   });
 });
 
@@ -169,7 +138,7 @@ describe('<GenerationReport>', () => {
   // F1 — tous full → compteur visible, pas de lignes de détail
   it('F1: shows counter with "All fully supported" when all endpoints are full', () => {
     const spec = specWithEndpoints([makeEndpoint('a'), makeEndpoint('b')]);
-    render(<ConfigScreen spec={spec} selectedIds={['a', 'b']} onBack={() => {}} onGenerate={() => {}} />);
+    renderConfig({ spec, selectedIds: ['a', 'b'], onGenerate: () => {} });
     expect(screen.getByText(/2 \/ 2 endpoints in MCP/i)).toBeInTheDocument();
     expect(screen.getByText(/all fully supported/i)).toBeInTheDocument();
     expect(screen.queryByText(/approximated schema/i)).not.toBeInTheDocument();
@@ -181,7 +150,7 @@ describe('<GenerationReport>', () => {
       makeEndpoint('a'),
       makeEndpoint('b', ['schema_fallback']),
     ]);
-    render(<ConfigScreen spec={spec} selectedIds={['a', 'b']} onBack={() => {}} onGenerate={() => {}} />);
+    renderConfig({ spec, selectedIds: ['a', 'b'], onGenerate: () => {} });
     expect(screen.getByText(/approximated schema/i)).toBeInTheDocument();
     expect(screen.queryByText(/all fully supported/i)).not.toBeInTheDocument();
   });
@@ -193,7 +162,7 @@ describe('<GenerationReport>', () => {
       makeEndpoint('b', ['schema_fallback']),
       makeEndpoint('c', ['non_json_body']),
     ]);
-    render(<ConfigScreen spec={spec} selectedIds={['a', 'b', 'c']} onBack={() => {}} onGenerate={() => {}} />);
+    renderConfig({ spec, selectedIds: ['a', 'b', 'c'], onGenerate: () => {} });
     expect(screen.getByText(/1 fully supported/i)).toBeInTheDocument();
     expect(screen.getByText(/1 with approximated schema/i)).toBeInTheDocument();
     expect(screen.getByText(/1 with no body support/i)).toBeInTheDocument();
@@ -205,7 +174,7 @@ describe('<GenerationReport>', () => {
       makeEndpoint('a'),
       makeEndpoint('b', ['schema_fallback']),
     ]);
-    render(<ConfigScreen spec={spec} selectedIds={['a']} onBack={() => {}} onGenerate={() => {}} />);
+    renderConfig({ spec, selectedIds: ['a'], onGenerate: () => {} });
     expect(screen.getByText(/all fully supported/i)).toBeInTheDocument();
     expect(screen.queryByText(/approximated schema/i)).not.toBeInTheDocument();
   });
@@ -213,7 +182,7 @@ describe('<GenerationReport>', () => {
   // F5 — compteur N/N correct
   it('F5: counter shows correct selected count', () => {
     const spec = specWithEndpoints([makeEndpoint('a'), makeEndpoint('b'), makeEndpoint('c')]);
-    render(<ConfigScreen spec={spec} selectedIds={['a', 'b', 'c']} onBack={() => {}} onGenerate={() => {}} />);
+    renderConfig({ spec, selectedIds: ['a', 'b', 'c'], onGenerate: () => {} });
     expect(screen.getByText(/3 \/ 3 endpoints in MCP/i)).toBeInTheDocument();
   });
 });

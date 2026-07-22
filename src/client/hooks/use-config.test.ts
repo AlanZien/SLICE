@@ -15,13 +15,12 @@ describe('useConfig', () => {
     const { result } = renderHook(() => useConfig(baseDefault));
     expect(result.current.config.mcpName).toBe('shopify-admin');
     expect(result.current.config.baseUrl).toBe('https://api.shopify.com/v1');
-    // Pivot — transport pinned to remote, hosting not chosen yet (RC1.3).
+    // Transport pinned to remote, cloud pre-selected by default.
     expect(result.current.config.mode).toBe('remote');
-    expect(result.current.config.hosting).toBeUndefined();
+    expect(result.current.config.hosting).toBe('cloud');
     expect(result.current.config.includeParamDescriptions).toBe(true);
     expect(result.current.config.retryOnServerError).toBe(false);
-    // Invalid until a hosting target is picked.
-    expect(result.current.isValid).toBe(false);
+    expect(result.current.isValid).toBe(true);
   });
 
   it('setField updates a single value', () => {
@@ -44,11 +43,11 @@ describe('useConfig', () => {
     expect(result.current.isValid).toBe(false);
   });
 
-  it('becomes valid once a hosting target is chosen (RC1.3)', () => {
+  it('switches hosting target between cloud and self', () => {
     const { result } = renderHook(() => useConfig(baseDefault));
-    // No hosting picked → invalid, whatever else is filled in.
-    expect(result.current.isValid).toBe(false);
-    act(() => result.current.setField('hosting', 'cloud'));
+    expect(result.current.config.hosting).toBe('cloud');
+    act(() => result.current.setField('hosting', 'self'));
+    expect(result.current.config.hosting).toBe('self');
     expect(result.current.isValid).toBe(true);
   });
 
