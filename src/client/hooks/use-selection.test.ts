@@ -111,6 +111,19 @@ describe('useSelection', () => {
     expect(result.current.selectedIds()).toEqual([]);
   });
 
+  it('bulkUncheck(visible) removes only the endpoints in scope (select-all toggle)', () => {
+    const { result } = renderHook(() => useSelection(SPEC));
+    act(() => result.current.bulkCheck(() => true));
+    expect(result.current.count).toBe(5);
+    // Scope the uncheck to GET endpoints only — writes must SURVIVE.
+    act(() => result.current.bulkUncheck((e) => e.method === 'GET'));
+    expect(result.current.selectedIds().sort()).toEqual([
+      'DELETE /things/{id}',
+      'POST /things',
+      'PUT /other',
+    ]);
+  });
+
   it('exposes focused = null by default, setFocused updates it', () => {
     const { result } = renderHook(() => useSelection(SPEC));
     expect(result.current.focused).toBeNull();

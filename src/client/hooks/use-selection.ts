@@ -42,8 +42,12 @@ export interface UseSelectionApi {
     predicate: (endpoint: Endpoint) => boolean,
     visible?: (endpoint: Endpoint) => boolean
   ) => void;
-  /** Empty the selection. */
-  bulkUncheck: () => void;
+  /**
+   * Empty the selection — or, when a `visible` scope is given, remove only the
+   * endpoints matching it (used by the select-all toggle to respect the
+   * current tag/search/filter context).
+   */
+  bulkUncheck: (visible?: (endpoint: Endpoint) => boolean) => void;
   /** Snapshot of selected ids — returns a fresh array each call. */
   selectedIds: () => string[];
 }
@@ -107,9 +111,22 @@ export function useSelection(spec: ParsedSpec): UseSelectionApi {
     [allEndpoints]
   );
 
-  const bulkUncheck = useCallback(() => {
-    setSelected(new Set());
-  }, []);
+  const bulkUncheck = useCallback(
+    (visible?: (e: Endpoint) => boolean) => {
+      if (!visible) {
+        setSelected(new Set());
+        return;
+      }
+      setSelected((prev) => {
+        const next = new Set(prev);
+        for (const ep of allEndpoints) {
+          if (visible(ep)) next.delete(ep.id);
+        }
+        return next;
+      });
+    },
+    [allEndpoints]
+  );
 
   const selectedIds = useCallback(() => Array.from(selected), [selected]);
 

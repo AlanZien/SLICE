@@ -17,7 +17,12 @@ const PLACEHOLDER_PATH = '/absolute/path/to';
  * SLICE never stores it — the hosted runtime relays whatever the agent sends
  * in `Authorization: Bearer …` (RC2.2 / RC5.3).
  */
-export const TOKEN_PLACEHOLDER = 'COLLE_TON_TOKEN_ICI';
+export const TOKEN_PLACEHOLDER = 'PASTE_YOUR_TOKEN_HERE';
+
+/** True when the upstream API requires no credentials — no token to ask for. */
+function isPublicUpstream(config: SliceConfig): boolean {
+  return config.upstreamAuth.type === 'none';
+}
 
 /** Build the Claude Desktop `claude_desktop_config.json` snippet. */
 export function buildClaudeDesktopSnippet(config: SliceConfig): string {
@@ -78,7 +83,9 @@ export function buildHostedClaudeSnippet(url: string, config: SliceConfig): stri
     mcpServers: {
       [config.mcpName]: {
         command: 'npx',
-        args: ['-y', 'mcp-remote', url, '--header', `Authorization:Bearer ${TOKEN_PLACEHOLDER}`],
+        args: isPublicUpstream(config)
+          ? ['-y', 'mcp-remote', url]
+          : ['-y', 'mcp-remote', url, '--header', `Authorization:Bearer ${TOKEN_PLACEHOLDER}`],
       },
     },
   };
@@ -86,7 +93,15 @@ export function buildHostedClaudeSnippet(url: string, config: SliceConfig): stri
 }
 
 /** Build the n8n MCP Client node block for a remotely-hosted MCP. */
-export function buildHostedN8nSnippet(url: string, _config: SliceConfig): string {
+export function buildHostedN8nSnippet(url: string, config: SliceConfig): string {
+  if (isPublicUpstream(config)) {
+    return [
+      `# n8n — MCP Client node`,
+      `URL:     ${url}`,
+      ``,
+      `# This API is public — no token needed.`,
+    ].join('\n');
+  }
   return [
     `# n8n — MCP Client node`,
     `URL:     ${url}`,
@@ -98,10 +113,11 @@ export function buildHostedN8nSnippet(url: string, _config: SliceConfig): string
 
 /** Build the Airia connection block for a remotely-hosted MCP. */
 export function buildHostedAiriaSnippet(url: string, config: SliceConfig): string {
-  return [
+  const lines = [
     `# Airia — MCP Connector`,
     `Name:    ${config.mcpName}`,
     `URL:     ${url}`,
-    `Auth:    Bearer ${TOKEN_PLACEHOLDER}`,
-  ].join('\n');
+  ];
+  if (!isPublicUpstream(config)) lines.push(`Auth:    Bearer ${TOKEN_PLACEHOLDER}`);
+  return lines.join('\n');
 }

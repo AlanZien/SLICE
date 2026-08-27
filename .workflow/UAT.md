@@ -812,3 +812,23 @@ Appliqués : env enfant **allowlisté** (aucun secret hérité), cap stdout enfa
 | 2 | Cliquer le lien → ouvre le mail pré-rempli « SLICE — permanent hosting » | ⏳ | visuel |
 | 3 | Forcer un `createdAt` ancien dans `data/hosted.json` → appel de l'URL → erreur claire d'expiration | ⏳ | E2E manuel |
 | 4 | `scripts/try-hosted.ts` contre une URL fraîche → fonctionne comme avant | ⏳ | E2E manuel |
+
+## Phase selection-ux : Select all + nom du tool dans les lignes (2026-07-22)
+
+### Tests techniques
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | `bulkUncheck(visible)` retire uniquement le périmètre, le reste survit | ✓ | use-selection.test.ts |
+| 2 | « Select all » coche tous les endpoints visibles (tag/recherche/filtre respectés) | ✓ | selection.test.tsx |
+| 3 | Second clic décoche uniquement les visibles (GET d'un autre tag survit) | ✓ | selection.test.tsx |
+| 4 | Ligne endpoint : nom du tool MCP affiché (`get_pet.findByStatus`) | ✓ | endpoint-row.test.tsx |
+| — | Suite complète verte + typecheck | ✓ | |
+
+### Tests métier / UX (à valider par l'utilisateur)
+
+| # | Scenario | Résultat | Notes |
+|---|----------|----------|-------|
+| 1 | Case « Select all » dans la barre d'actions ; état intermédiaire (tiret) quand partiellement coché | ⏳ | visuel |
+| 2 | Avec une recherche active, « Select all » ne coche que les résultats filtrés | ⏳ | comportement live |
+| 3 | Nom du tool visible à droite de chaque ligne, tronqué proprement sur les longs paths | ⏳ | visuel |

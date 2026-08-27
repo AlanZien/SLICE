@@ -46,11 +46,10 @@ describe('<EndpointPreview>', () => {
     expect(screen.getByText(/~\s*123 tokens/i)).toBeInTheDocument();
   });
 
-  it('shows an "Agent call" sample snippet', () => {
+  it('does not render the "Agent call" pseudo-code (removed — no-code vocabulary)', () => {
     render(<EndpointPreview endpoint={EP} {...DEFAULTS} />);
-    const snippet = document.querySelector('pre')?.textContent ?? '';
-    expect(snippet).toMatch(/await mcp\.tools\["get_products\.id"\]/);
-    expect(snippet).toContain('id: "123"');
+    expect(screen.queryByText(/agent call/i)).toBeNull();
+    expect(document.querySelector('pre')).toBeNull();
   });
 
   it('renders an empty state on Endpoint tab when no endpoint is focused', () => {
