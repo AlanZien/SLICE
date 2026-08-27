@@ -94,7 +94,40 @@ describe('<SuccessScreen />', () => {
 
     it('drives the connection tabs in hosted mode (token placeholder visible)', () => {
       setupHosted();
-      expect(screen.getAllByText(/COLLE_TON_TOKEN_ICI/).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/PASTE_YOUR_TOKEN_HERE/).length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('hosted URL expiry (free tier)', () => {
+    function setupWithExpiry(expiresAt: string | null | undefined) {
+      URL.createObjectURL = vi.fn(() => 'blob:fake');
+      URL.revokeObjectURL = vi.fn();
+      render(
+        <ToastProvider>
+          <SuccessScreen
+            config={CONFIG}
+            endpointCount={23}
+            economySnapshot={74}
+            hostedUrl="https://slice.test/m/abc123"
+            expiresAt={expiresAt}
+            onRestart={vi.fn()}
+            onBackToSelection={vi.fn()}
+          />
+        </ToastProvider>
+      );
+    }
+
+    it('shows the expiry line and a mailto CTA when expiresAt is set', () => {
+      setupWithExpiry('2026-07-25T20:00:00.000Z');
+      expect(screen.getByText(/stays live until/i)).toBeInTheDocument();
+      const cta = screen.getByRole('link', { name: /permanent plan/i });
+      expect(cta.getAttribute('href')).toMatch(/^mailto:/);
+    });
+
+    it('hides the expiry line when expiresAt is null (no TTL)', () => {
+      setupWithExpiry(null);
+      expect(screen.queryByText(/stays live until/i)).toBeNull();
+      expect(screen.queryByRole('link', { name: /permanent plan/i })).toBeNull();
     });
   });
 });

@@ -32,6 +32,38 @@ describe('<EndpointRow>', () => {
     expect(screen.queryByText(/~\s*\d+\s*tk/i)).not.toBeInTheDocument();
   });
 
+  it('shows the MCP tool name next to the endpoint', () => {
+    render(
+      <EndpointRow
+        {...baseProps}
+        endpoint={{ ...EP, id: 'GET /pet/findByStatus', method: 'GET', path: '/pet/findByStatus' }}
+      />
+    );
+    expect(screen.getByText('get_pet.findByStatus')).toBeInTheDocument();
+  });
+
+  it('truncates long tool names from the head, keeping the discriminating tail', () => {
+    render(
+      <EndpointRow
+        {...baseProps}
+        endpoint={{
+          ...EP,
+          id: 'GET /v1/accounts/{account}/external_accounts/{id}',
+          method: 'GET',
+          path: '/v1/accounts/{account}/external_accounts/{id}',
+        }}
+      />
+    );
+    // Full name: get_v1.accounts.account.external_accounts.id (44 chars > cap).
+    const truncated = screen.getByText(/…accounts\.account\.external_accounts\.id$/);
+    expect(truncated).toBeInTheDocument();
+    // The full name stays available on hover.
+    expect(truncated).toHaveAttribute(
+      'title',
+      'MCP tool: get_v1.accounts.account.external_accounts.id'
+    );
+  });
+
   it('reflects the selected state on the checkbox', () => {
     const { rerender } = render(<EndpointRow {...baseProps} selected={false} />);
     expect(screen.getByRole('checkbox')).not.toBeChecked();

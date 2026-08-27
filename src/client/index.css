@@ -21,9 +21,12 @@
   --slice-bg-card-2: #f5f0df;
   --slice-bg-elev: #ffffff;
   --slice-ink: #2826a8;
+  /* Mute / faint darkened for light mode — the previous values (#8483c9 /
+     #b8b7d8) sat at ~3.2:1 on the cream background, below WCAG AA (4.5:1).
+     Same treatment the dark theme already received. Order: ink > soft > mute > faint. */
   --slice-ink-soft: #4f4eb8;
-  --slice-ink-mute: #8483c9;
-  --slice-ink-faint: #b8b7d8;
+  --slice-ink-mute: #5e5db4;
+  --slice-ink-faint: #9c9bd0;
   --slice-line: rgba(40, 38, 168, 0.20);
   --slice-line-soft: rgba(40, 38, 168, 0.08);
   --slice-line-strong: rgba(40, 38, 168, 0.50);

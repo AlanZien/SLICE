@@ -112,4 +112,27 @@ describe('hosted (URL-mode) snippets — RC5.3', () => {
       expect(out).toContain(TOKEN_PLACEHOLDER);
     });
   });
+
+  describe('public upstream API (auth: none) — no token asked', () => {
+    const PUBLIC = { ...BASE, upstreamAuth: { type: 'none' as const } };
+
+    it('Claude snippet has no Authorization header', () => {
+      const out = buildHostedClaudeSnippet(HOSTED_URL, PUBLIC);
+      const entry = JSON.parse(out).mcpServers['shopify-admin'];
+      expect(entry.args).toEqual(['-y', 'mcp-remote', HOSTED_URL]);
+      expect(out).not.toContain(TOKEN_PLACEHOLDER);
+    });
+
+    it('n8n snippet says the API is public instead of asking for a token', () => {
+      const out = buildHostedN8nSnippet(HOSTED_URL, PUBLIC);
+      expect(out).not.toContain(TOKEN_PLACEHOLDER);
+      expect(out).toMatch(/public.*no token needed/i);
+    });
+
+    it('Airia snippet has no auth line', () => {
+      const out = buildHostedAiriaSnippet(HOSTED_URL, PUBLIC);
+      expect(out).not.toContain(TOKEN_PLACEHOLDER);
+      expect(out).not.toContain('Auth:');
+    });
+  });
 });

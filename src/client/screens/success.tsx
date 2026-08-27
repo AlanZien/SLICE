@@ -26,9 +26,14 @@ export interface SuccessScreenProps {
   zipBlob?: Blob;
   /** Hosted flow — the live MCP URL. Absent in the bundle flow. */
   hostedUrl?: string;
+  /** Hosted flow — free-tier expiry (ISO). `null`/absent = no expiry (TTL disabled). */
+  expiresAt?: string | null;
   onRestart: () => void;
   onBackToSelection: () => void;
 }
+
+const PERMANENT_PLAN_MAILTO =
+  'mailto:maisonepigenetic@gmail.com?subject=SLICE%20%E2%80%94%20permanent%20hosting';
 
 export function SuccessScreen({
   config,
@@ -36,6 +41,7 @@ export function SuccessScreen({
   economySnapshot,
   zipBlob,
   hostedUrl,
+  expiresAt,
   onRestart,
   onBackToSelection,
 }: SuccessScreenProps) {
@@ -71,11 +77,21 @@ export function SuccessScreen({
         <section className="mt-10 flex flex-col gap-3">
           <p className="eyebrow">Your live endpoint</p>
           <UrlRow url={hostedUrl} />
-          <p className="text-sm text-muted-foreground">
-            Paste the snippet below into your agent, then replace{' '}
-            <code className="rounded bg-muted px-1.5 py-0.5 text-xs">COLLE_TON_TOKEN_ICI</code> with
-            the token of your target API. We relay it on every call — it&apos;s never stored.
-          </p>
+          {expiresAt && (
+            <p className="text-sm text-muted-foreground">
+              This URL stays live until{' '}
+              <span className="text-foreground">
+                {new Date(expiresAt).toLocaleString(undefined, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                })}
+              </span>{' '}
+              — plenty to wire it into your agent and test it. Need it permanent?{' '}
+              <a href={PERMANENT_PLAN_MAILTO} className="underline text-foreground hover:opacity-80">
+                Get a permanent plan
+              </a>
+            </p>
+          )}
         </section>
       ) : (
         <ol className="mt-10 space-y-4">
@@ -95,7 +111,20 @@ export function SuccessScreen({
         </ol>
       )}
 
-      <section className="mt-10">
+      <section className="mt-10 flex flex-col gap-3">
+        {hosted &&
+          (config.upstreamAuth.type === 'none' ? (
+            <p className="text-sm text-muted-foreground">
+              This API is public — paste the snippet below into your agent and you&apos;re live.
+              No token needed.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Paste the snippet below into your agent, then replace{' '}
+              <code className="rounded bg-muted px-1.5 py-0.5 text-xs">PASTE_YOUR_TOKEN_HERE</code>{' '}
+              with the token of your target API. We relay it on every call — it&apos;s never stored.
+            </p>
+          ))}
         <ConnectionTabs config={config} hostedUrl={hostedUrl} />
       </section>
 

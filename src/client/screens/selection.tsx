@@ -89,6 +89,20 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
     [allEndpoints, selection.focused]
   );
 
+  // Select-all master checkbox — scoped to the visible endpoints (active tag +
+  // search + reads/writes filter), so it never touches what the user can't see.
+  const visibleIds = useMemo(
+    () => new Set(visibleEndpoints.map((e) => e.id)),
+    [visibleEndpoints]
+  );
+  const allVisibleSelected =
+    visibleEndpoints.length > 0 && visibleEndpoints.every((e) => selection.isSelected(e.id));
+  const someVisibleSelected = visibleEndpoints.some((e) => selection.isSelected(e.id));
+  const handleSelectAll = () => {
+    if (allVisibleSelected) selection.bulkUncheck((e) => visibleIds.has(e.id));
+    else selection.bulkCheck(() => true, (e) => visibleIds.has(e.id));
+  };
+
   const totalCount = allEndpoints.length;
 
   const tagRailItems = useMemo(
@@ -116,6 +130,20 @@ export function SelectionScreen({ spec, onContinue }: SelectionScreenProps) {
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Action bar */}
           <div className="flex items-center gap-8 border-b border-border px-4 py-2.5">
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 pl-2">
+              <input
+                type="checkbox"
+                aria-label="Select all visible endpoints"
+                checked={allVisibleSelected}
+                ref={(el) => {
+                  if (el) el.indeterminate = !allVisibleSelected && someVisibleSelected;
+                }}
+                onChange={handleSelectAll}
+                className="h-4 w-4 accent-foreground"
+                disabled={visibleEndpoints.length === 0}
+              />
+              <span className="font-mono text-xs text-muted-foreground">Select all</span>
+            </label>
             <SearchBox
               value={query}
               onChange={setQuery}
