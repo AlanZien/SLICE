@@ -2,7 +2,7 @@
 
 Générateur web de serveurs MCP (Model Context Protocol) sur-mesure depuis une spec OpenAPI.
 
-## Phase en cours
+## État du projet
 
 **Pivot SLICE Cloud livré (2026-06-01)** — Le modèle "binaire double-clic" est abandonné (Gatekeeper). Modèle retenu et **implémenté** : SLICE héberge les MCP, livrable = **URL + snippet à coller dans l'agent**, token relayé (jamais stocké).
 
@@ -167,7 +167,7 @@ SLICE/
 │   └── shared/              # Code partagé front/back (types, schémas Zod)
 ├── public/                  # Assets statiques
 ├── docs/                    # Documentation interne (API.md)
-├── .workflow/               # Workflow FORGE (PRD, SPEC, phases, etc.)
+├── .workflow/               # Documents projet (PRD, SPEC, historique des phases)
 │   └── visuals/             # Références visuelles fournies en SPEC
 ├── dist/                    # Output de build (gitignored)
 │   ├── client/              # Build front
@@ -195,4 +195,4 @@ SLICE/
 
 - Spec produit complète : [SLICE.md](SLICE.md)
 - PRD validé : [.workflow/PRD.md](.workflow/PRD.md)
-- Workflow FORGE : `.claude/rules/`
+- Règles projet : `.claude/rules/` (workflow FORGE retiré le 2026-08-27 ; circuit de développement : dépôt `AlanZien/pilot`)
